@@ -1,0 +1,30 @@
+float var = 2/1.9;
+string hello = "Hello";
+string greet = hello + " world!";
+int n = 7^3;
+int a = n/6;
+string assembled = a + "." + n;
+greet = greet + " Again!";
+
+float e = exp(a);
+float s = sin(var);
+
+
+Collection globals {
+  float a = exp(var);
+  float b = cos(e);
+  string result = "Result is "+a;
+  Values physics {
+    float qe = 1.602e-19;
+  }
+  Constants maths {
+    float pi = 3.14159;
+  }
+}
+
+float other = globals:a;
+
+
+nsteps = n;
+dx = e;
+output = hello;

@@ -30,12 +30,30 @@
 
 using namespace schnek;
 
+
+class FieldsImplementation;
+
+class OPar;
+
+class OParImplementation
+{
+  private:
+    friend class OPar;
+    FieldsImplementation *fields;
+  public:
+    OParImplementation() : fields(0) {}
+    void execute();
+};
+
 class OPar : public Block
 {
+  private:
+    OParImplementation impl;
   protected:
     void initParameters(BlockParameters &blockPars);
   public:
     void execute();
+    void addField(FieldsImplementation *fields);
 };
 
 

@@ -29,6 +29,8 @@
 #include <schnek/array.hpp>
 #include <schnek/grid.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 #ifdef ONE_DIMENSIONAL
 static const int dimension = 1;
 #endif
@@ -47,11 +49,27 @@ typedef float real;
 typedef double real;
 #endif
 
-#ifdef DEBUG
+#ifdef NDEBUG
 #define ArrayArgCheck schnek::ArrayNoArgCheck
+#define GridArgCheck schnek::GridNoArgCheck
 #else
 #define ArrayArgCheck schnek::ArrayNoArgCheck
+#define GridArgCheck schnek::GridAssertCheck
 #endif
+
+
+typedef schnek::Grid<double, 1, MPulseGridChecker> DataGrid1d;
+typedef schnek::Grid<double, 2, MPulseGridChecker> DataGrid2d;
+typedef schnek::Grid<double, 3, MPulseGridChecker> DataGrid3d;
+typedef DataGrid1d DataLine;
+
+typedef schnek::Grid<double, dimension, MPulseGridChecker> DataGrid;
+typedef DataGrid::IndexType GridIndex;
+
+typedef boost::shared_ptr<DataGrid1d> pDataGrid1d;
+typedef boost::shared_ptr<DataGrid2d> pDataGrid2d;
+typedef boost::shared_ptr<DataGrid3d> pDataGrid3d;
+typedef boost::shared_ptr<DataGrid> pDataGrid;
 
 typedef schnek::Array<real, dimension, ArrayArgCheck> SVector;
 typedef schnek::Array<real, 3, ArrayArgCheck> PVector;
@@ -59,5 +77,8 @@ typedef schnek::Array<real, 3, ArrayArgCheck> PVector;
 typedef schnek::Array<int, dimension, ArrayArgCheck> SIntVector;
 typedef schnek::Array<int, 3, ArrayArgCheck> PIntVector;
 
+typedef schnek::Grid<double, dimension, MPulseGridChecker> DataGrid;
+
+enum Direction {north, south, west, east, up, down};
 
 #endif /* CONFIG_HPP_ */

@@ -32,13 +32,18 @@
 #include <cmath>
 
 
+void OParImplementation::execute()
+{
+}
+
+
 void OPar::initParameters(BlockParameters &blockPars)
 {}
 
 void OPar::execute()
 {
   this->evaluateParameters();
-
+  impl.execute();
 }
 
 void initBlockLayout(BlockClasses &blocks)

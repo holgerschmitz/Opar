@@ -53,6 +53,7 @@ class OPar : public Block
     void initParameters(BlockParameters &blockPars);
   public:
     void execute();
+//    void init();
     void addField(FieldsImplementation *fields);
 };
 

@@ -25,6 +25,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_INIT([OPar],[0.1])
+
 AC_CONFIG_SRCDIR([src/opar.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
@@ -42,6 +43,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+
 
 # AC_ARG_PROGRAM
 

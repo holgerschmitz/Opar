@@ -28,21 +28,14 @@
 
 #include <schnek/variables.hpp>
 
-#include "config.hpp"
 
 using namespace schnek;
 
 class CommonBlock : public Block
 {
-  private:
-	double runtime;
-	SVector dx;
-	SIntVector size;
-	SVector min;
-	SVector max;
   protected:
     void initParameters(BlockParameters &blockPars);
-
+    void preInit();
 };
 
 #endif /* COMMON_HPP_ */

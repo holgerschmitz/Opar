@@ -24,12 +24,14 @@
  */
 
 #include "common.hpp"
+#include "globals.hpp"
 
 void CommonBlock::initParameters(BlockParameters &blockPars)
 {
-  blockPars.addParameter(&runtime, "runtime");
-  blockPars.addArrayParameter(&dx, "d");
-  blockPars.addArrayParameter(&size, "size_");
-  blockPars.addArrayParameter(&min, "min_");
-  blockPars.addArrayParameter(&max, "max_");
+  Globals::instance().initCommonParameters(blockPars);
+}
+
+void CommonBlock::preInit()
+{
+  Globals::instance().init();
 }

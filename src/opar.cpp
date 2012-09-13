@@ -24,6 +24,9 @@
  */
 
 #include "opar.hpp"
+#include "common.hpp"
+#include "fields.hpp"
+#include "globals.hpp"
 
 #include <schnek/parser.hpp>
 
@@ -38,7 +41,9 @@ void OParImplementation::execute()
 
 
 void OPar::initParameters(BlockParameters &blockPars)
-{}
+{
+  Globals::instance().initGlobalParameters(blockPars);
+}
 
 void OPar::execute()
 {
@@ -48,13 +53,17 @@ void OPar::execute()
 
 void initBlockLayout(BlockClasses &blocks)
 {
-
   blocks.addBlockClass("opar");
   blocks("opar").addChildren("Common")("Fields")("Species");
   blocks("opar").setBlockClass<OPar>();
 
+  blocks("Common").setBlockClass<CommonBlock>();
+
   blocks("Fields").addChildren("FieldBC")("FieldInit");
+  blocks("Fields").setBlockClass<Fields>();
+
   blocks("Species").addChildren("SpeciesBC")("SpeciesInit");
+
 
   //blocks.addBlockClass("Collection").addChildren("Values")("Constants");
 }
@@ -76,10 +85,12 @@ int main()
   Parser P(vars, freg, blocks);
   pBlock application;
 
+  Globals::instance().setup(vars);
 
-  std::ifstream in("test_parser_sample.txt");
+  std::ifstream in("opar.config");
   if (!in) {
     std::cerr << "Could not open file\n";
+    exit(-1);
   }
   try
   {
@@ -88,10 +99,19 @@ int main()
   catch (ParserError &e)
   {
     std::cerr << "Parse error, " << e.atomToken.getFilename() << "(" << e.atomToken.getLine() << "): "<< e.message << "\n";
-    throw -1;
+    exit(-1);
   }
 
-  application->execute();
+  try
+  {
+    application->initAll();
+  }
+  catch (VariableNotInitialisedException e)
+  {
+    std::cerr << "Variable was not initialised: " << e.getVarName() << std::endl;
+    exit(-1);
+  }
+//  application->execute();
 
 }
 

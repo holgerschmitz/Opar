@@ -27,6 +27,10 @@ opar_SOURCES = \
   common.cpp \
   common.hpp \
   config.hpp \
+  fields.hpp \
+  fields.cpp \
+  globals.hpp \
+  globals.cpp \
   opar.cpp \
   opar.hpp
 

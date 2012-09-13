@@ -67,7 +67,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_opar_OBJECTS = common.$(OBJEXT) opar.$(OBJEXT)
+am_opar_OBJECTS = common.$(OBJEXT) fields.$(OBJEXT) globals.$(OBJEXT) \
+	opar.$(OBJEXT)
 opar_OBJECTS = $(am_opar_OBJECTS)
 am__DEPENDENCIES_1 =
 opar_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -186,6 +187,10 @@ opar_SOURCES = \
   common.cpp \
   common.hpp \
   config.hpp \
+  fields.hpp \
+  fields.cpp \
+  globals.hpp \
+  globals.cpp \
   opar.cpp \
   opar.hpp
 
@@ -272,6 +277,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fields.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/globals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opar.Po@am__quote@
 
 .cpp.o:

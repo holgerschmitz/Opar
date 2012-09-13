@@ -26,8 +26,8 @@
 #ifndef CONFIG_HPP_
 #define CONFIG_HPP_
 
-#include <schnek/array.hpp>
 #include <schnek/grid.hpp>
+#include <schnek/variables.hpp>
 
 #include <boost/shared_ptr.hpp>
 
@@ -58,26 +58,31 @@ typedef double real;
 #endif
 
 
-typedef schnek::Grid<double, 1, MPulseGridChecker> DataGrid1d;
-typedef schnek::Grid<double, 2, MPulseGridChecker> DataGrid2d;
-typedef schnek::Grid<double, 3, MPulseGridChecker> DataGrid3d;
-typedef DataGrid1d DataLine;
+typedef schnek::Field<double, 1, GridArgCheck> DataField1d;
+typedef schnek::Field<double, 2, GridArgCheck> DataField2d;
+typedef schnek::Field<double, 3, GridArgCheck> DataField3d;
+typedef DataField1d DataLine;
 
-typedef schnek::Grid<double, dimension, MPulseGridChecker> DataGrid;
-typedef DataGrid::IndexType GridIndex;
+typedef schnek::Field<double, dimension, GridArgCheck> DataField;
+typedef DataField::IndexType FieldIndex;
 
-typedef boost::shared_ptr<DataGrid1d> pDataGrid1d;
-typedef boost::shared_ptr<DataGrid2d> pDataGrid2d;
-typedef boost::shared_ptr<DataGrid3d> pDataGrid3d;
-typedef boost::shared_ptr<DataGrid> pDataGrid;
+typedef boost::shared_ptr<DataField1d> pDataField1d;
+typedef boost::shared_ptr<DataField2d> pDataField2d;
+typedef boost::shared_ptr<DataField3d> pDataField3d;
+typedef boost::shared_ptr<DataField> pDataField;
 
 typedef schnek::Array<real, dimension, ArrayArgCheck> SVector;
+typedef schnek::Range<real, dimension, ArrayArgCheck> SRange;
+typedef schnek::Array<bool, dimension> SStagger;
+
 typedef schnek::Array<real, 3, ArrayArgCheck> PVector;
 
 typedef schnek::Array<int, dimension, ArrayArgCheck> SIntVector;
 typedef schnek::Array<int, 3, ArrayArgCheck> PIntVector;
 
-typedef schnek::Grid<double, dimension, MPulseGridChecker> DataGrid;
+typedef schnek::Array<schnek::pParameter, dimension, ArrayArgCheck> SParameterVector;
+typedef schnek::Array<schnek::pParameter, 3, ArrayArgCheck> PParameterVector;
+
 
 enum Direction {north, south, west, east, up, down};
 

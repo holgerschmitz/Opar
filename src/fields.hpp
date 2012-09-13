@@ -21,6 +21,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
 #ifndef FIELDS_HPP_
@@ -37,18 +38,16 @@ class Fields;
 class FieldsImplementation
 {
   private:
-    pDataGrid pEx;
-    pDataGrid pEy;
-    pDataGrid pEz;
-    pDataGrid pBx;
-    pDataGrid pBy;
-    pDataGrid pBz;
+    pDataField pEx;
+    pDataField pEy;
+    pDataField pEz;
+    pDataField pBx;
+    pDataField pBy;
+    pDataField pBz;
 
 //    typedef std::list<Current*> CurrentList;
 //    CurrentList currents;
     friend class Fields;
-
-    OParImplementation *sim;
 
   public:
     void stepSchemeInit(double dt);
@@ -65,16 +64,16 @@ class Fields : public Block
 {
   private:
     FieldsImplementation impl;
-    double ExInit;
-    double EyInit;
-    double EzInit;
-    double BxInit;
-    double ByInit;
-    double BzInit;
+    PVector EInit;
+    PVector BInit;
+
+    PParameterVector EParam;
+    PParameterVector BParam;
   protected:
     void initParameters(BlockParameters &blockPars);
     void registerData();
     void init();
+    void postInit();
 };
 
 #endif /* FIELDS_HPP_ */

@@ -65,11 +65,11 @@ AC_ARG_WITH([dimension],
                             dim can be either 1,2 or 3.
                             Default is 1]))
             
-if test "$with_dimension" = "1" ; then
+if test x"$with_dimension" = x"1" ; then
   AC_DEFINE([ONE_DIMENSIONAL])
-elif test "$with_dimension" = "2" ; then
+elif test x"$with_dimension" = x"2" ; then
   AC_DEFINE([TWO_DIMENSIONAL])
-elif test "$with_dimension" = "3" ; then
+elif test x"$with_dimension" = x"3" ; then
   AC_DEFINE([THREE_DIMENSIONAL])
 else
   AC_MSG_NOTICE([Invalid dimension! Defaulting to 1.])

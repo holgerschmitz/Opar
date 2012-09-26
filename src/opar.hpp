@@ -27,34 +27,22 @@
 #define OPAR_HPP_
 
 #include <schnek/variables.hpp>
+#include <list>
 
 using namespace schnek;
 
-
-class FieldsImplementation;
-
-class OPar;
-
-class OParImplementation
-{
-  private:
-    friend class OPar;
-    FieldsImplementation *fields;
-  public:
-    OParImplementation() : fields(0) {}
-    void execute();
-};
+class Fields;
 
 class OPar : public Block
 {
   private:
-    OParImplementation impl;
+    std::list<Fields*> fields;
   protected:
     void initParameters(BlockParameters &blockPars);
   public:
     void execute();
 //    void init();
-    void addField(FieldsImplementation *fields);
+    void addField(Fields *f);
 };
 
 

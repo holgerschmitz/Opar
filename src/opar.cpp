@@ -29,30 +29,49 @@
 #include "globals.hpp"
 
 #include <schnek/parser.hpp>
+#include <schnek/util/logger.hpp>
 
 #include <iostream>
 #include <fstream>
 #include <cmath>
 
-
-void OParImplementation::execute()
-{
-}
-
+#undef LOGLEVEL
+#define LOGLEVEL 1
 
 void OPar::initParameters(BlockParameters &blockPars)
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+
+  //schnek::Logger::instance().out() << "Entering " << BOOST_CURRENT_FUNCTION << std::endl;
   Globals::instance().initGlobalParameters(blockPars);
 }
 
 void OPar::execute()
 {
-  this->evaluateParameters();
-  impl.execute();
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+
+  double dt = Globals::instance().getDt();
+  int n = 0;
+
+  BOOST_FOREACH(Fields *f, fields) f->stepSchemeInit(dt);
+
+  do
+  {
+    BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
+    if ((++n % 10) == 0) { BOOST_FOREACH(Fields *f, fields) f->writeAsTextFiles(n); }
+  } while (Globals::instance().stepTime());
+
+}
+
+void OPar::addField(Fields *f)
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+  fields.push_back(f);
 }
 
 void initBlockLayout(BlockClasses &blocks)
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
   blocks.addBlockClass("opar");
   blocks("opar").addChildren("Common")("Fields")("Species");
   blocks("opar").setBlockClass<OPar>();
@@ -70,11 +89,13 @@ void initBlockLayout(BlockClasses &blocks)
 
 void initFunctions(FunctionRegistry &freg)
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
   registerCMath(freg);
 }
 
 int main()
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
   VariableStorage vars("opar", "opar");
   FunctionRegistry freg;
   BlockClasses blocks;
@@ -102,16 +123,17 @@ int main()
     exit(-1);
   }
 
+  OPar &opar = dynamic_cast<OPar&>(*application);
   try
   {
-    application->initAll();
+    opar.initAll();
   }
   catch (VariableNotInitialisedException e)
   {
     std::cerr << "Variable was not initialised: " << e.getVarName() << std::endl;
     exit(-1);
   }
-//  application->execute();
+  opar.execute();
 
 }
 

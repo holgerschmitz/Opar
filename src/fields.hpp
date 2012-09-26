@@ -33,9 +33,7 @@
 
 using namespace schnek;
 
-class Fields;
-
-class FieldsImplementation
+class Fields : public Block
 {
   private:
     pDataField pEx;
@@ -45,25 +43,6 @@ class FieldsImplementation
     pDataField pBy;
     pDataField pBz;
 
-//    typedef std::list<Current*> CurrentList;
-//    CurrentList currents;
-    friend class Fields;
-
-  public:
-    void stepSchemeInit(double dt);
-    void stepScheme(double dt);
-
-  private:
-    void stepD(double dt);
-    void stepB(double dt);
-    void fdtdStepD(double dt, int i, int j, int k, double dx, double dy, double dz, double Jx, double Jy, double Jz);
-    void fdtdStepB(double dt, int i, int j, int k, double dx, double dy, double dz, double Jx, double Jy, double Jz);
-};
-
-class Fields : public Block
-{
-  private:
-    FieldsImplementation impl;
     PVector EInit;
     PVector BInit;
 
@@ -73,7 +52,21 @@ class Fields : public Block
     void initParameters(BlockParameters &blockPars);
     void registerData();
     void init();
-    void postInit();
+    // void postInit();
+
+  public:
+    void stepSchemeInit(double dt);
+    void stepScheme(double dt);
+
+    void writeAsTextFiles(int n);
+
+  private:
+    void stepD(double dt);
+    void stepB(double dt);
+#ifdef TWO_DIMENSIONAL
+    void fdtdStepD(double dt, int i, int j, SVector dx, double Jx, double Jy, double Jz);
+    void fdtdStepB(double dt, int i, int j, SVector dx, double Jx, double Jy, double Jz);
+#endif
 };
 
 #endif /* FIELDS_HPP_ */

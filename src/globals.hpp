@@ -84,8 +84,10 @@ class Globals : public Singleton<Globals>
     void initCommonParameters(BlockParameters &blockPars);
     void init();
 
-    const double getEndTime() { return endTime; }
-    const double getDt() { return dt; }
+    double getEndTime() const { return endTime; }
+    double getDt() const { return dt; }
+    bool stepTime();
+
     const SVector &getDomainMin() const { return domainMin; }
     const SVector &getDomainMax() const { return domainMax; }
     SRange getDomainRange() const { return  SRange(domainMin, domainMax); }

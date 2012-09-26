@@ -25,131 +25,288 @@
 
 #include "fields.hpp"
 #include "globals.hpp"
+#include "opar.hpp"
 
 #include <schnek/tools/fieldtools.hpp>
+#include <schnek/util/logger.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <fstream>
 
 
-inline void FieldsImplementation::fdtdStepD(double dt,
-                                           int i, int j, int k,
-                                           double dx, double dy, double dz,
-                                           double Jx, double Jy, double Jz)
-{
-//  double &ex = (*pEx)(i,j,k);
-//  double &ey = (*pEy)(i,j,k);
-//  double &ez = (*pEz)(i,j,k);
-//
-//#ifndef NDEBUG
-//  {
-//      double test = ex*ey*ez;
-//      if ( !((test>0) || (test<1)) )
-//      {
-//        std::cerr << "NaN in Field (1) " << ex << " " << ey << " " << ez << "\n";
-//        exit(-1);
-//      }
-//  }
-//#endif
-//
-//  double kappaEdx = 1.0;
-//  double kappaEdy = 1.0;
-//  double kappaEdz = 1.0;
-//
-////  double kappaEdx = (*pKappaEdx)(i)*dx;
-////  double kappaEdy = (*pKappaEdy)(j)*dy;
-////  double kappaEdz = (*pKappaEdz)(k)*dz;
-////
-//////  std::cerr << i << " " << j << " " << k << " " << kappaEdx << " " << kappaEdy << " " << kappaEdz << " " << std::endl;
-////
-////#ifndef NDEBUG
-////  {
-////      double test = kappaEdx*kappaEdy*kappaEdz;
-////      if ( !((test>0) || (test<1)) || (test==0) )
-////      {
-////        std::cerr << "Error in Kappa " << kappaEdx << " " << kappaEdy << " " << kappaEdz << "\n";
-////        exit(-1);
-////      }
-////  }
-////#endif
-//
-//  double exn =
-//    dt*(
-//        ((*pBz)(i,j,k) - (*pBz)(i,j-1,k))/kappaEdy
-//      - ((*pBy)(i,j,k) - (*pBy)(i,j,k-1))/kappaEdz
-//      + Jx
-//    );
-//
-//  double eyn =
-//    dt*(
-//        ((*pBx)(i,j,k) - (*pBx)(i,j,k-1))/kappaEdz
-//      - ((*pBz)(i,j,k) - (*pBz)(i-1,j,k))/kappaEdx
-//      + Jy
-//    );
-//
-//  double ezn =
-//    dt*(
-//        ((*pBy)(i,j,k) - (*pBy)(i-1,j,k))/kappaEdx
-//      - ((*pBx)(i,j,k) - (*pBx)(i,j-1,k))/kappaEdy
-//      + Jz
-//    );
-//
-//  ex = exn;
-//  ey = eyn;
-//  ez = ezn;
-//
-////#ifndef NDEBUG
-//// {
-////     double test = ex*ey*ez;
-////     if ( !((test>0) || (test<1)) )
-////     {
-////         std::cerr << "NaN in Field (2) " << ex << " " << ey << " " << ez << "\n";
-////         exit(-1);
-////     }
-//// }
-////#endif
+#undef LOGLEVEL
+#define LOGLEVEL 2
 
+
+#ifdef THREE_DIMENSIONAL
+
+inline void Fields::fdtdStepD(double dt,
+                              int i, int j, int k,
+                              SVector dx,
+                              double Jx, double Jy, double Jz)
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(5)
+  double kappaEdx = 1.0;
+  double kappaEdy = 1.0;
+  double kappaEdz = 1.0;
+
+//  double kappaEdx = (*pKappaEdx)(i)*dx;
+//  double kappaEdy = (*pKappaEdy)(j)*dy;
+//  double kappaEdz = (*pKappaEdz)(k)*dz;
+
+  (*pEx)(i,j,k) =
+    dt*(
+        ((*pBz)(i,j,k) - (*pBz)(i,j-1,k))/kappaEdy
+      - ((*pBy)(i,j,k) - (*pBy)(i,j,k-1))/kappaEdz
+      + Jx
+    );
+
+  (*pEy)(i,j,k) =
+    dt*(
+        ((*pBx)(i,j,k) - (*pBx)(i,j,k-1))/kappaEdz
+      - ((*pBz)(i,j,k) - (*pBz)(i-1,j,k))/kappaEdx
+      + Jy
+    );
+
+  (*pEz)(i,j,k) =
+    dt*(
+        ((*pBy)(i,j,k) - (*pBy)(i-1,j,k))/kappaEdx
+      - ((*pBx)(i,j,k) - (*pBx)(i,j-1,k))/kappaEdy
+      + Jz
+    );
 }
 
-inline void FieldsImplementation::fdtdStepB(double dt,
-                                           int i, int j, int k,
-                                           double dx, double dy, double dz,
-                                           double Jx, double Jy, double Jz)
+inline void Fields::fdtdStepB(double dt,
+                              int i, int j, int k,
+                              SVector dx,
+                              double Jx, double Jy, double Jz)
 {
-//
-//  double kappaHdx = 1.0;
-//  double kappaHdy = 1.0;
-//  double kappaHdz = 1.0;
-//
-////  double kappaHdx = (*pKappaHdx)(i)*dx;
-////  double kappaHdy = (*pKappaHdy)(j)*dy;
-////  double kappaHdz = (*pKappaHdz)(k)*dz;
-//
-//  (*pBx)(i,j,k) = (*pBx)(i,j,k)
-//    + dt*(
-//        ((*pEy)(i,j,k+1) - (*pEy)(i,j,k))/kappaHdz
-//      - ((*pEz)(i,j+1,k) - (*pEz)(i,j,k))/kappaHdy
-//     + Jx
-//    );
-//
-//  (*pBy)(i,j,k) = (*pBy)(i,j,k)
-//    + dt*(
-//        ((*pEz)(i+1,j,k) - (*pEz)(i,j,k))/kappaHdx
-//      - ((*pEx)(i,j,k+1) - (*pEx)(i,j,k))/kappaHdz
-//     + Jy
-//    );
-//
-//  (*pBz)(i,j,k) = (*pBz)(i,j,k)
-//    + dt*(
-//        ((*pEx)(i,j+1,k) - (*pEx)(i,j,k))/kappaHdy
-//      - ((*pEy)(i+1,j,k) - (*pEy)(i,j,k))/kappaHdx
-//     + Jz
-//    );
+  SCHNEK_TRACE_ENTER_FUNCTION(5)
+  double kappaHdx = 1.0;
+  double kappaHdy = 1.0;
+  double kappaHdz = 1.0;
+
+//  double kappaHdx = (*pKappaHdx)(i)*dx;
+//  double kappaHdy = (*pKappaHdy)(j)*dy;
+//  double kappaHdz = (*pKappaHdz)(k)*dz;
+
+  (*pBx)(i,j,k) = (*pBx)(i,j,k)
+    + dt*(
+        ((*pEy)(i,j,k+1) - (*pEy)(i,j,k))/kappaHdz
+      - ((*pEz)(i,j+1,k) - (*pEz)(i,j,k))/kappaHdy
+     + Jx
+    );
+
+  (*pBy)(i,j,k) = (*pBy)(i,j,k)
+    + dt*(
+        ((*pEz)(i+1,j,k) - (*pEz)(i,j,k))/kappaHdx
+      - ((*pEx)(i,j,k+1) - (*pEx)(i,j,k))/kappaHdz
+     + Jy
+    );
+
+  (*pBz)(i,j,k) = (*pBz)(i,j,k)
+    + dt*(
+        ((*pEx)(i,j+1,k) - (*pEx)(i,j,k))/kappaHdy
+      - ((*pEy)(i+1,j,k) - (*pEy)(i,j,k))/kappaHdx
+     + Jz
+    );
 }
 
 
-void FieldsImplementation::stepSchemeInit(double dt)
+void Fields::stepD(double dt)
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+  SIntVector low  = Globals::instance().getLocalGridMin();
+  SIntVector high = Globals::instance().getLocalGridMax();
+
+  SVector dx = Globals::instance().getDx();
+
+  double jx(0), jy(0), jz(0);
+//  if (this->pJx != 0) sumCurrents();
+
+  for (int i=low[0]+1; i<high[0]; ++i)
+    for (int j=low[1]+1; j<high[1]; ++j)
+      for (int k=low[2]+1; k<high[2]; ++k)
+      {
+//        if (this->pJx != 0)
+//        {
+//          jx = (*this->pJx)(i,j,k);
+//          jy = (*this->pJy)(i,j,k);
+//          jz = (*this->pJz)(i,j,k);
+//        }
+
+        this->fdtdStepD(dt, i, j, k, dx, jx, jy, jz);
+      }
+
+
+//  this->storage->applyBoundary("E");
+}
+
+void Fields::stepB(double dt)
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+  SIntVector low  = Globals::instance().getLocalGridMin();
+  SIntVector high = Globals::instance().getLocalGridMax();
+
+  SVector dx = Globals::instance().getDx();
+
+  double jx(0), jy(0), jz(0);
+//  if (this->pMx != 0) sumMagCurrents();
+
+  for (int i=low[0]; i<high[0]; ++i)
+    for (int j=low[1]; j<high[1]; ++j)
+      for (int k=low[2]; k<high[2]; ++k)
+      {
+//        if (this->pMx != 0)
+//        {
+//          jx = (*this->pMx)(i,j,k);
+//          jy = (*this->pMy)(i,j,k);
+//          jz = (*this->pMz)(i,j,k);
+//        }
+
+        this->fdtdStepB(dt, i, j, k, dx, dy, dz, jx, jy, jz);
+      }
+
+//  this->storage->applyBoundary("B");
+}
+
+#endif
+
+#ifdef TWO_DIMENSIONAL
+
+inline void Fields::fdtdStepD(double dt,
+                              int i, int j,
+                              SVector dx,
+                              double Jx, double Jy, double Jz)
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(5)
+  double kappaEdx = dx[0];
+  double kappaEdy = dx[1];
+
+//  double kappaEdx = (*pKappaEdx)(i)*dx;
+//  double kappaEdy = (*pKappaEdy)(j)*dy;
+//  double kappaEdz = (*pKappaEdz)(k)*dz;
+
+  (*pEx)(i,j) +=
+    dt*(
+        ((*pBz)(i,j) - (*pBz)(i,j-1))/kappaEdy
+      + Jx
+    );
+
+  (*pEy)(i,j) +=
+    dt*(
+      - ((*pBz)(i,j) - (*pBz)(i-1,j))/kappaEdx
+      + Jy
+    );
+
+  (*pEz)(i,j) +=
+    dt*(
+        ((*pBy)(i,j) - (*pBy)(i-1,j))/kappaEdx
+      - ((*pBx)(i,j) - (*pBx)(i,j-1))/kappaEdy
+      + Jz
+    );
+}
+
+inline void Fields::fdtdStepB(double dt,
+                              int i, int j,
+                              SVector dx,
+                              double Jx, double Jy, double Jz)
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(5)
+  double kappaHdx = dx[0];
+  double kappaHdy = dx[1];
+
+//  double kappaHdx = (*pKappaHdx)(i)*dx;
+//  double kappaHdy = (*pKappaHdy)(j)*dy;
+//  double kappaHdz = (*pKappaHdz)(k)*dz;
+
+  (*pBx)(i,j) +=
+    + dt*(
+      - ((*pEz)(i,j+1) - (*pEz)(i,j))/kappaHdy
+     + Jx
+    );
+
+  (*pBy)(i,j) +=
+    + dt*(
+        ((*pEz)(i+1,j) - (*pEz)(i,j))/kappaHdx
+     + Jy
+    );
+  SCHNEK_TRACE_LOG(6, i << " " << j << " " << (*pBz)(i,j))
+
+  (*pBz)(i,j) +=
+    + dt*(
+        ((*pEx)(i,j+1) - (*pEx)(i,j))/kappaHdy
+      - ((*pEy)(i+1,j) - (*pEy)(i,j))/kappaHdx
+     + Jz
+    );
+  SCHNEK_TRACE_LOG(6,(*pBz)(i,j))
+
+}
+
+
+void Fields::stepD(double dt)
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+
+  SIntVector low  = Globals::instance().getLocalGridMin();
+  SIntVector high = Globals::instance().getLocalGridMax();
+
+  SVector dx = Globals::instance().getDx();
+
+  double jx(0), jy(0), jz(0);
+//  if (this->pJx != 0) sumCurrents();
+
+  for (int i=low[0]+1; i<high[0]; ++i)
+    for (int j=low[1]+1; j<high[1]; ++j)
+      {
+//        if (this->pJx != 0)
+//        {
+//          jx = (*this->pJx)(i,j,k);
+//          jy = (*this->pJy)(i,j,k);
+//          jz = (*this->pJz)(i,j,k);
+//        }
+
+        this->fdtdStepD(dt, i, j, dx, jx, jy, jz);
+      }
+
+
+//  this->storage->applyBoundary("E");
+}
+
+void Fields::stepB(double dt)
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+
+  SIntVector low  = Globals::instance().getLocalGridMin();
+  SIntVector high = Globals::instance().getLocalGridMax();
+
+  SVector dx = Globals::instance().getDx();
+
+  double jx(0), jy(0), jz(0);
+//  if (this->pMx != 0) sumMagCurrents();
+
+  for (int i=low[0]; i<high[0]; ++i)
+    for (int j=low[1]; j<high[1]; ++j)
+      {
+//        if (this->pMx != 0)
+//        {
+//          jx = (*this->pMx)(i,j,k);
+//          jy = (*this->pMy)(i,j,k);
+//          jz = (*this->pMz)(i,j,k);
+//        }
+
+        this->fdtdStepB(dt, i, j, dx, jx, jy, jz);
+      }
+
+//  this->storage->applyBoundary("B");
+}
+
+#endif
+
+void Fields::stepSchemeInit(double dt)
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
   stepB(0.5*dt);
 
 //  BOOST_FOREACH(Current *cur, this->currents)
@@ -162,8 +319,9 @@ void FieldsImplementation::stepSchemeInit(double dt)
 //    cur->stepSchemeInit(dt);
 //  }
 }
-void FieldsImplementation::stepScheme(double dt)
+void Fields::stepScheme(double dt)
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
 //  BOOST_FOREACH(Current *cur, this->currents)
 //  {
 //    cur->stepScheme(dt);
@@ -179,70 +337,11 @@ void FieldsImplementation::stepScheme(double dt)
   stepB(dt);
 }
 
-void FieldsImplementation::stepD(double dt)
-{
-//  GridIndex low = this->storage->getLow();
-//  GridIndex high = this->storage->getHigh();
-//
-//  double dx = this->storage->getDx();
-//  double dy = this->storage->getDy();
-//  double dz = this->storage->getDz();
-//
-//
-////  double jx(0), jy(0), jz(0);
-////  if (this->pJx != 0) sumCurrents();
-//
-//  for (int i=low[0]+1; i<high[0]; ++i)
-//    for (int j=low[1]+1; j<high[1]; ++j)
-//      for (int k=low[2]+1; k<high[2]; ++k)
-//      {
-////        if (this->pJx != 0)
-////        {
-////          jx = (*this->pJx)(i,j,k);
-////          jy = (*this->pJy)(i,j,k);
-////          jz = (*this->pJz)(i,j,k);
-////        }
-//
-//        this->fdtdStepD(dt, i, j, k, dx, dy, dz, jx, jy, jz);
-//      }
-//
-//
-//  this->storage->applyBoundary("E");
-}
-
-void FieldsImplementation::stepB(double dt)
-{
-//  GridIndex low = this->storage->getLow();
-//  GridIndex high = this->storage->getHigh();
-//
-//  double dx = this->storage->getDx();
-//  double dy = this->storage->getDy();
-//  double dz = this->storage->getDz();
-//
-////  double jx(0), jy(0), jz(0);
-////  if (this->pMx != 0) sumMagCurrents();
-//
-//  for (int i=low[0]; i<high[0]; ++i)
-//    for (int j=low[1]; j<high[1]; ++j)
-//      for (int k=low[2]; k<high[2]; ++k)
-//      {
-////        if (this->pMx != 0)
-////        {
-////          jx = (*this->pMx)(i,j,k);
-////          jy = (*this->pMy)(i,j,k);
-////          jz = (*this->pMz)(i,j,k);
-////        }
-//
-//        this->fdtdStepB(dt, i, j, k, dx, dy, dz, jx, jy, jz);
-//      }
-//
-//  this->storage->applyBoundary("B");
-}
-
 
 
 void Fields::initParameters(BlockParameters &blockPars)
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(3)
   std::cout << "Fields::initParameters()" << std::endl;
   EParam = blockPars.addArrayParameter("E", EInit);
   BParam = blockPars.addArrayParameter("B", BInit);
@@ -250,116 +349,120 @@ void Fields::initParameters(BlockParameters &blockPars)
 
 void Fields::registerData()
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(3)
   std::cout << "Fields::registerData()" << std::endl;
-  addData("Ex", impl.pEx);
-  addData("Ey", impl.pEy);
-  addData("Ez", impl.pEz);
-  addData("Bx", impl.pBx);
-  addData("By", impl.pBy);
-  addData("Bz", impl.pBz);
+  addData("Ex", pEx);
+  addData("Ey", pEy);
+  addData("Ez", pEz);
+  addData("Bx", pBx);
+  addData("By", pBy);
+  addData("Bz", pBz);
 }
 
 void Fields::init()
 {
-  SIntVector gsize = Globals::instance().getGlobalGridSize();
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+  dynamic_cast<OPar&>(*this->getParent()).addField(this);
+
+  SIntVector low  = Globals::instance().getLocalGridMin();
+  SIntVector high = Globals::instance().getLocalGridMax();
   SRange grange = Globals::instance().getDomainRange();
 
-  std::cout << "Creating fields of size " << gsize[0] << "x" << gsize[1] << std::endl;
+  //std::cout << "Creating fields of size " << gsize[0] << "x" << gsize[1] << std::endl;
 
-  impl.pEx = pDataField(new DataField(gsize, grange, SStagger(true,  false)));
-  impl.pEy = pDataField(new DataField(gsize, grange, SStagger(false, true)));
-  impl.pEz = pDataField(new DataField(gsize, grange, SStagger(false, false)));
+  pEx = pDataField(new DataField(low, high, grange, SStagger(true,  false)));
+  pEy = pDataField(new DataField(low, high, grange, SStagger(false, true)));
+  pEz = pDataField(new DataField(low, high, grange, SStagger(false, false)));
 
-  impl.pBx = pDataField(new DataField(gsize, grange, SStagger(false, true)));
-  impl.pBy = pDataField(new DataField(gsize, grange, SStagger(true,  false)));
-  impl.pBz = pDataField(new DataField(gsize, grange, SStagger(true,  true)));
+  pBx = pDataField(new DataField(low, high, grange, SStagger(false, true)));
+  pBy = pDataField(new DataField(low, high, grange, SStagger(true,  false)));
+  pBz = pDataField(new DataField(low, high, grange, SStagger(true,  true)));
 
 
   SVector &coords = Globals::instance().getX();
   pDependencyUpdater updater = Globals::instance().getUpdater(var_space);
 
   updater->addDependent(EParam[0]);
-  fill_field(*impl.pEx, coords, EInit[0], *updater);
+  fill_field(*pEx, coords, EInit[0], *updater);
 
   updater->clearDependent();
   updater->addDependent(EParam[1]);
-  fill_field(*impl.pEy, coords, EInit[1], *updater);
+  fill_field(*pEy, coords, EInit[1], *updater);
 
   updater->clearDependent();
   updater->addDependent(EParam[2]);
-  fill_field(*impl.pEz, coords, EInit[2], *updater);
+  fill_field(*pEz, coords, EInit[2], *updater);
 
   updater->clearDependent();
   updater->addDependent(BParam[0]);
-  fill_field(*impl.pBx, coords, BInit[0], *updater);
+  fill_field(*pBx, coords, BInit[0], *updater);
 
   updater->clearDependent();
   updater->addDependent(BParam[1]);
-  fill_field(*impl.pBy, coords, BInit[1], *updater);
+  fill_field(*pBy, coords, BInit[1], *updater);
 
   updater->clearDependent();
   updater->addDependent(BParam[2]);
-  fill_field(*impl.pBz, coords, BInit[2], *updater);
+  fill_field(*pBz, coords, BInit[2], *updater);
 
 }
-
-void Fields::postInit()
+void Fields::writeAsTextFiles(int n)
 {
-  std::cout << "Fields::postInit() " << std::endl;
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+  std::string num = boost::lexical_cast<std::string>(n);
+  SIntVector min(pEx->getLow());
+  SIntVector max(pEx->getHigh());;
 
-  SIntVector min(impl.pEx->getLow());
-  SIntVector max(impl.pEx->getHigh());;
-
-  std::ofstream exFile("ex.dat");
+  std::ofstream exFile(("ex"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
-      exFile << i << " " << j << " " << (*impl.pEx)(i,j) << std::endl;
+      exFile << i << " " << j << " " << (*pEx)(i,j) << std::endl;
     exFile << std::endl;
   }
   exFile.close();
 
-  std::ofstream eyFile("ey.dat");
+  std::ofstream eyFile(("ey"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
-      eyFile << i << " " << j << " " << (*impl.pEy)(i,j) << std::endl;
+      eyFile << i << " " << j << " " << (*pEy)(i,j) << std::endl;
     eyFile << std::endl;
   }
   eyFile.close();
 
-  std::ofstream ezFile("ez.dat");
+  std::ofstream ezFile(("ez"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
-      ezFile << i << " " << j << " " << (*impl.pEz)(i,j) << std::endl;
+      ezFile << i << " " << j << " " << (*pEz)(i,j) << std::endl;
     ezFile << std::endl;
   }
   ezFile.close();
 
-  std::ofstream bxFile("bx.dat");
+  std::ofstream bxFile(("bx"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
-      bxFile << i << " " << j << " " << (*impl.pBx)(i,j) << std::endl;
+      bxFile << i << " " << j << " " << (*pBx)(i,j) << std::endl;
     bxFile << std::endl;
   }
   bxFile.close();
 
-  std::ofstream byFile("by.dat");
+  std::ofstream byFile(("by"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
-      byFile << i << " " << j << " " << (*impl.pBy)(i,j) << std::endl;
+      byFile << i << " " << j << " " << (*pBy)(i,j) << std::endl;
     byFile << std::endl;
   }
   byFile.close();
 
-  std::ofstream bzFile("bz.dat");
+  std::ofstream bzFile(("bz"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
-      bzFile << i << " " << j << " " << (*impl.pBz)(i,j) << std::endl;
+      bzFile << i << " " << j << " " << (*pBz)(i,j) << std::endl;
     bzFile << std::endl;
   }
   bzFile.close();

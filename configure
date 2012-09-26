@@ -4691,13 +4691,13 @@ if test "${with_dimension+set}" = set; then :
 fi
 
 
-if test "$with_dimension" = "1" ; then
+if test x"$with_dimension" = x"1" ; then
   $as_echo "#define ONE_DIMENSIONAL 1" >>confdefs.h
 
-elif test "$with_dimension" = "2" ; then
+elif test x"$with_dimension" = x"2" ; then
   $as_echo "#define TWO_DIMENSIONAL 1" >>confdefs.h
 
-elif test "$with_dimension" = "3" ; then
+elif test x"$with_dimension" = x"3" ; then
   $as_echo "#define THREE_DIMENSIONAL 1" >>confdefs.h
 
 else

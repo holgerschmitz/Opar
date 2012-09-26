@@ -60,6 +60,11 @@ void Globals::init()
   for (int i=0; i<dimension; ++i) dx[i] = (domainMax[i]-domainMin[i]) / (real)globalGridSize[i];
 }
 
+bool Globals::stepTime()
+{
+  return (t += dt) <= endTime;
+}
+
 pDependencyUpdater Globals::getUpdater(VarGroup gr)
 {
   pDependencyMap depMap(new DependencyMap(blockVars));

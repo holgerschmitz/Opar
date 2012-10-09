@@ -24,16 +24,19 @@
 bin_PROGRAMS = opar
 
 opar_SOURCES = \
-  common.cpp \
-  common.hpp \
-  config.hpp \
-  fields.hpp \
-  fields.cpp \
+  common.cpp  \
+  common.hpp  \
+  config.hpp  \
+  fieldbc.hpp \
+  fields.hpp  \
+  fields.cpp  \
   globals.hpp \
   globals.cpp \
-  opar.cpp \
-  opar.hpp
+  opar.cpp    \
+  opar.hpp    \
+  util.hpp    \
+  util.cpp
 
-opar_LDADD = $(INTI_LIBS) -lschnek
+opar_LDADD = -lschnek $(INTI_LIBS)
 
 

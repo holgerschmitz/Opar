@@ -27,7 +27,8 @@
 #ifndef FIELDS_HPP_
 #define FIELDS_HPP_
 
-#include "config.hpp"
+#include "types.hpp"
+#include "fieldbc.hpp"
 
 #include <schnek/variables.hpp>
 
@@ -48,6 +49,13 @@ class Fields : public Block
 
     PParameterVector EParam;
     PParameterVector BParam;
+
+    typedef boost::function<FieldBC*()> fieldBCFactoryFunction;
+    std::map<std::string, fieldBCFactoryFunction> fieldBCFactories;
+
+    schnek::Array<std::string, dimension> bcNames;
+    schnek::Array<pFieldBC, dimension> boundaries;
+
   protected:
     void initParameters(BlockParameters &blockPars);
     void registerData();

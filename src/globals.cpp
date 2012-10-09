@@ -24,6 +24,7 @@
  */
 
 #include "globals.hpp"
+#include <schnek/grid/mpisubdivision.hpp>
 
 void Globals::initCommonParameters(BlockParameters &blockPars)
 {
@@ -55,8 +56,15 @@ void Globals::setup(VariableStorage &vars)
 
 void Globals::init()
 {
-  localGridMin = SIntVector(0,0);
-  localGridMax = globalGridSize;
+#ifdef HAVE_MPI
+  subdivision = pSubdivision(new MPICartSubdivision<DataField>());
+#else
+  subdivision = pSubdivision(new SerialSubdivision<DataField>());
+#endif
+  subdivision->init(SIntVector(0,0), globalGridSize, 2);
+  localGridMin = subdivision->getLo();
+  localGridMax = subdivision->getHi();
+
   for (int i=0; i<dimension; ++i) dx[i] = (domainMax[i]-domainMin[i]) / (real)globalGridSize[i];
 }
 

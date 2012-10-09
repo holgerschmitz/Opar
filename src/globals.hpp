@@ -26,10 +26,10 @@
 #ifndef GLOBALS_HPP_
 #define GLOBALS_HPP_
 
+#include "types.hpp"
+
 #include <schnek/util.hpp>
 #include <schnek/variables.hpp>
-
-#include "config.hpp"
 
 using namespace schnek;
 
@@ -39,6 +39,8 @@ enum VarGroup { var_none, var_space, var_time, var_spacetime };
 
 class Globals : public Singleton<Globals>
 {
+  public:
+    typedef boost::shared_ptr<schnek::DomainSubdivision<DataField> > pSubdivision;
   private:
     /// The total duration of the simulation
     double endTime;
@@ -65,8 +67,11 @@ class Globals : public Singleton<Globals>
 
     /// Global time variable
     double t;
+
     /// The parameter associated with t
     pParameter t_parameter;
+
+    pSubdivision subdivision;
 
     pParametersGroup spaceVars;
     pParametersGroup timeVars;
@@ -105,6 +110,7 @@ class Globals : public Singleton<Globals>
     double &getT() { return t; }
 
     pDependencyUpdater getUpdater(VarGroup gr=var_none);
+    pSubdivision getSubdivision() { return subdivision; }
 };
 
 #endif // GLOBALS_HPP_ 

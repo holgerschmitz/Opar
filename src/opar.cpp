@@ -23,6 +23,7 @@
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.hpp"
 #include "opar.hpp"
 #include "common.hpp"
 #include "fields.hpp"
@@ -93,9 +94,14 @@ void initFunctions(FunctionRegistry &freg)
   registerCMath(freg);
 }
 
-int main()
+int main(int argc, char **argv)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
+
+#ifdef HAVE_MPI
+    MPI_Init(&argc, &argv);
+#endif
+
   VariableStorage vars("opar", "opar");
   FunctionRegistry freg;
   BlockClasses blocks;
@@ -135,5 +141,8 @@ int main()
   }
   opar.execute();
 
+#ifdef HAVE_MPI
+    MPI_Finalize();
+#endif
 }
 

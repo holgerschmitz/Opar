@@ -26,17 +26,19 @@
 #include "fields.hpp"
 #include "globals.hpp"
 #include "opar.hpp"
+#include "util.hpp"
 
 #include <schnek/tools/fieldtools.hpp>
 #include <schnek/util/logger.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/functional/factory.hpp>
 #include <fstream>
 
 
 #undef LOGLEVEL
-#define LOGLEVEL 2
+#define LOGLEVEL 1
 
 
 #ifdef THREE_DIMENSIONAL
@@ -270,8 +272,17 @@ void Fields::stepD(double dt)
         this->fdtdStepD(dt, i, j, dx, jx, jy, jz);
       }
 
+  Globals::pSubdivision sub = Globals::instance().getSubdivision();
 
-//  this->storage->applyBoundary("E");
+  for (int i=0; i<dimension; ++i)
+  {
+    sub->exchange(*pEx,i);
+    sub->exchange(*pEy,i);
+    sub->exchange(*pEz,i);
+    boundaries[i]->applyEx(*pEx,i);
+    boundaries[i]->applyEy(*pEy,i);
+    boundaries[i]->applyEy(*pEz,i);
+  }
 }
 
 void Fields::stepB(double dt)
@@ -299,7 +310,17 @@ void Fields::stepB(double dt)
         this->fdtdStepB(dt, i, j, dx, jx, jy, jz);
       }
 
-//  this->storage->applyBoundary("B");
+  Globals::pSubdivision sub = Globals::instance().getSubdivision();
+
+  for (int i=0; i<dimension; ++i)
+  {
+    sub->exchange(*pBx,i);
+    sub->exchange(*pBy,i);
+    sub->exchange(*pBz,i);
+    boundaries[i]->applyBx(*pBx,i);
+    boundaries[i]->applyBy(*pBy,i);
+    boundaries[i]->applyBz(*pBz,i);
+  }
 }
 
 #endif
@@ -345,6 +366,12 @@ void Fields::initParameters(BlockParameters &blockPars)
   std::cout << "Fields::initParameters()" << std::endl;
   EParam = blockPars.addArrayParameter("E", EInit);
   BParam = blockPars.addArrayParameter("B", BInit);
+
+  blockPars.addArrayParameter("boundary_", bcNames);
+
+  fieldBCFactories["periodic"] = boost::factory<FieldPeriodicBC*>();
+  //  fieldBCFactories["periodic"] = boost::factory<FieldPeriodicBC*>();
+
 }
 
 void Fields::registerData()
@@ -367,8 +394,6 @@ void Fields::init()
   SIntVector low  = Globals::instance().getLocalGridMin();
   SIntVector high = Globals::instance().getLocalGridMax();
   SRange grange = Globals::instance().getDomainRange();
-
-  //std::cout << "Creating fields of size " << gsize[0] << "x" << gsize[1] << std::endl;
 
   pEx = pDataField(new DataField(low, high, grange, SStagger(true,  false)));
   pEy = pDataField(new DataField(low, high, grange, SStagger(false, true)));
@@ -405,13 +430,21 @@ void Fields::init()
   updater->addDependent(BParam[2]);
   fill_field(*pBz, coords, BInit[2], *updater);
 
+  for (int i=0; i<dimension; ++i)
+  {
+    if (fieldBCFactories.count(bcNames[i]) == 0)
+      terminate("Unknown boundary condition: "+bcNames[i]);
+
+    boundaries[i] = pFieldBC(fieldBCFactories[bcNames[i]]());
+  }
+
 }
 void Fields::writeAsTextFiles(int n)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   std::string num = boost::lexical_cast<std::string>(n);
-  SIntVector min(pEx->getLow());
-  SIntVector max(pEx->getHigh());;
+  SIntVector min(pEx->getLo());
+  SIntVector max(pEx->getHi());;
 
   std::ofstream exFile(("ex"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)

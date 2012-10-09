@@ -1,5 +1,5 @@
 /*
- * config.hpp
+ * types.hpp
  *
  *  Created on: 1 Aug 2012
  * Author: Holger Schmitz
@@ -25,6 +25,8 @@
 
 #ifndef CONFIG_HPP_
 #define CONFIG_HPP_
+
+#include "config.hpp"
 
 #include <schnek/grid.hpp>
 #include <schnek/variables.hpp>
@@ -82,7 +84,6 @@ typedef schnek::Array<int, 3, ArrayArgCheck> PIntVector;
 
 typedef schnek::Array<schnek::pParameter, dimension, ArrayArgCheck> SParameterVector;
 typedef schnek::Array<schnek::pParameter, 3, ArrayArgCheck> PParameterVector;
-
 
 enum Direction {north, south, west, east, up, down};
 

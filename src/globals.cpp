@@ -23,8 +23,12 @@
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#undef LOGLEVEL
+#define LOGLEVEL 2
+
 #include "globals.hpp"
 #include <schnek/grid/mpisubdivision.hpp>
+#include <schnek/util/logger.hpp>
 
 void Globals::initCommonParameters(BlockParameters &blockPars)
 {
@@ -56,6 +60,8 @@ void Globals::setup(VariableStorage &vars)
 
 void Globals::init()
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+  for (int i=0; i<dimension; ++i) globalGridSize[i] += 3;
 #ifdef HAVE_MPI
   subdivision = pSubdivision(new MPICartSubdivision<DataField>());
 #else
@@ -65,7 +71,14 @@ void Globals::init()
   localGridMin = subdivision->getLo();
   localGridMax = subdivision->getHi();
 
-  for (int i=0; i<dimension; ++i) dx[i] = (domainMax[i]-domainMin[i]) / (real)globalGridSize[i];
+  for (int i=0; i<dimension; ++i)
+  {
+    dx[i] = (domainMax[i]-domainMin[i]) / ((real)globalGridSize[i] - 3.0); // account for ghost cells
+    localDomainMin[i] = domainMin[i] + localGridMin[i]*dx[i];
+    localDomainMax[i] = domainMin[i] + (localGridMax[i] - 3.0)*dx[i];
+
+//    std::cout << "Extent: "<< subdivision->getUniqueId() << " " << i << " " << localDomainMin[i] << " " << localDomainMax[i] << std::endl;
+  }
 }
 
 bool Globals::stepTime()

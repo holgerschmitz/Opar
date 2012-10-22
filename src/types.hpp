@@ -60,12 +60,12 @@ typedef double real;
 #endif
 
 
-typedef schnek::Field<double, 1, GridArgCheck> DataField1d;
-typedef schnek::Field<double, 2, GridArgCheck> DataField2d;
-typedef schnek::Field<double, 3, GridArgCheck> DataField3d;
+typedef schnek::Field<real, 1, GridArgCheck> DataField1d;
+typedef schnek::Field<real, 2, GridArgCheck> DataField2d;
+typedef schnek::Field<real, 3, GridArgCheck> DataField3d;
 typedef DataField1d DataLine;
 
-typedef schnek::Field<double, dimension, GridArgCheck> DataField;
+typedef schnek::Field<real, dimension, GridArgCheck> DataField;
 typedef DataField::IndexType FieldIndex;
 
 typedef boost::shared_ptr<DataField1d> pDataField1d;

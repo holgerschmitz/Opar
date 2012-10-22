@@ -51,6 +51,10 @@ class Globals : public Singleton<Globals>
     SVector domainMin;
     SVector domainMax;
 
+    /// The physical size of the simulation domain
+    SVector localDomainMin;
+    SVector localDomainMax;
+
     /// The global grid size of the simulation
     SIntVector globalGridSize;
 
@@ -95,7 +99,12 @@ class Globals : public Singleton<Globals>
 
     const SVector &getDomainMin() const { return domainMin; }
     const SVector &getDomainMax() const { return domainMax; }
+
+    const SVector &getLocalDomainMin() const { return localDomainMin; }
+    const SVector &getLocalDomainMax() const { return localDomainMax; }
+
     SRange getDomainRange() const { return  SRange(domainMin, domainMax); }
+    SRange getLocalDomainRange() const { return  SRange(localDomainMin, localDomainMax); }
 
     const SIntVector &getGlobalGridSize() const { return globalGridSize; }
 

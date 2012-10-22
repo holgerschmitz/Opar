@@ -24,24 +24,23 @@
  *
  */
 
-#ifndef SCHNEK_FIELDBC_HPP_
-#define SCHNEK_FIELDBC_HPP_
+#ifndef OPAR_FIELDBC_HPP_
+#define OPAR_FIELDBC_HPP_
 
 #include "types.hpp"
-
-namespace schnek {
+#include "numboundary.hpp"
 
 class FieldBC
 {
   public:
+    typdef enum {lo = 1, hi = -1} FieldBC::;
     FieldBC() {}
-    virtual ~FieldBC() {}
-    virtual void applyEx(DataField &grid, int dim) = 0;
-    virtual void applyEy(DataField &grid, int dim) = 0;
-    virtual void applyEz(DataField &grid, int dim) = 0;
-    virtual void applyBx(DataField &grid, int dim) = 0;
-    virtual void applyBy(DataField &grid, int dim) = 0;
-    virtual void applyBz(DataField &grid, int dim) = 0;
+    void applyEx(DataField &grid, int dim, Direction dir) = 0;
+    void applyEy(DataField &grid, int dim, Direction dir) = 0;
+    void applyEz(DataField &grid, int dim, Direction dir) = 0;
+    void applyBx(DataField &grid, int dim, Direction dir) = 0;
+    void applyBy(DataField &grid, int dim, Direction dir) = 0;
+    void applyBz(DataField &grid, int dim, Direction dir) = 0;
 };
 typedef boost::shared_ptr<FieldBC> pFieldBC;
 
@@ -53,14 +52,102 @@ class FieldPeriodicBC : public FieldBC
     /** No need to do anything. This has been taken care of by the
      *  DomainSubdivision object
      */
-    void applyEx(DataField &grid, int) {}
-    void applyEy(DataField &grid, int) {}
-    void applyEz(DataField &grid, int) {}
-    void applyBx(DataField &grid, int) {}
-    void applyBy(DataField &grid, int) {}
-    void applyBz(DataField &grid, int) {}
+    void applyEx(DataField &grid, int, FieldBC::Direction) {}
+    void applyEy(DataField &grid, int, FieldBC::Direction) {}
+    void applyEz(DataField &grid, int, FieldBC::Direction) {}
+    void applyBx(DataField &grid, int, FieldBC::Direction) {}
+    void applyBy(DataField &grid, int, FieldBC::Direction) {}
+    void applyBz(DataField &grid, int, FieldBC::Direction) {}
 };
 
-} // namespace schnek
+class FieldConductingBC : public FieldBC
+{
+  private:
+    FieldDirichletBC dirichlet;
+    FieldDirichletBC neumann;
+  public:
+    FieldConductingBC() {}
 
-#endif // SCHNEK_FIELDBC_HPP_
+    void applyEx(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=0) neumann(grid, dim, dir);
+      else dirichlet(grid, dim, dir);
+    }
+
+    void applyEy(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=1) neumann(grid, dim, dir);
+      else dirichlet(grid, dim, dir);
+    }
+
+    void applyEz(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=2) neumann(grid, dim, dir);
+      else dirichlet(grid, dim, dir);
+    }
+
+    void applyBx(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=0) dirichlet(grid, dim, dir);
+      else neumann(grid, dim, dir);
+    }
+
+    void applyBy(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=1) dirichlet(grid, dim, dir);
+      else neumann(grid, dim, dir);
+    }
+
+    void applyBz(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=2) dirichlet(grid, dim, dir);
+      else neumann(grid, dim, dir);
+    }
+};
+
+
+class FieldSymmetryBC : public FieldBC
+{
+  private:
+    FieldDirichletBC dirichlet;
+    FieldDirichletBC neumann;
+  public:
+    FieldSymmetryBC() {}
+
+    void applyEx(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=0) neumann(grid, dim, dir);
+      else dirichlet(grid, dim, dir);
+    }
+
+    void applyEy(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=1) neumann(grid, dim, dir);
+      else dirichlet(grid, dim, dir);
+    }
+
+    void applyEz(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=2) neumann(grid, dim, dir);
+      else dirichlet(grid, dim, dir);
+    }
+
+    void applyBx(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=0) neumann(grid, dim, dir);
+      else dirichlet(grid, dim, dir);
+    }
+
+    void applyBy(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=1) neumann(grid, dim, dir);
+      else dirichlet(grid, dim, dir);
+    }
+
+    void applyBz(DataField &grid, int dim, Direction dir)
+    {
+      if (dim=2) neumann(grid, dim, dir);
+      else dirichlet(grid, dim, dir);
+    }
+};
+#endif // OPAR_FIELDBC_HPP_

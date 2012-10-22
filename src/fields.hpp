@@ -53,8 +53,8 @@ class Fields : public Block
     typedef boost::function<FieldBC*()> fieldBCFactoryFunction;
     std::map<std::string, fieldBCFactoryFunction> fieldBCFactories;
 
-    schnek::Array<std::string, dimension> bcNames;
-    schnek::Array<pFieldBC, dimension> boundaries;
+    schnek::Array<std::string, dimension> bcNamesLo, bcNamesHi;
+    schnek::Array<pFieldBC, dimension> boundariesLo, boundariesHi;
 
   protected:
     void initParameters(BlockParameters &blockPars);

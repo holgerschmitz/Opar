@@ -367,10 +367,12 @@ void Fields::initParameters(BlockParameters &blockPars)
   EParam = blockPars.addArrayParameter("E", EInit);
   BParam = blockPars.addArrayParameter("B", BInit);
 
-  blockPars.addArrayParameter("boundary_", bcNames);
+  blockPars.addArrayParameter("boundary_min", bcNamesLo);
+  blockPars.addArrayParameter("boundary_max", bcNamesHi);
 
   fieldBCFactories["periodic"] = boost::factory<FieldPeriodicBC*>();
-  //  fieldBCFactories["periodic"] = boost::factory<FieldPeriodicBC*>();
+  fieldBCFactories["conducting"] = boost::factory<FieldConductingBC*>();
+  fieldBCFactories["symmetric"] = boost::factory<FieldSymmetryBC*>();
 
 }
 
@@ -393,16 +395,22 @@ void Fields::init()
 
   SIntVector low  = Globals::instance().getLocalGridMin();
   SIntVector high = Globals::instance().getLocalGridMax();
-  SRange grange = Globals::instance().getDomainRange();
+  SRange grange = Globals::instance().getLocalDomainRange();
 
-  pEx = pDataField(new DataField(low, high, grange, SStagger(true,  false)));
-  pEy = pDataField(new DataField(low, high, grange, SStagger(false, true)));
-  pEz = pDataField(new DataField(low, high, grange, SStagger(false, false)));
+  pEx = pDataField(new DataField(low, high, grange, SStagger(true,  false),2));
+  pEy = pDataField(new DataField(low, high, grange, SStagger(false, true),2));
+  pEz = pDataField(new DataField(low, high, grange, SStagger(false, false),2));
 
-  pBx = pDataField(new DataField(low, high, grange, SStagger(false, true)));
-  pBy = pDataField(new DataField(low, high, grange, SStagger(true,  false)));
-  pBz = pDataField(new DataField(low, high, grange, SStagger(true,  true)));
+  pBx = pDataField(new DataField(low, high, grange, SStagger(false, true),2));
+  pBy = pDataField(new DataField(low, high, grange, SStagger(true,  false),2));
+  pBz = pDataField(new DataField(low, high, grange, SStagger(true,  true),2));
 
+//  for (int i=0; i<dimension; ++i)
+//  {
+//    std::cout << "Field: "<< Globals::instance().getSubdivision()->getUniqueId() << " " << i <<
+//        " (" << low[i] << " " << high[i] <<
+//        ") (" << grange.getLo()[i] << " " << grange.getHi()[i] << ")" << std::endl;
+//  }
 
   SVector &coords = Globals::instance().getX();
   pDependencyUpdater updater = Globals::instance().getUpdater(var_space);
@@ -432,10 +440,13 @@ void Fields::init()
 
   for (int i=0; i<dimension; ++i)
   {
-    if (fieldBCFactories.count(bcNames[i]) == 0)
-      terminate("Unknown boundary condition: "+bcNames[i]);
+    if (fieldBCFactories.count(bcNamesLo[i]) == 0)
+      terminate("Unknown boundary condition: "+bcNamesLo[i]);
 
-    boundaries[i] = pFieldBC(fieldBCFactories[bcNames[i]]());
+    if (fieldBCFactories.count(bcNamesHi[i]) == 0)
+      terminate("Unknown boundary condition: "+bcNamesHi[i]);
+
+    boundariesHi[i] = pFieldBC(fieldBCFactories[bcNamesHi[i]]());
   }
 
 }
@@ -443,10 +454,12 @@ void Fields::writeAsTextFiles(int n)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   std::string num = boost::lexical_cast<std::string>(n);
+  std::string rank = boost::lexical_cast<std::string>(
+      Globals::instance().getSubdivision()->procnum());
   SIntVector min(pEx->getLo());
   SIntVector max(pEx->getHi());;
 
-  std::ofstream exFile(("ex"+num+".dat").c_str());
+  std::ofstream exFile(("ex"+rank+"_"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
@@ -455,7 +468,7 @@ void Fields::writeAsTextFiles(int n)
   }
   exFile.close();
 
-  std::ofstream eyFile(("ey"+num+".dat").c_str());
+  std::ofstream eyFile(("ey"+rank+"_"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
@@ -464,7 +477,7 @@ void Fields::writeAsTextFiles(int n)
   }
   eyFile.close();
 
-  std::ofstream ezFile(("ez"+num+".dat").c_str());
+  std::ofstream ezFile(("ez"+rank+"_"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
@@ -473,7 +486,7 @@ void Fields::writeAsTextFiles(int n)
   }
   ezFile.close();
 
-  std::ofstream bxFile(("bx"+num+".dat").c_str());
+  std::ofstream bxFile(("bx"+rank+"_"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
@@ -482,7 +495,7 @@ void Fields::writeAsTextFiles(int n)
   }
   bxFile.close();
 
-  std::ofstream byFile(("by"+num+".dat").c_str());
+  std::ofstream byFile(("by"+rank+"_"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)
@@ -491,7 +504,7 @@ void Fields::writeAsTextFiles(int n)
   }
   byFile.close();
 
-  std::ofstream bzFile(("bz"+num+".dat").c_str());
+  std::ofstream bzFile(("bz"+rank+"_"+num+".dat").c_str());
   for (int i=min[0]; i<=max[0]; ++i)
   {
     for (int j=min[1]; j<=max[1]; ++j)

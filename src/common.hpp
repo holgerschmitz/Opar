@@ -23,8 +23,8 @@
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef COMMON_HPP_
-#define COMMON_HPP_
+#ifndef OPAR_COMMON_HPP_
+#define OPAR_COMMON_HPP_
 
 #include <schnek/variables.hpp>
 
@@ -38,4 +38,4 @@ class CommonBlock : public Block
     void preInit();
 };
 
-#endif /* COMMON_HPP_ */
+#endif /* OPAR_COMMON_HPP_ */

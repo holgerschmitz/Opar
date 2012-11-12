@@ -27,6 +27,7 @@
 #define OPAR_HPP_
 
 #include <schnek/variables.hpp>
+#include <schnek/diagnostic/diagnostic.hpp>
 #include <list>
 
 using namespace schnek;
@@ -43,6 +44,7 @@ class OPar : public Block
     void execute();
 //    void init();
     void addField(Fields *f);
+    void addDiagnostic(DiagnosticInterface *d);
 };
 
 

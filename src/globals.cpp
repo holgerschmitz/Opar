@@ -28,6 +28,7 @@
 
 #include "globals.hpp"
 #include <schnek/grid/mpisubdivision.hpp>
+#include <schnek/diagnostic/diagnostic.hpp>
 #include <schnek/util/logger.hpp>
 
 void Globals::initCommonParameters(BlockParameters &blockPars)
@@ -67,7 +68,7 @@ void Globals::init()
 #else
   subdivision = pSubdivision(new SerialSubdivision<DataField>());
 #endif
-  subdivision->init(SIntVector(0,0), globalGridSize, 2);
+  subdivision->init(SIntVector(0), globalGridSize, 2);
   localGridMin = subdivision->getLo();
   localGridMax = subdivision->getHi();
 
@@ -79,10 +80,15 @@ void Globals::init()
 
 //    std::cout << "Extent: "<< subdivision->getUniqueId() << " " << i << " " << localDomainMin[i] << " " << localDomainMax[i] << std::endl;
   }
+
+  DiagnosticManager::instance().setTimeCounter(&t_count);
+  DiagnosticManager::instance().setMaster(subdivision->master());
+  DiagnosticManager::instance().setRank(subdivision->getUniqueId());
 }
 
 bool Globals::stepTime()
 {
+  ++t_count;
   return (t += dt) <= endTime;
 }
 

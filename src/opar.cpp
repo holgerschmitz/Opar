@@ -31,6 +31,8 @@
 
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
+#include <schnek/diagnostic/diagnostic.hpp>
+#include <schnek/diagnostic/hdfdiagnostic.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -38,6 +40,14 @@
 
 #undef LOGLEVEL
 #define LOGLEVEL 1
+
+
+class FieldDiagnostic : public schnek::HDFGridDiagnostic<DataField, pDataField>
+{
+  protected:
+    FieldIndex getGlobalMin() { return FieldIndex(0); }
+    FieldIndex getGlobalMax() { return Globals::instance().getGlobalGridSize(); }
+};
 
 void OPar::initParameters(BlockParameters &blockPars)
 {
@@ -52,15 +62,20 @@ void OPar::execute()
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
   double dt = Globals::instance().getDt();
-  int n = 0;
 
   BOOST_FOREACH(Fields *f, fields) f->stepSchemeInit(dt);
 
   do
   {
+    // Advance electromagnetic fields
     BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
-    if ((++n % 10) == 0) { BOOST_FOREACH(Fields *f, fields) f->writeAsTextFiles(n); }
+
+    // run diagnostics
+    DiagnosticManager::instance().execute();
+
+    //if ((++n % 10) == 0) { BOOST_FOREACH(Fields *f, fields) f->writeAsTextFiles(n); }
   } while (Globals::instance().stepTime());
+
 
 }
 
@@ -72,9 +87,10 @@ void OPar::addField(Fields *f)
 
 void initBlockLayout(BlockClasses &blocks)
 {
+
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   blocks.addBlockClass("opar");
-  blocks("opar").addChildren("Common")("Fields")("Species");
+  blocks("opar").addChildren("Common")("Fields")("Species")("FieldDiagnostic");
   blocks("opar").setBlockClass<OPar>();
 
   blocks("Common").setBlockClass<CommonBlock>();
@@ -84,6 +100,7 @@ void initBlockLayout(BlockClasses &blocks)
 
   blocks("Species").addChildren("SpeciesBC")("SpeciesInit");
 
+  blocks("FieldDiagnostic").setBlockClass<FieldDiagnostic>();
 
   //blocks.addBlockClass("Collection").addChildren("Values")("Constants");
 }

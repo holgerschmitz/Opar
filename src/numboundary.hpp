@@ -30,7 +30,7 @@
 class NumBoundary
 {
   private:
-    const int lo, dim, dir;
+    int lo, dim, dir;
 
   protected:
     real& get(int pos, DataField &field, SIntVector &gpos)
@@ -67,7 +67,7 @@ class BoundDirichletImpl : public NumBoundary
         get(-1-i,field,gpos) = -get(-1+i,field,gpos);
     }
 
-    void applyRowStaggerLow(DataField &field, SIntVector &gpos)
+    void applyRowStaggerHigh(DataField &field, SIntVector &gpos)
     {
       get(0,field,gpos) = 0.0;
       for (int i=0; i<ghostCells; ++i)
@@ -91,7 +91,7 @@ class BoundNeumannImpl : public NumBoundary
         get(-1-i,field,gpos) = get(-1+i,field,gpos);
     }
 
-    void applyRowStaggerLow(DataField &field, SIntVector &gpos)
+    void applyRowStaggerHigh(DataField &field, SIntVector &gpos)
     {
       for (int i=0; i<ghostCells; ++i)
         get(-1-i,field,gpos) = get(1+i,field,gpos);
@@ -131,7 +131,7 @@ class FieldBoundary : public Implementation<ghostCells>
       for (int i=0, k=0; i<dimension; ++i)
         if (i != this->getDim()) itdims[k++] = i;
 
-      for (int i=0; i<dimension-1l ++i)
+      for (int i=0; i<dimension-1; ++i)
       {
         Lo[i] = field.getLo()[itdims[i]];
         Hi[i] = field.getHi()[itdims[i]];
@@ -143,7 +143,7 @@ class FieldBoundary : public Implementation<ghostCells>
       {
         while (loop)
         {
-          applyRow(field, gpos);
+          this->applyRow(field, gpos);
           loop = advancePos(Lo, Hi, itdims, gpos);
         }
       }
@@ -151,7 +151,7 @@ class FieldBoundary : public Implementation<ghostCells>
       {
         while (loop)
         {
-          applyRowStaggerLow(field, gpos);
+          this->applyRowStaggerLow(field, gpos);
           loop = advancePos(Lo, Hi, itdims, gpos);
         }
       }
@@ -159,7 +159,7 @@ class FieldBoundary : public Implementation<ghostCells>
       {
         while (loop)
         {
-          applyRowStaggerHigh(field, gpos);
+          this->applyRowStaggerHigh(field, gpos);
           loop = advancePos(Lo, Hi, itdims, gpos);
         }
       }

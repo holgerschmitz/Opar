@@ -279,9 +279,14 @@ void Fields::stepD(double dt)
     sub->exchange(*pEx,i);
     sub->exchange(*pEy,i);
     sub->exchange(*pEz,i);
-    boundaries[i]->applyEx(*pEx,i);
-    boundaries[i]->applyEy(*pEy,i);
-    boundaries[i]->applyEy(*pEz,i);
+
+    boundariesLo[i]->applyEx(*pEx,i,FieldBC::lo);
+    boundariesLo[i]->applyEy(*pEy,i,FieldBC::lo);
+    boundariesLo[i]->applyEy(*pEz,i,FieldBC::lo);
+
+    boundariesHi[i]->applyEx(*pEx,i,FieldBC::hi);
+    boundariesHi[i]->applyEy(*pEy,i,FieldBC::hi);
+    boundariesHi[i]->applyEy(*pEz,i,FieldBC::hi);
   }
 }
 
@@ -317,9 +322,14 @@ void Fields::stepB(double dt)
     sub->exchange(*pBx,i);
     sub->exchange(*pBy,i);
     sub->exchange(*pBz,i);
-    boundaries[i]->applyBx(*pBx,i);
-    boundaries[i]->applyBy(*pBy,i);
-    boundaries[i]->applyBz(*pBz,i);
+
+    boundariesLo[i]->applyBx(*pBx,i,FieldBC::lo);
+    boundariesLo[i]->applyBy(*pBy,i,FieldBC::lo);
+    boundariesLo[i]->applyBy(*pBz,i,FieldBC::lo);
+
+    boundariesHi[i]->applyBx(*pBx,i,FieldBC::hi);
+    boundariesHi[i]->applyBy(*pBy,i,FieldBC::hi);
+    boundariesHi[i]->applyBy(*pBz,i,FieldBC::hi);
   }
 }
 
@@ -363,6 +373,7 @@ void Fields::stepScheme(double dt)
 void Fields::initParameters(BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(3)
+
   std::cout << "Fields::initParameters()" << std::endl;
   EParam = blockPars.addArrayParameter("E", EInit);
   BParam = blockPars.addArrayParameter("B", BInit);
@@ -373,7 +384,6 @@ void Fields::initParameters(BlockParameters &blockPars)
   fieldBCFactories["periodic"] = boost::factory<FieldPeriodicBC*>();
   fieldBCFactories["conducting"] = boost::factory<FieldConductingBC*>();
   fieldBCFactories["symmetric"] = boost::factory<FieldSymmetryBC*>();
-
 }
 
 void Fields::registerData()
@@ -415,28 +425,13 @@ void Fields::init()
   SVector &coords = Globals::instance().getX();
   pDependencyUpdater updater = Globals::instance().getUpdater(var_space);
 
-  updater->addDependent(EParam[0]);
-  fill_field(*pEx, coords, EInit[0], *updater);
+  fill_field(*pEx, coords, EInit[0], *updater, EParam[0]);
+  fill_field(*pEy, coords, EInit[1], *updater, EParam[1]);
+  fill_field(*pEz, coords, EInit[2], *updater, EParam[2]);
 
-  updater->clearDependent();
-  updater->addDependent(EParam[1]);
-  fill_field(*pEy, coords, EInit[1], *updater);
-
-  updater->clearDependent();
-  updater->addDependent(EParam[2]);
-  fill_field(*pEz, coords, EInit[2], *updater);
-
-  updater->clearDependent();
-  updater->addDependent(BParam[0]);
-  fill_field(*pBx, coords, BInit[0], *updater);
-
-  updater->clearDependent();
-  updater->addDependent(BParam[1]);
-  fill_field(*pBy, coords, BInit[1], *updater);
-
-  updater->clearDependent();
-  updater->addDependent(BParam[2]);
-  fill_field(*pBz, coords, BInit[2], *updater);
+  fill_field(*pBx, coords, BInit[0], *updater, BParam[0]);
+  fill_field(*pBy, coords, BInit[1], *updater, BParam[1]);
+  fill_field(*pBz, coords, BInit[2], *updater, BParam[2]);
 
   for (int i=0; i<dimension; ++i)
   {
@@ -446,6 +441,7 @@ void Fields::init()
     if (fieldBCFactories.count(bcNamesHi[i]) == 0)
       terminate("Unknown boundary condition: "+bcNamesHi[i]);
 
+    boundariesLo[i] = pFieldBC(fieldBCFactories[bcNamesLo[i]]());
     boundariesHi[i] = pFieldBC(fieldBCFactories[bcNamesHi[i]]());
   }
 

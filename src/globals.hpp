@@ -58,7 +58,6 @@ class Globals : public Singleton<Globals>
     /// The global grid size of the simulation
     SIntVector globalGridSize;
 
-
     // derived quantities
     SIntVector localGridMin;
     SIntVector localGridMax;
@@ -71,6 +70,8 @@ class Globals : public Singleton<Globals>
 
     /// Global time variable
     double t;
+    /// Global time counter
+    int t_count;
 
     /// The parameter associated with t
     pParameter t_parameter;
@@ -86,7 +87,7 @@ class Globals : public Singleton<Globals>
     friend class Singleton<Globals>;
     friend class CreateUsingNew<Globals>;
 
-    Globals() : spaceVars(new ParametersGroup()), timeVars(new ParametersGroup()) {}
+    Globals() : t(0.0), t_count(0), spaceVars(new ParametersGroup()), timeVars(new ParametersGroup()) {}
   public:
     void setup(VariableStorage &vars);
     void initGlobalParameters(BlockParameters &blockPars);

@@ -33,14 +33,14 @@
 class FieldBC
 {
   public:
-    typdef enum {lo = 1, hi = -1} FieldBC::;
+    typedef enum {lo = 1, hi = -1} Direction;
     FieldBC() {}
-    void applyEx(DataField &grid, int dim, Direction dir) = 0;
-    void applyEy(DataField &grid, int dim, Direction dir) = 0;
-    void applyEz(DataField &grid, int dim, Direction dir) = 0;
-    void applyBx(DataField &grid, int dim, Direction dir) = 0;
-    void applyBy(DataField &grid, int dim, Direction dir) = 0;
-    void applyBz(DataField &grid, int dim, Direction dir) = 0;
+    virtual void applyEx(DataField &grid, int dim, Direction dir) = 0;
+    virtual void applyEy(DataField &grid, int dim, Direction dir) = 0;
+    virtual void applyEz(DataField &grid, int dim, Direction dir) = 0;
+    virtual void applyBx(DataField &grid, int dim, Direction dir) = 0;
+    virtual void applyBy(DataField &grid, int dim, Direction dir) = 0;
+    virtual void applyBz(DataField &grid, int dim, Direction dir) = 0;
 };
 typedef boost::shared_ptr<FieldBC> pFieldBC;
 
@@ -70,38 +70,38 @@ class FieldConductingBC : public FieldBC
 
     void applyEx(DataField &grid, int dim, Direction dir)
     {
-      if (dim=0) neumann(grid, dim, dir);
-      else dirichlet(grid, dim, dir);
+      if (dim==0) neumann.apply(grid, dim, dir);
+      else dirichlet.apply(grid, dim, dir);
     }
 
     void applyEy(DataField &grid, int dim, Direction dir)
     {
-      if (dim=1) neumann(grid, dim, dir);
-      else dirichlet(grid, dim, dir);
+      if (dim==1) neumann.apply(grid, dim, dir);
+      else dirichlet.apply(grid, dim, dir);
     }
 
     void applyEz(DataField &grid, int dim, Direction dir)
     {
-      if (dim=2) neumann(grid, dim, dir);
-      else dirichlet(grid, dim, dir);
+      if (dim==2) neumann.apply(grid, dim, dir);
+      else dirichlet.apply(grid, dim, dir);
     }
 
     void applyBx(DataField &grid, int dim, Direction dir)
     {
-      if (dim=0) dirichlet(grid, dim, dir);
-      else neumann(grid, dim, dir);
+      if (dim==0) dirichlet.apply(grid, dim, dir);
+      else neumann.apply(grid, dim, dir);
     }
 
     void applyBy(DataField &grid, int dim, Direction dir)
     {
-      if (dim=1) dirichlet(grid, dim, dir);
-      else neumann(grid, dim, dir);
+      if (dim==1) dirichlet.apply(grid, dim, dir);
+      else neumann.apply(grid, dim, dir);
     }
 
     void applyBz(DataField &grid, int dim, Direction dir)
     {
-      if (dim=2) dirichlet(grid, dim, dir);
-      else neumann(grid, dim, dir);
+      if (dim==2) dirichlet.apply(grid, dim, dir);
+      else neumann.apply(grid, dim, dir);
     }
 };
 
@@ -116,38 +116,38 @@ class FieldSymmetryBC : public FieldBC
 
     void applyEx(DataField &grid, int dim, Direction dir)
     {
-      if (dim=0) neumann(grid, dim, dir);
-      else dirichlet(grid, dim, dir);
+      if (dim==0) neumann.apply(grid, dim, dir);
+      else dirichlet.apply(grid, dim, dir);
     }
 
     void applyEy(DataField &grid, int dim, Direction dir)
     {
-      if (dim=1) neumann(grid, dim, dir);
-      else dirichlet(grid, dim, dir);
+      if (dim==1) neumann.apply(grid, dim, dir);
+      else dirichlet.apply(grid, dim, dir);
     }
 
     void applyEz(DataField &grid, int dim, Direction dir)
     {
-      if (dim=2) neumann(grid, dim, dir);
-      else dirichlet(grid, dim, dir);
+      if (dim==2) neumann.apply(grid, dim, dir);
+      else dirichlet.apply(grid, dim, dir);
     }
 
     void applyBx(DataField &grid, int dim, Direction dir)
     {
-      if (dim=0) neumann(grid, dim, dir);
-      else dirichlet(grid, dim, dir);
+      if (dim==0) neumann.apply(grid, dim, dir);
+      else dirichlet.apply(grid, dim, dir);
     }
 
     void applyBy(DataField &grid, int dim, Direction dir)
     {
-      if (dim=1) neumann(grid, dim, dir);
-      else dirichlet(grid, dim, dir);
+      if (dim==1) neumann.apply(grid, dim, dir);
+      else dirichlet.apply(grid, dim, dir);
     }
 
     void applyBz(DataField &grid, int dim, Direction dir)
     {
-      if (dim=2) neumann(grid, dim, dir);
-      else dirichlet(grid, dim, dir);
+      if (dim==2) neumann.apply(grid, dim, dir);
+      else dirichlet.apply(grid, dim, dir);
     }
 };
 #endif // OPAR_FIELDBC_HPP_

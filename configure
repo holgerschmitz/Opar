@@ -606,11 +606,6 @@ LIBOBJS
 EGREP
 GREP
 CXXCPP
-PKG_CONFIG_LIBDIR
-PKG_CONFIG_PATH
-PKG_CONFIG
-hdf5_LIBS
-hdf5_CFLAGS
 MPILIBS
 MPICXX
 BOOST_LDFLAGS
@@ -710,8 +705,7 @@ with_boost
 with_boost_libdir
 with_mpi
 with_hdf5
-with_hdf5_include
-with_hdf5_lib
+enable_parallel_hdf5
 with_dimension
 '
       ac_precious_vars='build_alias
@@ -726,11 +720,6 @@ CCC
 CC
 CFLAGS
 MPICXX
-PKG_CONFIG
-PKG_CONFIG_PATH
-PKG_CONFIG_LIBDIR
-hdf5_CFLAGS
-hdf5_LIBS
 CXXCPP'
 
 
@@ -1350,6 +1339,8 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
+  --enable-parallel-hdf5  use parallel file access for HDF5 (mpio) if
+                          available.
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1366,11 +1357,7 @@ Optional Packages:
   --with-mpi              compile with MPI (parallelization) support. If none
                           is found, MPI is not used. Default: auto
 
-  --with-hdf5=path        location of the hdf5 library
-  --with-hdf5-include=path
-                          location of the hdf5 headers, defaults to
-                          /usr/include
-  --with-hdf5-lib=path    location of the hdf5 libraries
+  --without-hdf5          do not allow HDF5 output
   --with-dimension=dim    The dimensionality of the code. dim can be either
                           1,2 or 3. Default is 1
 
@@ -1385,13 +1372,6 @@ Some influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
   MPICXX      MPI C++ compiler command
-  PKG_CONFIG  path to pkg-config utility
-  PKG_CONFIG_PATH
-              directories to add to pkg-config's search path
-  PKG_CONFIG_LIBDIR
-              path overriding pkg-config's built-in search path
-  hdf5_CFLAGS C compiler flags for hdf5, overriding pkg-config
-  hdf5_LIBS   linker flags for hdf5, overriding pkg-config
   CXXCPP      C++ preprocessor
 
 Use these variables to override the choices made by `configure' or to help
@@ -4694,6 +4674,7 @@ fi
 
 fi
 
+
 # Search for HDF5 libraries
 # To distinguish between serial and parallel, use the H5_HAVE_PARALLEL macro
 # supplied by HDF5 itself
@@ -4702,277 +4683,62 @@ fi
 
 # Check whether --with-hdf5 was given.
 if test "${with_hdf5+set}" = set; then :
-  withval=$with_hdf5;
-              hdf5_LIBS="-L$withval/lib -lhdf5 -lhdf5_cpp"
-              hdf5_CFLAGS="-I$withval/include"
-
+  withval=$with_hdf5; ok=$withval
 else
-  with_hdf5=auto
-
+  ok=yes
 fi
 
-
-
-if test x"$with_hdf5" = xyes; then
-  hdf5_LIBS="-lhdf5 -lhdf5_cpp"
-  hdf5_CFLAGS=""
-fi
-
-if test x"$with_hdf5" = xauto; then
-  hdf5_LIBS="-lhdf5 -lhdf5_cpp"
-  hdf5_CFLAGS=""
-fi
-
-if test x"$with_hdf5" = xno; then
-  hdf5_LIBS=""
-  hdf5_CFLAGS=""
-fi
-
-
-
-
-
-# Check whether --with-hdf5-include was given.
-if test "${with_hdf5_include+set}" = set; then :
-  withval=$with_hdf5_include;
-                hdf5_CFLAGS="-I$withval"
-
-
-fi
-
-
-
-# Check whether --with-hdf5-lib was given.
-if test "${with_hdf5_lib+set}" = set; then :
-  withval=$with_hdf5_lib;
-                hdf5_LIBS="-L$withval -lhdf5 -lhdf5_cpp"
-
-
-fi
-
-
-
-
-
-
-
-
-
-
-if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
-	if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
-set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_PKG_CONFIG+:} false; then :
+if test "$ok" = "yes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for deflate in -lz" >&5
+$as_echo_n "checking for deflate in -lz... " >&6; }
+if ${ac_cv_lib_z_deflate+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lz  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
-  ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-if test -n "$PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-$as_echo "$PKG_CONFIG" >&6; }
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char deflate ();
+int
+main ()
+{
+return deflate ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_z_deflate=yes
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+  ac_cv_lib_z_deflate=no
 fi
-
-
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
 fi
-if test -z "$ac_cv_path_PKG_CONFIG"; then
-  ac_pt_PKG_CONFIG=$PKG_CONFIG
-  # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $ac_pt_PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_z_deflate" >&5
+$as_echo "$ac_cv_lib_z_deflate" >&6; }
+if test "x$ac_cv_lib_z_deflate" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBZ 1
+_ACEOF
 
-  ;;
-esac
-fi
-ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
-if test -n "$ac_pt_PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
-$as_echo "$ac_pt_PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-  if test "x$ac_pt_PKG_CONFIG" = x; then
-    PKG_CONFIG=""
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    PKG_CONFIG=$ac_pt_PKG_CONFIG
-  fi
-else
-  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
-fi
-
-fi
-if test -n "$PKG_CONFIG"; then
-	_pkg_min_version=0.9.0
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
-$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
-	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	else
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-		PKG_CONFIG=""
-	fi
-fi
-
-pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for hdf5" >&5
-$as_echo_n "checking for hdf5... " >&6; }
-
-if test -n "$hdf5_CFLAGS"; then
-    pkg_cv_hdf5_CFLAGS="$hdf5_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"hdf5 >= 1.8.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "hdf5 >= 1.8.0") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_hdf5_CFLAGS=`$PKG_CONFIG --cflags "hdf5 >= 1.8.0" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$hdf5_LIBS"; then
-    pkg_cv_hdf5_LIBS="$hdf5_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"hdf5 >= 1.8.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "hdf5 >= 1.8.0") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_hdf5_LIBS=`$PKG_CONFIG --libs "hdf5 >= 1.8.0" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        hdf5_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "hdf5 >= 1.8.0" 2>&1`
-        else
-	        hdf5_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "hdf5 >= 1.8.0" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$hdf5_PKG_ERRORS" >&5
-
-
-                    hdf5_LIBS="-L/usr/lib -lhdf5 -lhdf5_cpp"
-                    hdf5_CFLAGS="-I/usr/include"
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"No hdf5 >= 1.8.0 found automatically. Check your \$PKG_CONFIG_PATH or set --with-hdf5 flag. Assuming hdf5 is stored in /usr \"" >&5
-$as_echo "$as_me: WARNING: \"No hdf5 >= 1.8.0 found automatically. Check your \$PKG_CONFIG_PATH or set --with-hdf5 flag. Assuming hdf5 is stored in /usr \"" >&2;}
-
-
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-                    hdf5_LIBS="-L/usr/lib -lhdf5 -lhdf5_cpp"
-                    hdf5_CFLAGS="-I/usr/include"
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"No hdf5 >= 1.8.0 found automatically. Check your \$PKG_CONFIG_PATH or set --with-hdf5 flag. Assuming hdf5 is stored in /usr \"" >&5
-$as_echo "$as_me: WARNING: \"No hdf5 >= 1.8.0 found automatically. Check your \$PKG_CONFIG_PATH or set --with-hdf5 flag. Assuming hdf5 is stored in /usr \"" >&2;}
-
+  LIBS="-lz $LIBS"
 
 else
-	hdf5_CFLAGS=$pkg_cv_hdf5_CFLAGS
-	hdf5_LIBS=$pkg_cv_hdf5_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-
-
-
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: zlib is required for HDF5!" >&5
+$as_echo "$as_me: WARNING: zlib is required for HDF5!" >&2;}
 fi
 
 
-if test x"$with_hdf5" != xno; then
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-  CPPFLAGS_save=$CPPFLAGS
-  LDFLAGS_save=$LDFLAGS
-  CPPFLAGS=$hdf5_CFLAGS
-  LDFLAGS=$hdf5_LIBS
-
-  found_hdf5=yes;
+  save_LIBS_0="$LIBS" # save, to check later if we found any library
   ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -5366,17 +5132,9 @@ fi
 done
 
 
-ac_fn_cxx_check_header_mongrel "$LINENO" "hdf5.h" "ac_cv_header_hdf5_h" "$ac_includes_default"
-if test "x$ac_cv_header_hdf5_h" = xyes; then :
-
-else
-  found_hdf5=no
-fi
-
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for H5Fflush in -lhdf5" >&5
-$as_echo_n "checking for H5Fflush in -lhdf5... " >&6; }
-if ${ac_cv_lib_hdf5_H5Fflush+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for H5Pcreate in -lhdf5" >&5
+$as_echo_n "checking for H5Pcreate in -lhdf5... " >&6; }
+if ${ac_cv_lib_hdf5_H5Pcreate+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -5390,106 +5148,77 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char H5Fflush ();
+char H5Pcreate ();
 int
 main ()
 {
-return H5Fflush ();
+return H5Pcreate ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_lib_hdf5_H5Fflush=yes
+  ac_cv_lib_hdf5_H5Pcreate=yes
 else
-  ac_cv_lib_hdf5_H5Fflush=no
+  ac_cv_lib_hdf5_H5Pcreate=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_hdf5_H5Fflush" >&5
-$as_echo "$ac_cv_lib_hdf5_H5Fflush" >&6; }
-if test "x$ac_cv_lib_hdf5_H5Fflush" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_hdf5_H5Pcreate" >&5
+$as_echo "$ac_cv_lib_hdf5_H5Pcreate" >&6; }
+if test "x$ac_cv_lib_hdf5_H5Pcreate" = xyes; then :
+
+    for ac_header in hdf5.h
+do :
+  ac_fn_cxx_check_header_mongrel "$LINENO" "hdf5.h" "ac_cv_header_hdf5_h" "$ac_includes_default"
+if test "x$ac_cv_header_hdf5_h" = xyes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBHDF5 1
+#define HAVE_HDF5_H 1
 _ACEOF
+ LIBS="-lhdf5 $LIBS"
 
-  LIBS="-lhdf5 $LIBS"
+$as_echo "#define SCHNEK_HAVE_HDF5 1" >>confdefs.h
 
-else
-  found_hdf5=no
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for H5DSis_scale in -lhdf5_hl" >&5
-$as_echo_n "checking for H5DSis_scale in -lhdf5_hl... " >&6; }
-if ${ac_cv_lib_hdf5_hl_H5DSis_scale+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lhdf5_hl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
+done
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char H5DSis_scale ();
-int
-main ()
-{
-return H5DSis_scale ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_lib_hdf5_hl_H5DSis_scale=yes
-else
-  ac_cv_lib_hdf5_hl_H5DSis_scale=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_hdf5_hl_H5DSis_scale" >&5
-$as_echo "$ac_cv_lib_hdf5_hl_H5DSis_scale" >&6; }
-if test "x$ac_cv_lib_hdf5_hl_H5DSis_scale" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBHDF5_HL 1
-_ACEOF
-
-  LIBS="-lhdf5_hl $LIBS"
-
-else
-  found_hdf5=no
 fi
 
-
-  CPPFLAGS=$CPPFLAGS_save
-  LDFLAGS=$LDFLAGS_save
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-
-  if test $found_hdf5 = yes; then
-
-$as_echo "#define HAVE_HDF5 1" >>confdefs.h
-
-  else if test x"$with_hdf5" = xyes; then
-      as_fn_error $? "HDF5 support requested HDF5 library not found!" "$LINENO" 5
-    fi
+  if test x"$save_LIBS_0" = x"$LIBS"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Couldn't find the HDF5 library!!  Switching to --without-hdf5." >&5
+$as_echo "$as_me: WARNING: Couldn't find the HDF5 library!!  Switching to --without-hdf5." >&2;}
   fi
 
+  if test "x$with_mpi" = "xyes"; then
+    for ac_func in H5Pset_mpi H5Pset_fapl_mpio
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_cxx_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+  fi
+fi
+
+# Check whether --enable-parallel-hdf5 was given.
+if test "${enable_parallel_hdf5+set}" = set; then :
+  enableval=$enable_parallel_hdf5;
 fi
 
 
+if test x"$enable-parallel-hdf5" != "xno" ; then
+
+$as_echo "#define SCHNEK_USE_HDF_PARALLEL 1" >>confdefs.h
+
+fi
 
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -5510,7 +5239,9 @@ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
-#End :: Check HDF5 suport
+#End :: Check HDF5 support
+
+
 
 
 

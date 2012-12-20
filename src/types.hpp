@@ -85,6 +85,11 @@ typedef schnek::Array<int, 3, ArrayArgCheck> PIntVector;
 typedef schnek::Array<schnek::pParameter, dimension, ArrayArgCheck> SParameterVector;
 typedef schnek::Array<schnek::pParameter, 3, ArrayArgCheck> PParameterVector;
 
+typedef schnek::RecDomain<dimension> SDomain;
+typedef schnek::RecDomain<3> PDomain;
+typedef SDomain::LimitType SLimit;
+typedef PDomain::LimitType PLimit;
+
 enum Direction {north, south, west, east, up, down};
 
 #endif /* CONFIG_HPP_ */

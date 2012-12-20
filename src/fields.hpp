@@ -44,6 +44,10 @@ class Fields : public Block
     pDataField pBy;
     pDataField pBz;
 
+    pDataField pJx;
+    pDataField pJy;
+    pDataField pJz;
+
     PVector EInit;
     PVector BInit;
 
@@ -71,9 +75,17 @@ class Fields : public Block
   private:
     void stepD(double dt);
     void stepB(double dt);
+#ifdef THREE_DIMENSIONAL
+    void fdtdStepD(double dt, int i, int j, int k, SVector dx, double Jx, double Jy, double Jz);
+    void fdtdStepB(double dt, int i, int j, int k, SVector dx, double Jx, double Jy, double Jz);
+#endif
 #ifdef TWO_DIMENSIONAL
     void fdtdStepD(double dt, int i, int j, SVector dx, double Jx, double Jy, double Jz);
     void fdtdStepB(double dt, int i, int j, SVector dx, double Jx, double Jy, double Jz);
+#endif
+#ifdef ONE_DIMENSIONAL
+    void fdtdStepD(double dt, int i, SVector dx, double Jx, double Jy, double Jz);
+    void fdtdStepB(double dt, int i, SVector dx, double Jx, double Jy, double Jz);
 #endif
 };
 

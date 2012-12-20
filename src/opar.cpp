@@ -23,6 +23,8 @@
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// TODO Create JavaDoc comments everywhere
+
 #include "config.hpp"
 #include "opar.hpp"
 #include "common.hpp"
@@ -111,8 +113,17 @@ void initFunctions(FunctionRegistry &freg)
   registerCMath(freg);
 }
 
+void test_species()
+{
+  Species sp;
+
+}
+
 int main(int argc, char **argv)
 {
+  test_species();
+  exit(0);
+
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
 #ifdef HAVE_MPI

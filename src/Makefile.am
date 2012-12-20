@@ -23,19 +23,31 @@
 
 bin_PROGRAMS = opar
 
-opar_SOURCES = \
-  common.cpp  \
-  common.hpp  \
-  config.hpp  \
-  fieldbc.hpp \
-  fields.hpp  \
-  fields.cpp  \
-  globals.hpp \
-  globals.cpp \
-  opar.cpp    \
-  opar.hpp    \
-  util.hpp    \
-  util.cpp
+opar_SOURCES =     \
+  common.cpp       \
+  common.hpp       \
+  config.hpp       \
+  currents.cpp     \
+  currents.hpp     \
+  defs.hpp         \
+  fieldbc.hpp      \
+  fields.hpp       \
+  fields.cpp       \
+  globals.hpp      \
+  globals.cpp      \
+  numboundary.hpp  \
+  opar.cpp         \
+  opar.hpp         \
+  particles.cpp    \
+  particles.hpp    \
+  random.cpp       \
+  random.hpp       \
+  species.cpp      \
+  species.hpp      \
+  typse.hpp        \
+  util.hpp         \
+  util.cpp         \
+  weighting.hpp
 
 opar_LDADD = -lschnek $(INTI_LIBS)
 

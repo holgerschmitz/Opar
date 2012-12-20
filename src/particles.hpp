@@ -32,7 +32,6 @@
 #include <list>
 #include <iterator>
 
-
 /** @Particle
  *  A low impact particle class for holding all the particle data
  */
@@ -42,18 +41,27 @@ class Particle
     static long nextIndex;
     long index;
   public:
+    /// This is the position
     SVector x;
-    PVector p;
+    /// This is the relativistic four velocity
+    PVector u;
     real weight;
 
-    Particle() {}
-    Particle(const SVector &x_, const PVector &p_, real weight_)
-      : index(++nextIndex), x(x_), p(p_), weight(weight_) {}
-    Particle(const Particle &P) : index(P.index), x(P.x), p(P.p), weight(P.weight) {}
+    Particle()
+    {
+    }
+    Particle(const SVector &x_, const PVector &u_, real weight_) :
+      index(++nextIndex), x(x_), u(u_), weight(weight_)
+    {
+    }
+    Particle(const Particle &P) :
+      index(P.index), x(P.x), u(P.u), weight(P.weight)
+    {
+    }
     Particle &operator=(const Particle &P)
     {
       x = P.x;
-      p = P.p;
+      u = P.u;
       weight = P.weight;
       index = P.index;
     }
@@ -61,32 +69,35 @@ class Particle
     void copyFrom(const Particle &P)
     {
       x = P.x;
-      p = P.p;
+      u = P.u;
       weight = P.weight;
       index = ++nextIndex;
     }
 
-    long getIndex() { return index; }
+    long getIndex()
+    {
+      return index;
+    }
 
-    void setValues(SVector &x_, PVector &p_, real weight_)
+    void setValues(SVector &x_, PVector &u_, real weight_)
     {
       x = x_;
-      p = p_;
+      u = u_;
       weight = weight;
     }
 
-    void setValues(SVector &x_, PVector &p_)
+    void setValues(SVector &x_, PVector &u_)
     {
       x = x_;
-      p = p_;
+      u = u_;
     }
 };
-
 
 class ParticleStorage
 {
   private:
-    struct DataBlock {
+    struct DataBlock
+    {
         Particle *data;
         long count;
         DataBlock();
@@ -111,9 +122,14 @@ class ParticleStorage
         BlockIterator blockIter;
         long pos;
 
-        iterator(BlockIterator blockIter_, long pos_ = 0) : blockIter(blockIter_), pos(pos_) {}
+        iterator(BlockIterator blockIter_, long pos_ = 0) :
+          blockIter(blockIter_), pos(pos_)
+        {
+        }
       public:
-        iterator() {}
+        iterator()
+        {
+        }
         iterator(const iterator &it)
         {
           blockIter = it.blockIter;
@@ -137,14 +153,30 @@ class ParticleStorage
           return tmp;
         }
 
-        bool operator==(const iterator& rhs) { return (blockIter == rhs.blockIter) && (pos == rhs.pos); }
-        bool operator!=(const iterator& rhs) { return (blockIter != rhs.blockIter) || (pos != rhs.pos); }
-        Particle& operator*() { return blockIter->block[pos]; }
+        bool operator==(const iterator& rhs)
+        {
+          return (blockIter == rhs.blockIter) && (pos == rhs.pos);
+        }
+
+        bool operator!=(const iterator& rhs)
+        {
+          return (blockIter != rhs.blockIter) || (pos != rhs.pos);
+        }
+
+        Particle& operator*()
+        {
+          return blockIter->block[pos];
+        }
     };
 
-    iterator begin() { return iterator(BlockList.begin()); }
-    iterator end() { return iterator(BlockList.end()); }
-
+    iterator begin()
+    {
+      return iterator(BlockList.begin());
+    }
+    iterator end()
+    {
+      return iterator(BlockList.end());
+    }
 
     Particle &addParticle();
 
@@ -154,7 +186,6 @@ class ParticleStorage
      * This is in line with STL behaviour
      */
     iterator removeParticle(const iterator&);
-
 };
 
 #endif /* PARTICLES_HPP_ */

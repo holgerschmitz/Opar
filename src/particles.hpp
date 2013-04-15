@@ -47,7 +47,7 @@ class Particle
     PVector u;
     real weight;
 
-    Particle()
+    Particle() : index(0), weight(1.0)
     {
     }
     Particle(const SVector &x_, const PVector &u_, real weight_) :
@@ -58,12 +58,14 @@ class Particle
       index(P.index), x(P.x), u(P.u), weight(P.weight)
     {
     }
+
     Particle &operator=(const Particle &P)
     {
       x = P.x;
       u = P.u;
       weight = P.weight;
       index = P.index;
+      return *this;
     }
 
     void copyFrom(const Particle &P)
@@ -83,7 +85,7 @@ class Particle
     {
       x = x_;
       u = u_;
-      weight = weight;
+      weight = weight_;
     }
 
     void setValues(SVector &x_, PVector &u_)
@@ -105,6 +107,7 @@ class ParticleStorage
         void free();
         Particle &addParticle();
     };
+
     typedef std::list<DataBlock> BlockList;
     typedef BlockList::iterator BlockIterator;
     BlockList blocks;
@@ -127,7 +130,7 @@ class ParticleStorage
         {
         }
       public:
-        iterator()
+        iterator() : pos(0)
         {
         }
         iterator(const iterator &it)
@@ -165,17 +168,17 @@ class ParticleStorage
 
         Particle& operator*()
         {
-          return blockIter->block[pos];
+          return blockIter->data[pos];
         }
     };
 
     iterator begin()
     {
-      return iterator(BlockList.begin());
+      return iterator(blocks.begin());
     }
     iterator end()
     {
-      return iterator(BlockList.end());
+      return iterator(blocks.end());
     }
 
     Particle &addParticle();

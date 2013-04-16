@@ -118,7 +118,7 @@ class ParticleStorage
       freeBlock = blocks.end();
     }
 
-    class iterator : public std::iterator<std::forward_iterator_tag, Particle>
+    class iterator : public std::iterator<std::bidirectional_iterator_tag, Particle>
     {
       private:
         friend class ParticleStorage;
@@ -153,6 +153,23 @@ class ParticleStorage
         {
           iterator tmp(*this);
           operator++();
+          return tmp;
+        }
+
+        iterator& operator--()
+        {
+          if (--pos < 0)
+          {
+            --blockIter;
+            pos = blockIter->count - 1;
+          }
+          return *this;
+        }
+
+        iterator operator--(int)
+        {
+          iterator tmp(*this);
+          operator--();
           return tmp;
         }
 

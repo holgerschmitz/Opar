@@ -51,7 +51,7 @@ class Globals : public Singleton<Globals>
     SVector domainMin;
     SVector domainMax;
 
-    /// The physical size of the simulation domain
+    /// The physical size of the local simulation domain
     SVector localDomainMin;
     SVector localDomainMax;
 

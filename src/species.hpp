@@ -76,6 +76,7 @@ class Species : public Block
   public:
     void pushParticles(double dt);
     Particle &addParticle();
+    void removeParticle(const ParticleStorage::iterator &p);
 
 };
 

@@ -32,7 +32,7 @@
 
 #include <schnek/grid.hpp>
 
-#include <boost/forech.hpp>
+#include <boost/foreach.hpp>
 
 
 inline double ipow(double x, int y)
@@ -47,6 +47,12 @@ template<class Weighting>
 Particle &Species<Weighting>::addParticle()
 {
   return particles.addParticle();
+}
+
+template<class Weighting>
+void Species<Weighting>::removeParticle(const ParticleStorage::iterator &p)
+{
+  particles.removeParticle(p);
 }
 
 template<class Weighting>

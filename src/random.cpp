@@ -25,6 +25,6 @@
 
 #include "random.hpp"
 
-boost::random::mt11213b Random::generator_();
-boost::random::uniform_01<real> Random::uniform_();
+boost::random::mt11213b Random::generator_;
+boost::random::uniform_01<real> Random::uniform_;
 boost::random::normal_distribution<real> Random::normal_(0.0, 1.0);

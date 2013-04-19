@@ -25,6 +25,7 @@
  */
 
 #include "particle_exchange.hpp"
+#include "species.hpp"
 
 #include <boost/foreach.hpp>
 
@@ -33,10 +34,10 @@ ParticleExchange::ParticleExchange(Species& species_) : species(species_) {}
 
 void ParticleExchange::exchange(ParticleStorage &particles)
 {
-  subdivision = Globals.instance().getSubdivision();
+  subdivision = Globals::instance().getSubdivision();
 
-  SVector locMin = Globals.instance().getLocalDomainMin();
-  SVector locMax = Globals.instance().getLocalDomainMax();
+  SVector locMin = Globals::instance().getLocalDomainMin();
+  SVector locMax = Globals::instance().getLocalDomainMax();
 
   for (int d=0; d<dimension; ++d)
   {
@@ -44,35 +45,35 @@ void ParticleExchange::exchange(ParticleStorage &particles)
     // Low boundary
     //
 
-    for (ParticleStorage::iterator it = ParticleStorage.begin();
-        it != ParticleStorage.end();
+    for (ParticleStorage::iterator it = particles.begin();
+        it != particles.end();
         ++it)
     {
       if ((*it).x[d] <  locMin[d]) listSend.push_front(it);
     }
 
-    // species.getBoundaryLo(d).apply(listSend);
+    species.getBoundaryLo(d).apply(listSend);
 
-    doExchange(particles, -1);
+    doExchange(particles, d, -1);
 
     //
     // High boundary
     //
 
-    for (ParticleStorage::iterator it = ParticleStorage.begin();
-        it != ParticleStorage.end();
+    for (ParticleStorage::iterator it = particles.begin();
+        it != particles.end();
         ++it)
     {
       if ((*it).x[d] >= locMax[d]) listSend.push_front(it);
     }
 
-    // species.getBoundaryHi(d).apply(listSend);
+    species.getBoundaryHi(d).apply(listSend);
 
-    doExchange(particles, +1);
+    doExchange(particles, d, +1);
   }
 }
 
-void ParticleExchange::doExchange(ParticleStorage &particles, int direction)
+void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direction)
 {
 
   bufferSend.makeBuffer(listSend);
@@ -83,11 +84,11 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int direction)
     listSend.pop_front();
   }
 
-  subdivision->exchangeData(dim, direction, bufferSend, bufferReceive);
+  subdivision->exchangeData(dim, direction, bufferSend.getBuffer(), bufferReceive.getBuffer());
 
-  BOOST_FOREACH(Particle &p, bufferReceive)
+  for (ParticleBuffer::iterator it = bufferReceive.begin(); it != bufferReceive.end(); ++it)
   {
-    particles.addParticle() = p;
+    particles.addParticle() = *it;
   }
 }
 

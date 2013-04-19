@@ -26,8 +26,11 @@
 #ifndef RANDOM_HPP_
 #define RANDOM_HPP_
 
+#include "types.hpp"
+
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_01.hpp>
+#include <boost/random/normal_distribution.hpp>
 
 class Random
 {
@@ -37,22 +40,22 @@ class Random
     static boost::random::normal_distribution<real> normal_;
 
   public:
-    static double uniform()
+    static real uniform()
     {
       return uniform_(generator_);
     }
 
-    static double uniform(double range)
+    static real uniform(double range)
     {
       return range*uniform_(generator_);
     }
 
-    static double gaussian()
+    static real gaussian()
     {
       return normal_(generator_);
     }
 
-    static double gaussian(double stddev)
+    static real gaussian(double stddev)
     {
       return stddev*normal_(generator_);
     }

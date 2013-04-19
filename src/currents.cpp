@@ -23,9 +23,10 @@
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/variant.hpp>
 #include "currents.hpp"
 
-#include <schnek/grid/domain.h>
+#include <schnek/grid/domain.hpp>
 
 #include <boost/foreach.hpp>
 
@@ -45,14 +46,15 @@ void Currents::addCurrent(pDataField jx, pDataField jy, pDataField jz)
 
 void Currents::updateCurrent(pDataField j, const std::list<pDataField> &jl)
 {
-  j = 0;
+  (*j) = 0.0;
 
   BOOST_FOREACH(pDataField jc, jl)
   {
     RecDomain<dimension> domain(jc->getLo(), jc->getHi());
-    BOOST_FOREACH(RecDomain<dimension>::LimitType pos, domain)
+    for (RecDomain<dimension>::iterator it = domain.begin(); it != domain.end(); ++it)
+    //BOOST_FOREACH(RecDomain<dimension>::LimitType pos, domain)
     {
-      j[pos] += jc[pos];
+      (*j)[*it] += (*jc)[*it];
     }
   }
 }

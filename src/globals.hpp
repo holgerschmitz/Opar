@@ -29,11 +29,12 @@
 #include "types.hpp"
 
 #include <schnek/util.hpp>
-#include <schnek/variables.hpp>
-
-using namespace schnek;
+#include <schnek/grid/domainsubdivision.hpp>
+//#include <schnek/variables.hpp>
 
 class CommonBlock;
+
+using namespace schnek;
 
 enum VarGroup { var_none, var_space, var_time, var_spacetime };
 

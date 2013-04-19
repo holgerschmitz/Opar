@@ -59,6 +59,8 @@ class ParticleBoundary
     virtual void apply(ParticleExchange::PartList &particles) = 0;
 };
 
+typedef boost::shared_ptr<ParticleBoundary> pParticleBoundary;
+
 /** Periodic boundary conditions for particles.
  */
 class PeriodicParticleBoundary : public ParticleBoundary

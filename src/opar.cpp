@@ -30,6 +30,7 @@
 #include "common.hpp"
 #include "fields.hpp"
 #include "globals.hpp"
+#include "species.hpp"
 
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
@@ -85,6 +86,12 @@ void OPar::addField(Fields *f)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   fields.push_back(f);
+}
+
+void OPar::addSpecies(Species *s);
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+  species.push_back(s);
 }
 
 void initBlockLayout(BlockClasses &blocks)

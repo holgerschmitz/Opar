@@ -23,10 +23,11 @@
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common.hpp"
-#include "globals.hpp"
 
-void CommonBlock::initParameters(BlockParameters &blockPars)
+#include "globals.hpp"
+#include "common.hpp"
+
+void CommonBlock::initParameters(schnek::BlockParameters &blockPars)
 {
   Globals::instance().initCommonParameters(blockPars);
 }

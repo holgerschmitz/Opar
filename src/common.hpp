@@ -28,13 +28,12 @@
 
 #include <schnek/variables.hpp>
 
+//using namespace schnek;
 
-using namespace schnek;
-
-class CommonBlock : public Block
+class CommonBlock : public schnek::Block
 {
   protected:
-    void initParameters(BlockParameters &blockPars);
+    void initParameters(schnek::BlockParameters &blockPars);
     void preInit();
 };
 

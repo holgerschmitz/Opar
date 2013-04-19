@@ -59,6 +59,8 @@ typedef double real;
 #define GridArgCheck schnek::GridAssertCheck
 #endif
 
+class TriangularWeighting;
+typedef TriangularWeighting Weighting;
 
 typedef schnek::Field<real, 1, GridArgCheck> DataField1d;
 typedef schnek::Field<real, 2, GridArgCheck> DataField2d;

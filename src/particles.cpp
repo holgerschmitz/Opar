@@ -29,19 +29,19 @@
 
 static const long STORAGE_BLOCK_SIZE = 1000000;
 
-DataBlock::DataBlock()
+ParticleStorage::DataBlock::DataBlock()
 {
   data = new Particle[STORAGE_BLOCK_SIZE];
 }
 
-DataBlock::DataBlock(const DataBlock &block) : data(block.data), count(block.count) {}
+ParticleStorage::DataBlock::DataBlock(const DataBlock &block) : data(block.data), count(block.count) {}
 
-void DataBlock::free()
+void ParticleStorage::DataBlock::free()
 {
   delete[] data;
 }
 
-Particle &DataBlock::addParticle()
+Particle &ParticleStorage::DataBlock::addParticle()
 {
   return data[count++];
 }
@@ -92,4 +92,5 @@ ParticleStorage::iterator ParticleStorage::removeParticle(const iterator &it_)
   {
     freeBlock = it.blockIter;
   }
+  return it;
 }

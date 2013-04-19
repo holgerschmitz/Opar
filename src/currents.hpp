@@ -28,6 +28,10 @@
 
 #include "types.hpp"
 
+#include <schnek/util/singleton.hpp>
+
+using namespace schnek;
+
 class Currents : public Singleton<Currents>
 {
   private:

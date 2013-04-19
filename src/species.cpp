@@ -29,13 +29,16 @@
 #include "currents.hpp"
 #include "globals.hpp"
 #include "random.hpp"
+#include "particle_boundary.hpp"
+#include "opar.hpp"
 
 #include <schnek/grid.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/functional/factory.hpp>
 
-
-inline double ipow(double x, int y)
+inline double
+ipow(double x, int y)
 {
   double result = 1.0;
   for (int i = 0; i < y; ++i)
@@ -43,20 +46,17 @@ inline double ipow(double x, int y)
   return result;
 }
 
-template<class Weighting>
-Particle &Species<Weighting>::addParticle()
+Particle &Species::addParticle()
 {
   return particles.addParticle();
 }
 
-template<class Weighting>
-void Species<Weighting>::removeParticle(const ParticleStorage::iterator &p)
+void Species::removeParticle(const ParticleStorage::iterator &p)
 {
   particles.removeParticle(p);
 }
 
-template<class Weighting>
-void Species<Weighting>::initParameters(BlockParameters &blockPars)
+void Species::initParameters(BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(3)
 
@@ -64,13 +64,19 @@ void Species<Weighting>::initParameters(BlockParameters &blockPars)
   blockPars.addParameter("mass", &mass);
   blockPars.addParameter("ppc", &ppc);
 
-  densityParam = blockPars.addArray("density", &density);
+  densityParam = blockPars.addParameter("density", &density);
   temperatureParam = blockPars.addArrayParameter("temperature", temperature);
   driftParam = blockPars.addArrayParameter("drift", drift);
+
+  blockPars.addArrayParameter("boundary_min", bcNamesLo);
+  blockPars.addArrayParameter("boundary_max", bcNamesHi);
+
+  particleBCFactories["periodic"] = boost::factory<PeriodicParticleBoundary*>();
+  particleBCFactories["open"] = boost::factory<OpenParticleBoundary*>();
+  particleBCFactories["reflecting"] = boost::factory<ReflectingParticleBoundary*>();
 }
 
-template<class Weighting>
-void Species<Weighting>::registerData()
+void Species::registerData()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(3)
   addData("Jx_species", pJx);
@@ -78,8 +84,7 @@ void Species<Weighting>::registerData()
   addData("Jz_species", pJz);
 }
 
-template<class Weighting>
-void Species<Weighting>::init()
+void Species::init()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   dynamic_cast<OPar&>(*this->getParent()).addSpecies(this);
@@ -87,10 +92,14 @@ void Species<Weighting>::init()
   SIntVector low = Globals::instance().getLocalGridMin();
   SIntVector high = Globals::instance().getLocalGridMax();
 
-  pJx = pDataField(new DataField(low, high, grange, SStagger(true, false), 2));
-  pJy = pDataField(new DataField(low, high, grange, SStagger(false, true), 2));
-  pJz = pDataField(new DataField(low, high, grange, SStagger(false, false), 2));
-  pDensity = pDataField(new DataField(low, high, grange, SStagger(false, false), 2));
+  pJx = pDataField(
+      new DataField(low, high, grange, SStagger(true, false), 2));
+  pJy = pDataField(
+      new DataField(low, high, grange, SStagger(false, true), 2));
+  pJz = pDataField(
+      new DataField(low, high, grange, SStagger(false, false), 2));
+  pDensity = pDataField(
+      new DataField(low, high, grange, SStagger(false, false), 2));
 
   Currents::instance().addCurrent(pJx, pJy, pJz);
 
@@ -101,16 +110,27 @@ void Species<Weighting>::init()
   this->getData("By", pBy);
   this->getData("Bz", pBz);
 
-
   SDomain d = Weighting::getDomain();
   gx.resize(d);
   hx.resize(d);
   d.grow(2);
   jHelper.resize(d);
+
+  for (int i = 0; i < dimension; ++i)
+  {
+    if (particleBCFactories.count(bcNamesLo[i]) == 0) terminate(
+        "Unknown boundary condition: " + bcNamesLo[i]);
+
+    if (particleBCFactories.count(bcNamesHi[i]) == 0) terminate(
+        "Unknown boundary condition: " + bcNamesHi[i]);
+
+    boundariesLo[i] = pParticleBoundary(particleBCFactories[bcNamesLo[i]]());
+    boundariesHi[i] = pParticleBoundary(particleBCFactories[bcNamesHi[i]]());
+  }
+  particleExchange = new ParticleExchange(*this);
 }
 
-template<class Weighting>
-void Species<Weighting>::initParticles()
+void Species::initParticles()
 {
   SIntVector lo = Globals::instance().getLocalGridMin();
   SIntVector hi = Globals::instance().getLocalGridMax();
@@ -125,19 +145,20 @@ void Species<Weighting>::initParticles()
   updater.addDependentArray(temperatureParam);
   updater.addDependentArray(driftParam);
 
-  double weight_factor = 1/ppc;
+  double weight_factor = 1 / ppc;
 
   // TODO this loop should be somewhere in schnek
-  for (int i=0; i<dimension; ++i) weight_factor *= dx[i];
+  for (int i = 0; i < dimension; ++i)
+    weight_factor *= dx[i];
 
   // TODO check that we are only initialising in the interior of the domain
   SPACE_LOOP(pos, lo, hi)
   {
     SVector r;
-    for (int n=0; n<ppc; ++n)
+    for (int n = 0; n < ppc; ++n)
     {
-      for (int i=0; i<dimension; ++i)
-        coords[i] = (pos[i] + Random::uniform())*dx[i];
+      for (int i = 0; i < dimension; ++i)
+        coords[i] = (pos[i] + Random::uniform()) * dx[i];
 
       Particle &p = particles.addParticle();
 
@@ -145,15 +166,14 @@ void Species<Weighting>::initParticles()
       updater.update();
 
       p.x = coords;
-      p.weight = density*weight_factor;
-      for (int i=0; i<3; ++i)
+      p.weight = density * weight_factor;
+      for (int i = 0; i < 3; ++i)
         p.u[i] = drift[i] + Random::gaussian(temperature[i]);
     }
   }
 }
 
-template<class Weighting>
-void Species<Weighting>::pushParticles(double dt)
+void Species::pushParticles(double dt)
 {
   pJx = 0.0;
   pJy = 0.0;
@@ -171,7 +191,7 @@ void Species<Weighting>::pushParticles(double dt)
   const double facd = ipow(fac, dimension) * charge;
 
   const double part_mc = clight * mass;
-  const double ipart_mc = 1.0_num / part_mc;
+  const double ipart_mc = 1.0 / part_mc;
 
   const double cmratio = charge * dtfac * ipart_mc;
   const double ccmratio = clight * cmratio;
@@ -207,17 +227,19 @@ void Species<Weighting>::pushParticles(double dt)
 
     // This is the EPOCH rotation code translated
     // TODO Check the two algorithms against each other
-    PVector
-        ur(
-            ((1.0 + tau2[0] - tau2[1] - tau2[2]) * um[0] + 2.0
-                * ((tau[0] * tau[1] + tau[2]) * um[1] + (tau[0] * tau[2]
-                    - tau[1]) * um[2])) * tau_ifac,
-            ((1.0 - tau2[0] + tau2[1] - tau2[2]) * um[1] + 2.0
-                * ((tau[1] * tau[2] + tau[0]) * um[2] + (tau[1] * tau[0]
-                    - tau[2]) * um[0])) * tau_ifac,
-            ((1.0 - tau2[0] - tau2[1] + tauz[2]) * um[2] + 2.0
-                * ((tau[2] * tau[0] + tau[1]) * um[0] + (tau[2] * tau[1]
-                    - tau[0]) * um[1])) * tau_ifac);
+    PVector ur(
+        ((1.0 + tau2[0] - tau2[1] - tau2[2]) * um[0]
+            + 2.0
+                * ((tau[0] * tau[1] + tau[2]) * um[1]
+                    + (tau[0] * tau[2] - tau[1]) * um[2])) * tau_ifac,
+        ((1.0 - tau2[0] + tau2[1] - tau2[2]) * um[1]
+            + 2.0
+                * ((tau[1] * tau[2] + tau[0]) * um[2]
+                    + (tau[1] * tau[0] - tau[2]) * um[0])) * tau_ifac,
+        ((1.0 - tau2[0] - tau2[1] + tauz[2]) * um[2]
+            + 2.0
+                * ((tau[2] * tau[0] + tau[1]) * um[0]
+                    + (tau[2] * tau[1] - tau[0]) * um[1])) * tau_ifac);
 
     // This is the original OPar rotation code translated
     //    PVector ur(
@@ -246,7 +268,7 @@ void Species<Weighting>::pushParticles(double dt)
     Weighting::getShape(cell2, cell_frac, dcell, hx);
 
     jHelper = 0.0;
-    RecDomain < 3 > d = Weighting::getDomain();
+    RecDomain<3> d = Weighting::getDomain();
 
     const PIntVector lo = d.lo() + (dcell - PIntVector::Unity()) / 2;
     const PIntVector hi = d.hi() + (dcell + PIntVector::Unity()) / 2;
@@ -276,62 +298,68 @@ void Species<Weighting>::pushParticles(double dt)
     const double fjz = idt * idx[0] * idx[1] * facd * part_weight;
 #endif
 
-SPACE_LOOP  (l_ind, lo, hi)
-  {
+    SPACE_LOOP (l_ind, lo, hi)
+    {
 
 #ifdef ONE_DIMENSIONAL
-    const double sx = gx[l_ind[0]][0];
-    const double rx = hx[l_ind[0]][0];
+      const double sx = gx[l_ind[0]][0];
+      const double rx = hx[l_ind[0]][0];
 
-    const double wx = (rx-sx);
-    const double wy = half * (sx+rx);
+      const double wx = (rx-sx);
+      const double wy = half * (sx+rx);
 
-    jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
-    jyHelper[l_ind] = fjy * wy;
-    jzHelper[l_ind] = fjz * wy;
+      jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
+      jyHelper[l_ind] = fjy * wy;
+      jzHelper[l_ind] = fjz * wy;
 #endif
 
 #ifdef TWO_DIMENSIONAL
-    const double sx = gx[l_ind[0]][0];
-    const double sy = gx[l_ind[1]][1];
+      const double sx = gx[l_ind[0]][0];
+      const double sy = gx[l_ind[1]][1];
 
-    const double rx = hx[l_ind[0]][0];
-    const double ry = hx[l_ind[1]][1];
+      const double rx = hx[l_ind[0]][0];
+      const double ry = hx[l_ind[1]][1];
 
-    const double wx = half * (rx-sx) * (sy+ry);
-    const double wy = half * (ry-sy) * (sx+rx);
-    const double wz = sixth * (rz-sz) * (sx * (2*sy+ry) + rx * (sy+2*ry));
+      const double wx = half * (rx-sx) * (sy+ry);
+      const double wy = half * (ry-sy) * (sx+rx);
+      const double wz = sixth * (rz-sz) * (sx * (2*sy+ry) + rx * (sy+2*ry));
 
-    jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
-    jyHelper[l_ind] = jyHelper(i, j - 1, k) - fjy * wy;
-    jzHelper[l_ind] = fjz * wz;
+      jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
+      jyHelper[l_ind] = jyHelper(i, j - 1, k) - fjy * wy;
+      jzHelper[l_ind] = fjz * wz;
 #endif
 
 #ifdef THREE_DIMENSIONAL
-    const double sx = gx[l_ind[0]][0];
-    const double sy = gx[l_ind[1]][1];
-    const double sz = gx[l_ind[2]][2];
+      const double sx = gx[l_ind[0]][0];
+      const double sy = gx[l_ind[1]][1];
+      const double sz = gx[l_ind[2]][2];
 
-    const double rx = hx[l_ind[0]][0];
-    const double ry = hx[l_ind[1]][1];
-    const double rz = hx[l_ind[2]][2];
+      const double rx = hx[l_ind[0]][0];
+      const double ry = hx[l_ind[1]][1];
+      const double rz = hx[l_ind[2]][2];
 
-    const double wx = sixth * (rx-sx) * (sy * (2*sz+rz) + ry * (sz+2*rz));
-    const double wy = sixth * (ry-sy) * (sx * (2*sz+rz) + rx * (sz+2*rz));
-    const double wz = sixth * (sx * (2*sy+ry) + rx * (sy+2*ry));
+      const double wx = sixth * (rx - sx)
+          * (sy * (2 * sz + rz) + ry * (sz + 2 * rz));
+      const double wy = sixth * (ry - sy)
+          * (sx * (2 * sz + rz) + rx * (sz + 2 * rz));
+      const double wz = sixth * (sx * (2 * sy + ry) + rx * (sy + 2 * ry));
 
-    jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
-    jyHelper[l_ind] = jyHelper(i, j - 1, k) - fjy * wy;
-    jzHelper[l_ind] = jzHelper(i, j, k - 1) - fjz * wz;
+      jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
+      jyHelper[l_ind] = jyHelper(i, j - 1, k) - fjy * wy;
+      jzHelper[l_ind] = jzHelper(i, j, k - 1) - fjz * wz;
 #endif
 
-    FieldIndex g_ind = cell1 + l_ind;
+      FieldIndex g_ind = cell1 + l_ind;
 
-    pJx[g_ind] += jxHelper[l_ind];
-    pJy[g_ind] += jyHelper[l_ind];
-    pJz[g_ind] += jzHelper[l_ind];
+      pJx[g_ind] += jxHelper[l_ind];
+      pJy[g_ind] += jyHelper[l_ind];
+      pJz[g_ind] += jzHelper[l_ind];
+
+    }
 
   }
 
+  // here all the boundary conditions and the MPI happens
+  particleExchange.exchange(particles);
 }
 

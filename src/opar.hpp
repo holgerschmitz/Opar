@@ -33,18 +33,22 @@
 using namespace schnek;
 
 class Fields;
+class Species;
 
 class OPar : public Block
 {
   private:
     std::list<Fields*> fields;
+    std::list<Species*> species;
   protected:
     void initParameters(BlockParameters &blockPars);
   public:
     void execute();
 //    void init();
     void addField(Fields *f);
+    void addSpecies(Species *s);
     void addDiagnostic(DiagnosticInterface *d);
+
 };
 
 

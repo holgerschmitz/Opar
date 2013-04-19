@@ -29,10 +29,11 @@
 
 #include "types.hpp"
 #include "particles.hpp"
+#include "particle_boundary.hpp"
+#include "weighting.hpp"
 
 #include <schnek/variables.hpp>
 
-template<class Weighting>
 class Species : public Block
 {
   private:
@@ -60,11 +61,19 @@ class Species : public Block
     int ppc;
 
     pParameter densityParam;
-    pParameterVector temperatureParam;
-    pParameterVector driftParam;
+    PParameterVector temperatureParam;
+    PParameterVector driftParam;
 
-    typedef typename Weighting::WeightingCoefficients WeightingCoefficients;
+    typedef Weighting::WeightingCoefficients WeightingCoefficients;
     WeightingCoefficients gx, hx;
+
+    typedef boost::function<ParticleBoundary*()> particleBCFactoryFunction;
+    std::map<std::string, particleBCFactoryFunction> particleBCFactories;
+
+    schnek::Array<std::string, dimension> bcNamesLo, bcNamesHi;
+    schnek::Array<pParticleBoundary, dimension> boundariesLo, boundariesHi;
+
+    pParticleExchange particleExchange;
 
     void initParticles();
 
@@ -77,6 +86,9 @@ class Species : public Block
     void pushParticles(double dt);
     Particle &addParticle();
     void removeParticle(const ParticleStorage::iterator &p);
+
+    ParticleBoundary &getBoundaryLo(int dim) { return *(boundariesLo[dim]); }
+    ParticleBoundary &getBoundaryHi(int dim) { return *(boundariesHi[dim]); }
 
 };
 

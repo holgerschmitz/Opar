@@ -30,9 +30,9 @@ ReflectingParticleBoundary::ReflectingParticleBoundary(int dim_, int direction_)
   : ParticleBoundary(dim_, direction_)
 {
   if (direction>0)
-    limit = (Globals.instance().getLocalDomainMax())[dim];
+    limit = (Globals::instance().getLocalDomainMax())[dim];
   else
-    limit = (Globals.instance().getLocalDomainMin())[dim];
+    limit = (Globals::instance().getLocalDomainMin())[dim];
 }
 
 void ReflectingParticleBoundary::apply(ParticleExchange::PartList &particles)

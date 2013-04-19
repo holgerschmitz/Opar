@@ -40,13 +40,15 @@ opar_SOURCES =             \
   opar.hpp                 \
   particles.cpp            \
   particles.hpp            \
+  particle_boundary.cpp    \
+  particle_boundary.hpp    \
   particle_exchange.cpp    \
   particle_exchange.hpp    \
   random.cpp               \
   random.hpp               \
   species.cpp              \
   species.hpp              \
-  typse.hpp                \
+  types.hpp                \
   util.hpp                 \
   util.cpp                 \
   weighting.hpp

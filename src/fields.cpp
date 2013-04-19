@@ -409,7 +409,7 @@ inline void Fields::fdtdStepB(double dt,
     );
   SCHNEK_TRACE_LOG(6, i << " " << j << " " << (*pBz)(i))
 
-  (*pBz)(i,j) +=
+  (*pBz)(i) +=
     + dt*(
       - ((*pEy)(i+1) - (*pEy)(i))/kappaHdx
      + Jz

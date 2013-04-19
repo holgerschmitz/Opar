@@ -25,15 +25,20 @@
  */
 
 #include "particles.hpp"
+#include "globals.hpp"
 
 #include <schnek/grid/grid.hpp>
 #include <schnek/grid/domainsubdivision.hpp>
 #include <schnek/util/databuffer.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 #include <list>
 
 #ifndef PARTICLE_EXCHANGE_HPP_
 #define PARTICLE_EXCHANGE_HPP_
+
+class Species;
 
 class ParticleExchange
 {
@@ -49,16 +54,18 @@ class ParticleExchange
     ParticleBuffer bufferReceive;
 
     Species& species;
-    pSubdivision subdivision;
+    Globals::pSubdivision subdivision;
 
   public:
     ParticleExchange(Species& species_);
 
     void exchange(ParticleStorage &particles);
   private:
-    void doExchange(ParticleStorage &particles, int direction);
+    void doExchange(ParticleStorage &particles, int dim, int direction);
 
 };
+
+typedef boost::shared_ptr<ParticleExchange> pParticleExchange;
 
 
 #endif /* PARTICLE_EXCHANGE_HPP_ */

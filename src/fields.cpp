@@ -610,10 +610,10 @@ void Fields::init()
   for (int i=0; i<dimension; ++i)
   {
     if (fieldBCFactories.count(bcNamesLo[i]) == 0)
-      terminate("Unknown boundary condition: "+bcNamesLo[i]);
+      terminateSim("Unknown boundary condition: "+bcNamesLo[i]);
 
     if (fieldBCFactories.count(bcNamesHi[i]) == 0)
-      terminate("Unknown boundary condition: "+bcNamesHi[i]);
+      terminateSim("Unknown boundary condition: "+bcNamesHi[i]);
 
     boundariesLo[i] = pFieldBC(fieldBCFactories[bcNamesLo[i]]());
     boundariesHi[i] = pFieldBC(fieldBCFactories[bcNamesHi[i]]());

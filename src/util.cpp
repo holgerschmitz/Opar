@@ -31,7 +31,7 @@
 #include <iostream>
 #include <cstdlib>
 
-void terminate(std::string msg)
+void terminateSim(std::string msg)
 {
   std::cerr << msg << std::endl;
 #ifdef HAVE_MPI

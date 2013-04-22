@@ -88,7 +88,7 @@ void OPar::addField(Fields *f)
   fields.push_back(f);
 }
 
-void OPar::addSpecies(Species *s);
+void OPar::addSpecies(Species *s)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   species.push_back(s);

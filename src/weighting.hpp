@@ -34,7 +34,14 @@ class TriangularWeighting
   public:
     typedef schnek::Grid<SVector, 1, GridArgCheck> WeightingCoefficients;
 
-    static SDomain getDomain()
+    static ScalarDomain getScalarDomain()
+    {
+      ScalarLimit lo(-1);
+      ScalarLimit hi(1);
+      return ScalarDomain(lo, hi);
+    }
+
+    static SDomain getSDomain()
     {
 #ifdef ONE_DIMENSIONAL
       SLimit lo(-1);
@@ -49,6 +56,13 @@ class TriangularWeighting
       SLimit hi(1,1,1);
 #endif
       return SDomain(lo, hi);
+    }
+
+    static PDomain getPDomain()
+    {
+      PLimit lo(-1,-1,-1);
+      PLimit hi(1,1,1);
+      return PDomain(lo, hi);
     }
 
     static double particleShapeFactor()
@@ -109,7 +123,7 @@ class TriangularWeighting
     {
 #ifdef ONE_DIMENSIONAL
       PVector result(0.0,0.0,0.0);
-      SDomain d = getDomain();
+      SDomain d = getSDomain();
       for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
       {
         result[0] += ws(i)[0]*Ex(is[0]+i);
@@ -132,7 +146,7 @@ class TriangularWeighting
 #endif
 #ifdef TWO_DIMENSIONAL
       PVector result(0.0,0.0,0.0);
-      SDomain d = getDomain();
+      SDomain d = getSDomain();
 
       for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
       {
@@ -178,7 +192,7 @@ class TriangularWeighting
 #endif
 #ifdef THREE_DIMENSIONAL
       PVector result(0.0,0.0,0.0);
-      SDomain d = getDomain();
+      SDomain d = getSDomain();
 
       for (int k=d.getLo()[2]; k<d.getHi()[2]; ++k)
       {
@@ -292,7 +306,7 @@ class TriangularWeighting
     {
 #ifdef ONE_DIMENSIONAL
       PVector result(0.0,0.0,0.0);
-      SDomain d = getDomain();
+      SDomain d = getSDomain();
       for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
       {
         result[0] += wc(i)[0]*Ex(ic[0]+i);
@@ -304,7 +318,7 @@ class TriangularWeighting
 
 #ifdef TWO_DIMENSIONAL
       PVector result(0.0,0.0,0.0);
-      SDomain d = getDomain();
+      SDomain d = getSDomain();
 
       for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
       {
@@ -322,7 +336,7 @@ class TriangularWeighting
 
 #ifdef THREE_DIMENSIONAL
       PVector result(0.0,0.0,0.0);
-      SDomain d = getDomain();
+      SDomain d = getSDomain();
 
       for (int k=d.getLo()[2]; k<d.getHi()[2]; ++k)
       {
@@ -343,6 +357,63 @@ class TriangularWeighting
 #endif
 
     }
+
+    /**
+     * Weighting a cell centered scalar field
+     * @param wc the cell centered weighting coefficients
+     * @param ic the cell centered grid index
+     * @param F the field to interpolate
+     * @return the interpolated result
+     */
+    static double interpolateScalar(const WeightingCoefficients &wc,
+        const SIntVector &ic, const DataField &F)
+    {
+#ifdef ONE_DIMENSIONAL
+      double result = 0.0;
+      SDomain d = getSDomain();
+      for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+      {
+        result += wc(i)[0]*F(ic[0]+i);
+      }
+      return result;
+#endif
+
+#ifdef TWO_DIMENSIONAL
+      double result = 0.0;
+      SDomain d = getSDomain();
+
+      for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
+      {
+        const double Wc = wc(j)[1];
+        for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+        {
+          result += Wc*wc(i)[0]*F(ic[0]+i, ic[1]+j);
+        }
+      }
+      return result;
+#endif
+
+#ifdef THREE_DIMENSIONAL
+      double result = 0.0;
+      SDomain d = getSDomain();
+
+      for (int k=d.getLo()[2]; k<d.getHi()[2]; ++k)
+      {
+        const double Wzc = wc(k)[2];
+        for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
+        {
+          const double Wyc = wc(j)[1];
+          for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+          {
+            result += Wzc*Wyc*wc(i)[0]*Ex(ic[0]+i, ic[1]+j, ic[2]+k);
+          }
+        }
+        return result;
+#endif
+
+    }
 };
+
+
 
 #endif // WEIGHTING_HPP_ 

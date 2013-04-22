@@ -29,6 +29,6 @@
 
 #include <string>
 
-void terminate(std::string msg);
+void terminateSim(std::string msg);
 
 #endif // SCHNEK_UTIL_HPP_

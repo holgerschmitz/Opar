@@ -24,8 +24,10 @@
  *
  */
 
-#ifndef DEFS_HPP_
-#define DEFS_HPP_
+#ifndef SCHNEK_DEFS_HPP_
+#define SCHNEK_DEFS_HPP_
+
+#include "config.hpp"
 
 #ifdef ONE_DIMENSIONAL
 
@@ -51,4 +53,4 @@
 
 #endif
 
-#endif // DEFS_HPP_ 
+#endif // SCHNEK_DEFS_HPP_

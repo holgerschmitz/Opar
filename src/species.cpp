@@ -326,7 +326,10 @@ void Species::pushParticles(double dt)
 
     SPACE_LOOP (l_ind, lo, hi)
     {
-
+      // Particle weighting according to
+      // T. Z. Esirkepov, Computer Physics Communications 135, 144 (2001).
+      //
+      // The weighting coefficients have been double checked and should be OK
 #ifdef ONE_DIMENSIONAL
       const double sx = gx[l_ind[0]][0];
       const double rx = hx[l_ind[0]][0];
@@ -340,19 +343,19 @@ void Species::pushParticles(double dt)
 #endif
 
 #ifdef TWO_DIMENSIONAL
-//      const double sx = gx[l_ind[0]][0];
-//      const double sy = gx[l_ind[1]][1];
-//
-//      const double rx = hx[l_ind[0]][0];
-//      const double ry = hx[l_ind[1]][1];
-//
-//      const double wx = half * (rx-sx) * (sy+ry);
-//      const double wy = half * (ry-sy) * (sx+rx);
-//      const double wz = sixth * (rz-sz) * (sx * (2*sy+ry) + rx * (sy+2*ry));
-//
-//      jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
-//      jyHelper[l_ind] = jyHelper(i, j - 1, k) - fjy * wy;
-//      jzHelper[l_ind] = fjz * wz;
+      const double sx = gx[l_ind[0]][0];
+      const double sy = gx[l_ind[1]][1];
+
+      const double rx = hx[l_ind[0]][0];
+      const double ry = hx[l_ind[1]][1];
+
+      const double wx = half * (rx-sx) * (sy+ry);
+      const double wy = half * (ry-sy) * (sx+rx);
+      const double wz = sixth * (sx * (2*sy+ry) + rx * (sy+2*ry));
+
+      jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
+      jyHelper[l_ind] = jyHelper(i, j - 1, k) - fjy * wy;
+      jzHelper[l_ind] = fjz * wz;
 #endif
 
 #ifdef THREE_DIMENSIONAL
@@ -368,7 +371,8 @@ void Species::pushParticles(double dt)
           * (sy * (2 * sz + rz) + ry * (sz + 2 * rz));
       const double wy = sixth * (ry - sy)
           * (sx * (2 * sz + rz) + rx * (sz + 2 * rz));
-      const double wz = sixth * (sx * (2 * sy + ry) + rx * (sy + 2 * ry));
+      const double wz = sixth * (rz - sz)
+          * (sx * (2 * sy + ry) + rx * (sy + 2 * ry));
 
       jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
       jyHelper[l_ind] = jyHelper(i, j - 1, k) - fjy * wy;

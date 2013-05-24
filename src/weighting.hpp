@@ -209,7 +209,8 @@ class TriangularWeighting
             result[2] += Wzs*Wyc*wc(i)[0]*Ez(ic[0]+i, ic[1]+j, is[2]+k);
           }
         }
-        return result;
+      }
+      return result;
 
         //        return PVector(
         //            wc(-1)[2] * (wc(-1)[1] * (ws(-1)[0] * ex(is[0]-1,ic[1]-1,ic[2]-1)
@@ -353,7 +354,8 @@ class TriangularWeighting
             result[2] += Wzc*Wys*wc(i)[0]*Ez(is[0]+i, is[1]+j, ic[2]+k);
           }
         }
-        return result;
+      }
+      return result;
 #endif
 
     }
@@ -405,10 +407,11 @@ class TriangularWeighting
           const double Wyc = wc(j)[1];
           for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
           {
-            result += Wzc*Wyc*wc(i)[0]*Ex(ic[0]+i, ic[1]+j, ic[2]+k);
+            result += Wzc*Wyc*wc(i)[0]*F(ic[0]+i, ic[1]+j, ic[2]+k);
           }
         }
-        return result;
+      }
+      return result;
 #endif
 
     }

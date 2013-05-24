@@ -21,7 +21,7 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define this macro if Schnek is compiled with MPI support */
+/* Define this macro if OPar is compiled with MPI support */
 #undef HAVE_MPI
 
 /* Define to 1 if stdbool.h conforms to C99. */

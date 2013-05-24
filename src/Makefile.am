@@ -44,6 +44,8 @@ opar_SOURCES =             \
   particle_boundary.hpp    \
   particle_exchange.cpp    \
   particle_exchange.hpp    \
+  particle_diagnostic.cpp  \
+  particle_diagnostic.hpp  \
   random.cpp               \
   random.hpp               \
   species.cpp              \

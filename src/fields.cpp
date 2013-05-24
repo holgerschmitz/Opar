@@ -41,7 +41,6 @@
 #undef LOGLEVEL
 #define LOGLEVEL 1
 
-
 #ifdef THREE_DIMENSIONAL
 
 inline void Fields::fdtdStepD(double dt,
@@ -179,7 +178,7 @@ void Fields::stepB(double dt)
 //          jz = (*this->pMz)(i,j,k);
 //        }
 
-        this->fdtdStepB(dt, i, j, k, dx, dy, dz, jx, jy, jz);
+        this->fdtdStepB(dt, i, j, k, dx, jx, jy, jz);
       }
 
   Globals::pSubdivision sub = Globals::instance().getSubdivision();
@@ -555,7 +554,6 @@ void Fields::initParameters(BlockParameters &blockPars)
 void Fields::registerData()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(3)
-  std::cout << "Fields::registerData()" << std::endl;
   addData("Ex", pEx);
   addData("Ey", pEy);
   addData("Ez", pEz);
@@ -576,17 +574,17 @@ void Fields::init()
   SIntVector high = Globals::instance().getLocalGridMax();
   SRange grange = Globals::instance().getLocalDomainRange();
 
-  pEx = pDataField(new DataField(low, high, grange, SStagger(true,  false),2));
-  pEy = pDataField(new DataField(low, high, grange, SStagger(false, true),2));
-  pEz = pDataField(new DataField(low, high, grange, SStagger(false, false),2));
+  pEx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
+  pEy = pDataField(new DataField(low, high, grange, eyStaggerYee, 2));
+  pEz = pDataField(new DataField(low, high, grange, ezStaggerYee, 2));
 
-  pBx = pDataField(new DataField(low, high, grange, SStagger(false, true),2));
-  pBy = pDataField(new DataField(low, high, grange, SStagger(true,  false),2));
-  pBz = pDataField(new DataField(low, high, grange, SStagger(true,  true),2));
+  pBx = pDataField(new DataField(low, high, grange, bxStaggerYee, 2));
+  pBy = pDataField(new DataField(low, high, grange, byStaggerYee, 2));
+  pBz = pDataField(new DataField(low, high, grange, bzStaggerYee, 2));
 
-  pJx = pDataField(new DataField(low, high, grange, SStagger(true,  false),2));
-  pJy = pDataField(new DataField(low, high, grange, SStagger(false, true),2));
-  pJz = pDataField(new DataField(low, high, grange, SStagger(false, false),2));
+  pJx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
+  pJy = pDataField(new DataField(low, high, grange, eyStaggerYee, 2));
+  pJz = pDataField(new DataField(low, high, grange, ezStaggerYee, 2));
 
   Currents::instance().setGlobalCurrent(pJx, pJy, pJz);
 //  for (int i=0; i<dimension; ++i)
@@ -619,70 +617,6 @@ void Fields::init()
     boundariesHi[i] = pFieldBC(fieldBCFactories[bcNamesHi[i]]());
   }
 
-}
-
-void Fields::writeAsTextFiles(int n)
-{
-  SCHNEK_TRACE_ENTER_FUNCTION(2)
-  std::string num = boost::lexical_cast<std::string>(n);
-  std::string rank = boost::lexical_cast<std::string>(
-      Globals::instance().getSubdivision()->procnum());
-  SIntVector min(pEx->getLo());
-  SIntVector max(pEx->getHi());;
-
-  std::ofstream exFile(("ex"+rank+"_"+num+".dat").c_str());
-  for (int i=min[0]; i<=max[0]; ++i)
-  {
-    for (int j=min[1]; j<=max[1]; ++j)
-      exFile << i << " " << j << " " << (*pEx)(i,j) << std::endl;
-    exFile << std::endl;
-  }
-  exFile.close();
-
-  std::ofstream eyFile(("ey"+rank+"_"+num+".dat").c_str());
-  for (int i=min[0]; i<=max[0]; ++i)
-  {
-    for (int j=min[1]; j<=max[1]; ++j)
-      eyFile << i << " " << j << " " << (*pEy)(i,j) << std::endl;
-    eyFile << std::endl;
-  }
-  eyFile.close();
-
-  std::ofstream ezFile(("ez"+rank+"_"+num+".dat").c_str());
-  for (int i=min[0]; i<=max[0]; ++i)
-  {
-    for (int j=min[1]; j<=max[1]; ++j)
-      ezFile << i << " " << j << " " << (*pEz)(i,j) << std::endl;
-    ezFile << std::endl;
-  }
-  ezFile.close();
-
-  std::ofstream bxFile(("bx"+rank+"_"+num+".dat").c_str());
-  for (int i=min[0]; i<=max[0]; ++i)
-  {
-    for (int j=min[1]; j<=max[1]; ++j)
-      bxFile << i << " " << j << " " << (*pBx)(i,j) << std::endl;
-    bxFile << std::endl;
-  }
-  bxFile.close();
-
-  std::ofstream byFile(("by"+rank+"_"+num+".dat").c_str());
-  for (int i=min[0]; i<=max[0]; ++i)
-  {
-    for (int j=min[1]; j<=max[1]; ++j)
-      byFile << i << " " << j << " " << (*pBy)(i,j) << std::endl;
-    byFile << std::endl;
-  }
-  byFile.close();
-
-  std::ofstream bzFile(("bz"+rank+"_"+num+".dat").c_str());
-  for (int i=min[0]; i<=max[0]; ++i)
-  {
-    for (int j=min[1]; j<=max[1]; ++j)
-      bzFile << i << " " << j << " " << (*pBz)(i,j) << std::endl;
-    bzFile << std::endl;
-  }
-  bzFile.close();
 }
 
 

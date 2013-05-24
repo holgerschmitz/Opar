@@ -93,6 +93,14 @@ class Globals : public Singleton<Globals>
     void setup(VariableStorage &vars);
     void initGlobalParameters(BlockParameters &blockPars);
     void initCommonParameters(BlockParameters &blockPars);
+
+    /**
+     * Initializes global parameters.
+     *
+     * This method is called during the pre-init phase from the Common block.
+     * This means all of Globals parameters can be used during the init phase
+     * but should not be used during the pre-init phase.
+     */
     void init();
 
     double getEndTime() const { return endTime; }

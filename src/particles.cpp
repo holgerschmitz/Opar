@@ -94,3 +94,11 @@ ParticleStorage::iterator ParticleStorage::removeParticle(const iterator &it_)
   }
   return it;
 }
+
+long ParticleStorage::getCount() const
+{
+  long count = 0;
+  for (BlockConstIterator b = blocks.begin(); b!=blocks.end(); ++b)
+    count += b->count;
+  return count;
+}

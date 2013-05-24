@@ -30,6 +30,7 @@
 #include "common.hpp"
 #include "fields.hpp"
 #include "globals.hpp"
+#include "particle_diagnostic.hpp"
 #include "species.hpp"
 
 #include <schnek/parser.hpp>
@@ -99,18 +100,18 @@ void initBlockLayout(BlockClasses &blocks)
 
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   blocks.addBlockClass("opar");
-  blocks("opar").addChildren("Common")("Fields")("Species")("FieldDiagnostic");
+  blocks("opar").addChildren("Common")("Fields")
+      ("Species")("FieldDiagnostic")("ParticleDiagnostic");
+
   blocks("opar").setBlockClass<OPar>();
-
   blocks("Common").setBlockClass<CommonBlock>();
-
-  blocks("Fields").addChildren("FieldBC")("FieldInit");
   blocks("Fields").setBlockClass<Fields>();
-
-  blocks("Species").addChildren("SpeciesBC")("SpeciesInit");
-
+  blocks("Species").setBlockClass<Species>();
   blocks("FieldDiagnostic").setBlockClass<FieldDiagnostic>();
+  blocks("ParticleDiagnostic").setBlockClass<ParticleDiagnostic>();
 
+  //blocks("Fields").addChildren("FieldBC")("FieldInit");
+  //blocks("Species").addChildren("SpeciesBC")("SpeciesInit");
   //blocks.addBlockClass("Collection").addChildren("Values")("Constants");
 }
 
@@ -169,11 +170,17 @@ int main(int argc, char **argv)
   {
     opar.initAll();
   }
-  catch (VariableNotInitialisedException e)
+  catch (VariableNotInitialisedException &e)
   {
     std::cerr << "Variable was not initialised: " << e.getVarName() << std::endl;
     exit(-1);
   }
+  catch (std::string &err)
+  {
+    std::cerr << "FATAL ERROR: " << err << std::endl;
+    exit(-1);
+  }
+
   opar.execute();
 
 #ifdef HAVE_MPI

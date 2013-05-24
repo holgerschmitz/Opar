@@ -50,7 +50,7 @@ AC_PROG_MAKE_SET
 
 # Checks for libraries.
 
-AX_BOOST_BASE([1.48.0],,[AC_MSG_ERROR([Schnek needs Boost version 1.48.0 to compile!])])
+AX_BOOST_BASE([1.48.0],,[AC_MSG_ERROR([OPar needs Boost version 1.48.0 to compile!])])
 
 # LDFLAGS="$LDFLAGS -lschnek"
 
@@ -76,7 +76,7 @@ if test x"$with_mpi" != xno; then
 #    CXXFLAGS="$CXXFLAGS_save $MPI_CXXFLAGS"
 #    LDFLAGS="$LDFLAGS_save $MPI_LDFLAGS"
      CXX="mpic++"
-    AC_DEFINE([HAVE_MPI],[1],[Define this macro if Schnek is compiled with MPI support])
+    AC_DEFINE([HAVE_MPI],[1],[Define this macro if OPar is compiled with MPI support])
   ],[
     if test x"$with_mpi" = xyes; then
       AC_MSG_ERROR([MPI support requested but no MPI library found!])

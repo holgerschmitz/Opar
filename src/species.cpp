@@ -47,6 +47,8 @@ ipow(double x, int y)
   return result;
 }
 
+std::map<std::string, Species*> Species::allSpecies;
+
 Particle &Species::addParticle()
 {
   return particles.addParticle();
@@ -60,6 +62,8 @@ void Species::removeParticle(const ParticleStorage::iterator &p)
 void Species::initParameters(BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(3)
+
+  blockPars.addParameter("name", &name);
 
   blockPars.addParameter("charge", &charge);
   blockPars.addParameter("mass", &mass);
@@ -85,6 +89,19 @@ void Species::registerData()
   addData("Jz_species", pJz);
 }
 
+void Species::preInit()
+{
+  allSpecies[name] = this;
+}
+
+Species* Species::getSpecies(std::string name)
+{
+  if (allSpecies.count(name)>0)
+    return allSpecies[name];
+
+  throw std::string("Species "+name+" could not be found!");
+}
+
 void Species::init()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
@@ -95,11 +112,11 @@ void Species::init()
   SRange grange = Globals::instance().getDomainRange();
 
   pJx = pDataField(
-      new DataField(low, high, grange, SStagger(true, false), 2));
+      new DataField(low, high, grange, exStaggerYee, 2));
   pJy = pDataField(
-      new DataField(low, high, grange, SStagger(false, true), 2));
+      new DataField(low, high, grange, eyStaggerYee, 2));
   pJz = pDataField(
-      new DataField(low, high, grange, SStagger(false, false), 2));
+      new DataField(low, high, grange, ezStaggerYee, 2));
 
   Currents::instance().addCurrent(pJx, pJy, pJz);
 
@@ -223,7 +240,7 @@ void Species::pushParticles(double dt)
     double gamma = sqrt(
         p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[1] * p.u[1] + 1.0);
 
-    p.x = p.x + SVector(p.u[0], p.u[1]) * (0.5 * dt / gamma);
+    p.x = p.x + p.u.project<dimension>() * (0.5 * dt / gamma);
 
     FieldIndex cell1, cell2, dcell;
     SVector cell_frac;
@@ -276,7 +293,7 @@ void Species::pushParticles(double dt)
 
     gamma = sqrt(p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[1] * p.u[1] + 1.0);
 
-    SVector delta = SVector(p.u[0], p.u[1]) * (0.5 * dt / gamma);
+    SVector delta = p.u.project<dimension>() * (0.5 * dt / gamma);
 
     p.x = p.x + delta;
     cell_pos = p.x;
@@ -308,7 +325,7 @@ void Species::pushParticles(double dt)
     const double vz = p.u[2] / gamma;
     const double fjx = idt * facd * weight;
     const double fjy = idx[0] * facd * weight * vy;
-    const double fjy = idx[0] * facd * weight * vz;
+    const double fjz = idx[0] * facd * weight * vz;
 #endif
 
 #ifdef TWO_DIMENSIONAL
@@ -331,18 +348,21 @@ void Species::pushParticles(double dt)
       //
       // The weighting coefficients have been double checked and should be OK
 #ifdef ONE_DIMENSIONAL
+      int i = l_ind[0];
       const double sx = gx[l_ind[0]][0];
       const double rx = hx[l_ind[0]][0];
 
       const double wx = (rx-sx);
       const double wy = half * (sx+rx);
 
-      jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
+      jxHelper[l_ind] = jxHelper(i - 1) - fjx * wx;
       jyHelper[l_ind] = fjy * wy;
       jzHelper[l_ind] = fjz * wy;
 #endif
 
 #ifdef TWO_DIMENSIONAL
+      int i = l_ind[0];
+      int j = l_ind[1];
       const double sx = gx[l_ind[0]][0];
       const double sy = gx[l_ind[1]][1];
 
@@ -353,12 +373,15 @@ void Species::pushParticles(double dt)
       const double wy = half * (ry-sy) * (sx+rx);
       const double wz = sixth * (sx * (2*sy+ry) + rx * (sy+2*ry));
 
-      jxHelper[l_ind] = jxHelper(i - 1, j, k) - fjx * wx;
-      jyHelper[l_ind] = jyHelper(i, j - 1, k) - fjy * wy;
+      jxHelper[l_ind] = jxHelper(i - 1, j) - fjx * wx;
+      jyHelper[l_ind] = jyHelper(i, j - 1) - fjy * wy;
       jzHelper[l_ind] = fjz * wz;
 #endif
 
 #ifdef THREE_DIMENSIONAL
+      int i = l_ind[0];
+      int j = l_ind[1];
+      int k = l_ind[2];
       const double sx = gx[l_ind[0]][0];
       const double sy = gx[l_ind[1]][1];
       const double sz = gx[l_ind[2]][2];

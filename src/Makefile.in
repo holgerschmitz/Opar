@@ -89,7 +89,8 @@ PROGRAMS = $(bin_PROGRAMS)
 am_opar_OBJECTS = common.$(OBJEXT) currents.$(OBJEXT) fields.$(OBJEXT) \
 	globals.$(OBJEXT) opar.$(OBJEXT) particles.$(OBJEXT) \
 	particle_boundary.$(OBJEXT) particle_exchange.$(OBJEXT) \
-	random.$(OBJEXT) species.$(OBJEXT) util.$(OBJEXT)
+	particle_diagnostic.$(OBJEXT) random.$(OBJEXT) \
+	species.$(OBJEXT) util.$(OBJEXT)
 opar_OBJECTS = $(am_opar_OBJECTS)
 am__DEPENDENCIES_1 =
 opar_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -234,6 +235,8 @@ opar_SOURCES = \
   particle_boundary.hpp    \
   particle_exchange.cpp    \
   particle_exchange.hpp    \
+  particle_diagnostic.cpp  \
+  particle_diagnostic.hpp  \
   random.cpp               \
   random.hpp               \
   species.cpp              \
@@ -350,6 +353,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/globals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/particle_boundary.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/particle_diagnostic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/particle_exchange.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/particles.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/random.Po@am__quote@

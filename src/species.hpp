@@ -37,6 +37,7 @@
 class Species : public Block
 {
   private:
+    std::string name;
     ParticleStorage particles;
 
     pDataField pJx;
@@ -79,9 +80,12 @@ class Species : public Block
 
     void initParticles();
 
+    static std::map<std::string, Species*> allSpecies;
+
   protected:
     void initParameters(BlockParameters &blockPars);
     void registerData();
+    void preInit();
     void init();
     // void postInit();
   public:
@@ -91,6 +95,9 @@ class Species : public Block
 
     ParticleBoundary &getBoundaryLo(int dim) { return *(boundariesLo[dim]); }
     ParticleBoundary &getBoundaryHi(int dim) { return *(boundariesHi[dim]); }
+
+    static Species* getSpecies(std::string name);
+    ParticleStorage& getStorage() { return particles; }
 
 };
 

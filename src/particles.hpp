@@ -110,6 +110,7 @@ class ParticleStorage
 
     typedef std::list<DataBlock> BlockList;
     typedef BlockList::iterator BlockIterator;
+    typedef BlockList::const_iterator BlockConstIterator;
     BlockList blocks;
     BlockIterator freeBlock;
   public:
@@ -187,6 +188,11 @@ class ParticleStorage
         {
           return blockIter->data[pos];
         }
+
+        Particle* operator->()
+        {
+          return &(blockIter->data[pos]);
+        }
     };
 
     iterator begin()
@@ -206,6 +212,8 @@ class ParticleStorage
      * This is in line with STL behaviour
      */
     iterator removeParticle(const iterator&);
+
+    long getCount() const;
 };
 
 #endif /* PARTICLES_HPP_ */

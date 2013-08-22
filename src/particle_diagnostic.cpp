@@ -51,12 +51,14 @@ void ParticleDiagnostic::write()
   totalCount = localCount;
   localStart = 0;
 #endif
-  data->resize(IndexType(localStart), IndexType(localStart+localCount));
+  data->resize(IndexType(localStart), IndexType(localStart+localCount-1));
   container.grid = &(*data);
   container.global_min = IndexType(0);
   container.global_max = IndexType(totalCount-1);
 
-  std::string coordNames("xyz");
+  if (totalCount==0) return;
+
+  std::string coordNames[] = {"x","y","z"};
   ParticleStorage particles = species->getStorage();
 
   for (int d=0; d<dimension; ++d)
@@ -66,7 +68,7 @@ void ParticleDiagnostic::write()
     {
       (*data)(pos++) = it->x[d];
     }
-    output.setBlockName(""+coordNames[d]);
+    output.setBlockName(coordNames[d]);
     output.writeGrid(container);
   }
 

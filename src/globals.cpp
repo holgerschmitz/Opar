@@ -62,7 +62,7 @@ void Globals::setup(VariableStorage &vars)
 void Globals::init()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-  for (int i=0; i<dimension; ++i) globalGridSize[i] += 3;
+  //for (int i=0; i<dimension; ++i) globalGridSize[i] += 3;
 #ifdef HAVE_MPI
   subdivision = pSubdivision(new MPICartSubdivision<DataField>());
 #else
@@ -74,7 +74,7 @@ void Globals::init()
 
   for (int i=0; i<dimension; ++i)
   {
-    dx[i] = (domainMax[i]-domainMin[i]) / ((real)globalGridSize[i] - 3.0); // account for ghost cells
+    dx[i] = (domainMax[i]-domainMin[i]) / (real)globalGridSize[i]; // account for ghost cells
     localDomainMin[i] = domainMin[i] + localGridMin[i]*dx[i];
     localDomainMax[i] = domainMin[i] + (localGridMax[i] - 3.0)*dx[i];
 

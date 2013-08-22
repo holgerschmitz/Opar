@@ -70,7 +70,7 @@ class TriangularWeighting
       return 1.0;
     }
 
-    static void toCellIndex(const SVector pos, SIntVector cell, SVector cell_frac)
+    static void toCellIndex(const SVector pos, SIntVector &cell, SVector &cell_frac)
     {
       for (int d = 0; d < dimension; ++d)
       {
@@ -79,8 +79,8 @@ class TriangularWeighting
       }
     }
 
-    static void toCellIndexStagger(const SVector pos, SIntVector cell,
-        SVector cell_frac)
+    static void toCellIndexStagger(const SVector pos, SIntVector &cell,
+        SVector &cell_frac)
     {
       for (int d = 0; d < dimension; ++d)
       {
@@ -90,7 +90,7 @@ class TriangularWeighting
     }
 
     static void getShape(const SIntVector cell, const SVector cell_frac,
-        const WeightingCoefficients gx)
+        WeightingCoefficients &gx)
     {
       for (int d = 0; d < dimension; ++d)
       {
@@ -102,18 +102,18 @@ class TriangularWeighting
       }
     }
 
-    static void getShape(const SIntVector cell, const SVector cell_frac,
-        const SIntVector shift, const WeightingCoefficients gx)
-    {
-      for (int d = 0; d < dimension; ++d)
-      {
-        double cf = cell_frac[d];
-        double cf2 = cf * cf;
-        gx(shift[d] - 1)[d] = 0.25 + cf2 + cf;
-        gx( shift[d])[d] = 1.5 - 2.0 * cf2;
-        gx(shift[d] + 1)[d] = 0.25 + cf2 - cf;
-      }
-    }
+//    static void getShape(const SIntVector cell, const SVector cell_frac,
+//        const SIntVector shift, WeightingCoefficients &gx)
+//    {
+//      for (int d = 0; d < dimension; ++d)
+//      {
+//        double cf = cell_frac[d];
+//        double cf2 = cf * cf;
+//        gx(shift[d] - 1)[d] = 0.25 + cf2 + cf;
+//        gx(shift[d]    )[d] = 1.5 - 2.0 * cf2;
+//        gx(shift[d] + 1)[d] = 0.25 + cf2 - cf;
+//      }
+//    }
 
     // TODO check speed of loops versus unrolled
     static PVector interpolateE(const WeightingCoefficients &wc,

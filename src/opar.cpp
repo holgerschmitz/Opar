@@ -74,6 +74,9 @@ void OPar::execute()
     // Advance electromagnetic fields
     BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
 
+    // Advance particle species
+    BOOST_FOREACH(Species *s, species) s->pushParticles(dt);
+
     // run diagnostics
     DiagnosticManager::instance().execute();
 
@@ -121,17 +124,8 @@ void initFunctions(FunctionRegistry &freg)
   registerCMath(freg);
 }
 
-void test_species()
-{
-  Species sp;
-
-}
-
 int main(int argc, char **argv)
 {
-  test_species();
-  exit(0);
-
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
 #ifdef HAVE_MPI
@@ -177,7 +171,7 @@ int main(int argc, char **argv)
   }
   catch (std::string &err)
   {
-    std::cerr << "FATAL ERROR: " << err << std::endl;
+    std::cerr << "FATAL ERROR: >>" << err << "<<" << std::endl;
     exit(-1);
   }
 

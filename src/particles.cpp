@@ -25,11 +25,16 @@
 
 #include "particles.hpp"
 
+#include <schnek/util/logger.hpp>
+
 #include <algorithm>
+
+#undef LOGLEVEL
+#define LOGLEVEL 1
 
 static const long STORAGE_BLOCK_SIZE = 1000000;
 
-ParticleStorage::DataBlock::DataBlock()
+ParticleStorage::DataBlock::DataBlock() : count(0)
 {
   data = new Particle[STORAGE_BLOCK_SIZE];
 }
@@ -43,6 +48,8 @@ void ParticleStorage::DataBlock::free()
 
 Particle &ParticleStorage::DataBlock::addParticle()
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(4)
+  SCHNEK_TRACE_LOG(4, "count "<<count)
   return data[count++];
 }
 

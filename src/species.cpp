@@ -34,9 +34,15 @@
 #include "util.hpp"
 
 #include <schnek/grid.hpp>
+#include <schnek/util/logger.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/functional/factory.hpp>
+
+#undef LOGLEVEL
+#define LOGLEVEL 0
+
+int debug_particle_number = 9702;
 
 inline double
 ipow(double x, int y)
@@ -118,6 +124,10 @@ void Species::init()
   pJz = pDataField(
       new DataField(low, high, grange, ezStaggerYee, 2));
 
+  (*pJx) = 0.0;
+  (*pJy) = 0.0;
+  (*pJz) = 0.0;
+
   Currents::instance().addCurrent(pJx, pJy, pJz);
 
   this->retrieveData("Ex", pEx);
@@ -148,10 +158,13 @@ void Species::init()
     boundariesHi[i] = pParticleBoundary(particleBCFactories[bcNamesHi[i]](i, 1));
   }
   particleExchange = pParticleExchange(new ParticleExchange(*this));
+
+  this->initParticles();
 }
 
 void Species::initParticles()
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
   SIntVector lo = Globals::instance().getLocalGridMin();
   SIntVector hi = Globals::instance().getLocalGridMax();
 
@@ -169,18 +182,28 @@ void Species::initParticles()
 
   // TODO this loop should be somewhere in schnek
   for (int i = 0; i < dimension; ++i)
+  {
     weight_factor *= dx[i];
+    --hi[i];
+  }
 
   FieldIndex pos;
-
+  int debug_count = 0;
+  SCHNEK_TRACE_LOG(3,"ppc = " << ppc)
+  SCHNEK_TRACE_LOG(3,"dx[0] = " << dx[0])
   // TODO check that we are only initialising in the interior of the domain
   SPACE_LOOP(pos,lo,hi)
   {
     SVector r;
     for (int n = 0; n < ppc; ++n)
     {
+      ++debug_count;
       for (int i = 0; i < dimension; ++i)
+      {
         coords[i] = (pos[i] + Random::uniform()) * dx[i];
+        SCHNEK_TRACE_LOG(3,debug_count <<": coords[" << i << "] = " << coords[i])
+        SCHNEK_TRACE_LOG(3,"pos[" << i << "] = " << pos[i])
+      }
 
       Particle &p = particles.addParticle();
 
@@ -216,7 +239,18 @@ void Species::pushParticles(double dt)
 
   // Unvarying multiplication factor
   const SVector dx = Globals::instance().getDx();
-  const SVector idx = 1.0 / dx;
+
+#ifdef ONE_DIMENSIONAL
+  const SVector idx(1.0/dx[0]);
+#endif
+
+#ifdef TWO_DIMENSIONAL
+  const SVector idx(1.0/dx[0], 1.0/dx[1]);
+#endif
+
+#ifdef THREE_DIMENSIONAL
+  const SVector idx(1.0/dx[0], 1.0/dx[1], 1.0/dx[2]);
+#endif
 
   const double idt = 1.0 / dt;
   const double dto2 = dt / 2.0;
@@ -231,16 +265,25 @@ void Species::pushParticles(double dt)
   const double cmratio = charge * dtfac * ipart_mc;
   const double ccmratio = clight * cmratio;
 
+  int debug_count = 0;
   for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
   {
+    ++debug_count;
     Particle &p_old = *it;
     Particle p(p_old);
+
+    if (debug_count==debug_particle_number)
+    {
+      std::cout << "Debug Particle " << debug_particle_number << std::endl;
+    }
+
     double weight = p.weight;
 
     double gamma = sqrt(
         p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[1] * p.u[1] + 1.0);
 
-    p.x = p.x + p.u.project<dimension>() * (0.5 * dt / gamma);
+    for (int i=0; i<dimension; ++i)
+      p.x[i] = p.x[i] + p.u[i] * (0.5 * dt / gamma);
 
     FieldIndex cell1, cell2, dcell;
     SVector cell_frac;
@@ -256,12 +299,17 @@ void Species::pushParticles(double dt)
     PVector E = Weighting::interpolateE(gx, hx, cell1, cell2, *pEx, *pEy, *pEz);
     PVector B = Weighting::interpolateB(gx, hx, cell1, cell2, *pBx, *pBy, *pBz);
 
-    PVector um = p.u + cmratio * E;
+    PVector um;
+    for (int i=0; i<3; ++i)
+      um[i] = p.u[i] + cmratio * E[i];
+
     gamma = sqrt(um[0] * um[0] + um[1] * um[1] + um[1] * um[1] + 1.0);
 
-    PVector tau = B * (0.5 * dt / gamma);
+    PVector tau;
+    for (int i=0; i<3; ++i) tau[i] = B[i] * (0.5 * dt / gamma);
+
     PVector tau2 = tau;
-    for (int i=0; i<dimension; ++i) tau2[i] *= tau[i];
+    for (int i=0; i<3; ++i) tau2[i] *= tau[i];
     double tau_ifac = 1.0 / (tau2[0] + tau2[1] + tau2[2] + 1.0);
 
     // This is the EPOCH rotation code translated
@@ -289,32 +337,44 @@ void Species::pushParticles(double dt)
     //        ((1.0 - tau2[0] - tau2[1]) * um[2] + (tau[0] * tau[2] + tau[1]) * um[0]
     //            + (tau[1] * tau[2] - tau[0]) * um[1]) * tau_ifac);
 
-    p.u = ur + cmratio * E;
+    for (int i=0; i<3; ++i) p.u[i] = ur[i] + cmratio * E[i];
 
     gamma = sqrt(p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[1] * p.u[1] + 1.0);
 
-    SVector delta = p.u.project<dimension>() * (0.5 * dt / gamma);
+    SVector delta;
 
-    p.x = p.x + delta;
+    for (int i=0; i<3; ++i) delta[i] = p.u[i] * (0.5 * dt / gamma);
+    for (int i=0; i<dimension; ++i) p.x[i] = p.x[i] + delta[i];
+
     cell_pos = p.x;
     for (int i=0; i<dimension; ++i) cell_pos[i] *= idx[i];
 
     // Calculate the current using the charge conserving algorithm by Esirkepov
     // T.Z. Esirkepov, Comp. Phys. Comm., vol 135, p.144 (2001)
 
-    SVector xplus = p.x + delta;
+    // SVector xplus = p.x + delta;
     Weighting::toCellIndex(cell_pos, cell2, cell_frac);
 
-    dcell = cell2 - cell1;
-    Weighting::getShape(cell2, cell_frac, dcell, hx);
+    for (int i=0; i<dimension; ++i)
+      dcell[i] = cell2[i] - cell1[i];
+
+    Weighting::getShape(cell2, cell_frac, hx);
 
     jxHelper = 0.0;
     jyHelper = 0.0;
     jzHelper = 0.0;
     SDomain d = Weighting::getSDomain();
 
-    const SIntVector lo = d.getLo() + (dcell - SIntVector::Unity()) / 2;
-    const SIntVector hi = d.getHi() + (dcell + SIntVector::Unity()) / 2;
+    SIntVector lo, dlo = d.getLo();
+    SIntVector hi, dhi = d.getHi();
+    for (int i=0; i<dimension; ++i)
+    {
+      //lo[i] = d.getLo()[i] + (dcell[i] - 1) / 2;
+      //hi[i] = d.getHi()[i] + (dcell[i] + 1) / 2;
+
+      lo[i] = d.getLo()[i] + std::min(0,dcell[i]);
+      hi[i] = d.getHi()[i] + std::max(0,dcell[i]);
+    }
 
     const double sixth = 1.0 / 6.0;
     const double half = 1.0 / 2.0;
@@ -349,8 +409,9 @@ void Species::pushParticles(double dt)
       // The weighting coefficients have been double checked and should be OK
 #ifdef ONE_DIMENSIONAL
       int i = l_ind[0];
-      const double sx = gx[l_ind[0]][0];
-      const double rx = hx[l_ind[0]][0];
+      int ih = l_ind[0] - dcell[0];
+      const double sx = ((i<dlo[0])||(i>dhi[0]))?0.0:gx[i][0];
+      const double rx = ((ih<dlo[0])||(ih>dhi[0]))?0.0:hx[ih][0];
 
       const double wx = (rx-sx);
       const double wy = half * (sx+rx);
@@ -363,11 +424,13 @@ void Species::pushParticles(double dt)
 #ifdef TWO_DIMENSIONAL
       int i = l_ind[0];
       int j = l_ind[1];
-      const double sx = gx[l_ind[0]][0];
-      const double sy = gx[l_ind[1]][1];
+      int ih = l_ind[0] - dcell[0];
+      int jh = l_ind[1] - dcell[1];
+      const double sx = ((i<dlo[0])||(i>dhi[0]))?0.0:gx[i][0];
+      const double sy = ((j<dlo[1])||(j>dhi[1]))?0.0:gx[j][1];
 
-      const double rx = hx[l_ind[0]][0];
-      const double ry = hx[l_ind[1]][1];
+      const double rx = ((ih<dlo[0])||(ih>dhi[0]))?0.0:hx[ih][0];
+      const double ry = ((jh<dlo[1])||(jh>dhi[1]))?0.0:hx[jh][1];
 
       const double wx = half * (rx-sx) * (sy+ry);
       const double wy = half * (ry-sy) * (sx+rx);
@@ -382,13 +445,16 @@ void Species::pushParticles(double dt)
       int i = l_ind[0];
       int j = l_ind[1];
       int k = l_ind[2];
-      const double sx = gx[l_ind[0]][0];
-      const double sy = gx[l_ind[1]][1];
-      const double sz = gx[l_ind[2]][2];
+      int ih = l_ind[0] - dcell[0];
+      int jh = l_ind[1] - dcell[1];
+      int kh = l_ind[2] - dcell[2];
+      const double sx = ((i<dlo[0])||(i>dhi[0]))?0.0:gx[i][0];
+      const double sy = ((j<dlo[1])||(j>dhi[1]))?0.0:gx[j][1];
+      const double sz = ((k<dlo[2])||(k>dhi[2]))?0.0:gx[k][2];
 
-      const double rx = hx[l_ind[0]][0];
-      const double ry = hx[l_ind[1]][1];
-      const double rz = hx[l_ind[2]][2];
+      const double rx = ((ih<dlo[0])||(ih>dhi[0])?0.0:hx[ih][0];
+      const double ry = ((jh<dlo[1])||(jh>dhi[1])?0.0:hx[jh][1];
+      const double rz = ((kh<dlo[2])||(kh>dhi[2])?0.0:hx[kh][2];
 
       const double wx = sixth * (rx - sx)
           * (sy * (2 * sz + rz) + ry * (sz + 2 * rz));
@@ -402,7 +468,9 @@ void Species::pushParticles(double dt)
       jzHelper[l_ind] = jzHelper(i, j, k - 1) - fjz * wz;
 #endif
 
-      FieldIndex g_ind = cell1 + l_ind;
+      FieldIndex g_ind;
+      for (int i=0; i<dimension; ++i)
+        g_ind[i] = cell1[i] + l_ind[i];
 
       (*pJx)[g_ind] += jxHelper[l_ind];
       (*pJy)[g_ind] += jyHelper[l_ind];

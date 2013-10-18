@@ -40,13 +40,15 @@ class ParticleBoundary
     int dim;
     /// The direction either -1 for the lower bound or +1 for the higher bound
     int direction;
+    /// The limiting value of the coordinate
+    double limit;
   public:
     /** Constructor of the boundary class
      *
      * @param dim_ The dimension in which the boundary condition is applied
      * @param direction_ The direction either -1 for the lower bound or +1 for the higher bound
      */
-    ParticleBoundary(int dim_, int direction_) : dim(dim_), direction(direction_) {}
+    ParticleBoundary(int dim_, int direction_);
 
     /// Virtual destructor needed because of virtual methods.
     virtual ~ParticleBoundary() {}
@@ -65,13 +67,15 @@ typedef boost::shared_ptr<ParticleBoundary> pParticleBoundary;
  */
 class PeriodicParticleBoundary : public ParticleBoundary
 {
+  private:
+    double shift;
   public:
     /** Constructor of the boundary class
      *
      * @param dim_ The dimension in which the boundary condition is applied
      * @param direction_ The direction either -1 for the lower bound or +1 for the higher bound
      */
-    PeriodicParticleBoundary(int dim_, int direction_) : ParticleBoundary(dim_, direction_) {}
+    PeriodicParticleBoundary(int dim_, int direction_);
 
     /** Apply periodic boundary conditions to particles.
      *
@@ -80,7 +84,7 @@ class PeriodicParticleBoundary : public ParticleBoundary
      *
      * @param particles A list of iterators over particles. The list is not modified.
      */
-    void apply(ParticleExchange::PartList &particles) {}
+    void apply(ParticleExchange::PartList &particles);
 };
 
 
@@ -116,15 +120,13 @@ class OpenParticleBoundary : public ParticleBoundary
  */
 class ReflectingParticleBoundary : public ParticleBoundary
 {
-  private:
-    double limit;
   public:
     /** Constructor of the boundary class
      *
      * @param dim_ The dimension in which the boundary condition is applied
      * @param direction_ The direction either -1 for the lower bound or +1 for the higher bound
      */
-    ReflectingParticleBoundary(int dim_, int direction_);
+    ReflectingParticleBoundary(int dim_, int direction_) : ParticleBoundary(dim_, direction_) {}
 
     /** Apply reflecting boundary conditions to particles.
      *

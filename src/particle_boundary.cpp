@@ -26,25 +26,55 @@
 
 #include "particle_boundary.hpp"
 
-ReflectingParticleBoundary::ReflectingParticleBoundary(int dim_, int direction_)
-  : ParticleBoundary(dim_, direction_)
+ParticleBoundary::ParticleBoundary(int dim_, int direction_) :
+    dim(dim_), direction(direction_)
 {
-  if (direction>0)
+  if (direction > 0)
     limit = (Globals::instance().getLocalDomainMax())[dim];
   else
     limit = (Globals::instance().getLocalDomainMin())[dim];
 }
 
+PeriodicParticleBoundary::PeriodicParticleBoundary(int dim_, int direction_)
+  : ParticleBoundary(dim_, direction_)
+{
+  shift = (Globals::instance().getLocalDomainMax())[dim] - (Globals::instance().getLocalDomainMin())[dim];
+}
+
+void PeriodicParticleBoundary::apply(ParticleExchange::PartList &particles)
+{
+  // wrapping the coordinates. We do not remove the particle from the list
+  // because it still needs to be transferred to the right node.
+
+  if (direction > 0)
+  {
+    for (ParticleExchange::PartList::iterator it = particles.begin();
+        it != particles.end(); ++it)
+    {
+      (*it)->x[dim] -= shift;
+    }
+  }
+  else
+  {
+    for (ParticleExchange::PartList::iterator it = particles.begin();
+        it != particles.end(); ++it)
+    {
+      (*it)->x[dim] += shift;
+    }
+  }
+
+}
+
 void ReflectingParticleBoundary::apply(ParticleExchange::PartList &particles)
 {
   while (!particles.empty())
-   {
-     Particle &p = *(particles.front());
+  {
+    Particle &p = *(particles.front());
 
-     p.x[dim] = 2.0*limit - p.x[dim];
-     p.u[dim] = -p.u[dim];
+    p.x[dim] = 2.0 * limit - p.x[dim];
+    p.u[dim] = -p.u[dim];
 
-     particles.pop_front();
-   }
+    particles.pop_front();
+  }
 }
 

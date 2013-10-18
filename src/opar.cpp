@@ -71,6 +71,7 @@ void OPar::execute()
 
   do
   {
+    std::cout << "Time = " << Globals::instance().getT() << std::endl;
     // Advance electromagnetic fields
     BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
 

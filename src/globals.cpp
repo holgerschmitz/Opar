@@ -76,7 +76,7 @@ void Globals::init()
   {
     dx[i] = (domainMax[i]-domainMin[i]) / (real)globalGridSize[i]; // account for ghost cells
     localDomainMin[i] = domainMin[i] + localGridMin[i]*dx[i];
-    localDomainMax[i] = domainMin[i] + (localGridMax[i] - 3.0)*dx[i];
+    localDomainMax[i] = domainMin[i] + localGridMax[i]*dx[i];
 
 //    std::cout << "Extent: "<< subdivision->getUniqueId() << " " << i << " " << localDomainMin[i] << " " << localDomainMax[i] << std::endl;
   }

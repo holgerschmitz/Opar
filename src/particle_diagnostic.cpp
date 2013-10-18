@@ -55,6 +55,8 @@ void ParticleDiagnostic::write()
   container.grid = &(*data);
   container.global_min = IndexType(0);
   container.global_max = IndexType(totalCount-1);
+  container.local_min = IndexType(localStart);
+  container.local_max = IndexType(localStart + localCount -1);
 
   if (totalCount==0) return;
 

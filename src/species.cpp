@@ -265,22 +265,25 @@ void Species::pushParticles(double dt)
   const double cmratio = charge * dtfac * ipart_mc;
   const double ccmratio = clight * cmratio;
 
-  int debug_count = 0;
+//  int debug_count = 0;
   for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
   {
-    ++debug_count;
+//    ++debug_count;
     Particle &p_old = *it;
+//    Particle p_debug_old(p_old);
     Particle p(p_old);
 
-    if (debug_count==debug_particle_number)
-    {
-      std::cout << "Debug Particle " << debug_particle_number << std::endl;
-    }
+//    if (debug_count==debug_particle_number)
+//    {
+//      std::cerr << "Debug Particle " << debug_particle_number << std::endl;
+//      std::cerr << "dt " << dt << " time " << Globals::instance().getT() << std::endl;
+//      std::cerr << "Before " << p.x[0] << " (" <<p.u[0]<<", "<<p.u[1]<<", "<<p.u[2]<<")"<< std::endl;
+//    }
 
     double weight = p.weight;
 
     double gamma = sqrt(
-        p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[1] * p.u[1] + 1.0);
+        p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[2] * p.u[2] + 1.0);
 
     for (int i=0; i<dimension; ++i)
       p.x[i] = p.x[i] + p.u[i] * (0.5 * dt / gamma);
@@ -345,6 +348,13 @@ void Species::pushParticles(double dt)
 
     for (int i=0; i<3; ++i) delta[i] = p.u[i] * (0.5 * dt / gamma);
     for (int i=0; i<dimension; ++i) p.x[i] = p.x[i] + delta[i];
+
+    p_old = p;
+
+//    if (debug_count==debug_particle_number)
+//    {
+//      std::cerr << "After " << p.x[0] << " (" <<p.u[0]<<", "<<p.u[1]<<", "<<p.u[2]<<")"<< std::endl;
+//    }
 
     cell_pos = p.x;
     for (int i=0; i<dimension; ++i) cell_pos[i] *= idx[i];

@@ -52,6 +52,7 @@ void ParticleExchange::exchange(ParticleStorage &particles)
       if ((*it).x[d] <  locMin[d]) listSend.push_front(it);
     }
 
+//    std::cerr << "Pushing " << listSend.size() << " particles < " << locMin[0] << std::endl;
     species.getBoundaryLo(d).apply(listSend);
 
     doExchange(particles, d, -1);
@@ -67,6 +68,7 @@ void ParticleExchange::exchange(ParticleStorage &particles)
       if ((*it).x[d] >= locMax[d]) listSend.push_front(it);
     }
 
+//    std::cerr << "Pushing " << listSend.size() << " particles > " << locMax[0] << std::endl;
     species.getBoundaryHi(d).apply(listSend);
 
     doExchange(particles, d, +1);

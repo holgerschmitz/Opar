@@ -1,0 +1,23 @@
+#!/bin/bash
+
+mkdir -p output
+
+for field in Ex Ey Ez Bx By Bz
+do
+  nline=`h5totxt ${field}_0.h5 | wc -l`
+  ntime=1000
+  
+  touch output/${field}.out
+  
+  for ((t=0; t<=9990; t+=10))
+  do 
+    echo ${field}${t}
+    f=${field}_${t}.h5
+    
+    h5totxt $f >> output/${field}.out
+  done
+  
+  echo "h5fromtxt -n ${ntime}x${nline} output/${field}.h5 < output/${field}.out"
+  h5fromtxt -n ${ntime}x${nline} output/${field}.h5 < output/${field}.out
+  rm -f output/${field}.out
+done

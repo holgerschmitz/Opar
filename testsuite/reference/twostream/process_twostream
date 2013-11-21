@@ -1,0 +1,24 @@
+#!/bin/bash
+
+mkdir -p output
+
+for f in phase_*.h5
+do 
+  b=`basename $f .h5`
+  echo $b
+  for d in x ux uy uz
+  do 
+    h5totxt -d $d $f > output/${b}_${d}.out; 
+  done
+  
+  paste output/${b}_x.out output/${b}_ux.out > output/${b}_x_ux.out
+  
+done
+
+for f in [EJ]x*.h5
+do 
+  echo $f; 
+  b=`basename $f .h5`
+  h5totxt $f > output/${b}.out
+  
+done

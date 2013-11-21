@@ -29,10 +29,14 @@
 #include "particles.hpp"
 #include "globals.hpp"
 
+#include <schnek/util/logger.hpp>
+
 #ifdef HAVE_MPI
 #include <mpi.h>
 #endif
 
+#undef LOGLEVEL
+#define LOGLEVEL 0
 
 void ParticleDiagnostic::write()
 {
@@ -57,6 +61,8 @@ void ParticleDiagnostic::write()
   container.global_max = IndexType(totalCount-1);
   container.local_min = IndexType(localStart);
   container.local_max = IndexType(localStart + localCount -1);
+
+  SCHNEK_TRACE_LOG(2,"ParticleDiagnostic::write "<< 0<<" " << totalCount-1<<" "<< localStart<<" "<<localStart + localCount -1)
 
   if (totalCount==0) return;
 

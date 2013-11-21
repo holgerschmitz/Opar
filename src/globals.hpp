@@ -62,6 +62,8 @@ class Globals : public Singleton<Globals>
     // derived quantities
     SIntVector localGridMin;
     SIntVector localGridMax;
+    SIntVector localInnerGridMin;
+    SIntVector localInnerGridMax;
     SVector dx;
 
     /// Global space variable
@@ -117,9 +119,12 @@ class Globals : public Singleton<Globals>
     SRange getLocalDomainRange() const { return  SRange(localDomainMin, localDomainMax); }
 
     const SIntVector &getGlobalGridSize() const { return globalGridSize; }
+    const SIntVector &getGlobalGridMin() const { return globalGridSize; }
 
     const SIntVector &getLocalGridMin() const { return localGridMin; }
     const SIntVector &getLocalGridMax() const { return localGridMax; }
+    const SIntVector &getLocalInnerGridMin() const { return localInnerGridMin; }
+    const SIntVector &getLocalInnerGridMax() const { return localInnerGridMax; }
     const SVector &getDx() const { return dx; }
 
     const pParametersGroup getSpaceVars() const { return spaceVars; }

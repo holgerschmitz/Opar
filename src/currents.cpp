@@ -27,8 +27,13 @@
 #include "currents.hpp"
 
 #include <schnek/grid/domain.hpp>
+#include <schnek/util/logger.hpp>
 
 #include <boost/foreach.hpp>
+
+
+#undef LOGLEVEL
+#define LOGLEVEL 0
 
 void Currents::setGlobalCurrent(pDataField jx, pDataField jy, pDataField jz)
 {
@@ -39,6 +44,7 @@ void Currents::setGlobalCurrent(pDataField jx, pDataField jy, pDataField jz)
 
 void Currents::addCurrent(pDataField jx, pDataField jy, pDataField jz)
 {
+  SCHNEK_TRACE_LOG(4,"Adding current")
   jxl.push_back(jx);
   jyl.push_back(jy);
   jzl.push_back(jz);
@@ -50,10 +56,12 @@ void Currents::updateCurrent(pDataField j, const std::list<pDataField> &jl)
 
   BOOST_FOREACH(pDataField jc, jl)
   {
+    SCHNEK_TRACE_LOG(4,"Summing up current")
     RecDomain<dimension> domain(jc->getLo(), jc->getHi());
     for (RecDomain<dimension>::iterator it = domain.begin(); it != domain.end(); ++it)
     //BOOST_FOREACH(RecDomain<dimension>::LimitType pos, domain)
     {
+      SCHNEK_TRACE_LOG(5,"at "<< it.getPos()[0] << " " << (*jc)[*it])
       (*j)[*it] += (*jc)[*it];
     }
   }

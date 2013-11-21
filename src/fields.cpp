@@ -61,21 +61,21 @@ inline void Fields::fdtdStepD(double dt,
     dt*(
         ((*pBz)(i,j,k) - (*pBz)(i,j-1,k))/kappaEdy
       - ((*pBy)(i,j,k) - (*pBy)(i,j,k-1))/kappaEdz
-      + Jx
+      - Jx
     );
 
   (*pEy)(i,j,k) =
     dt*(
         ((*pBx)(i,j,k) - (*pBx)(i,j,k-1))/kappaEdz
       - ((*pBz)(i,j,k) - (*pBz)(i-1,j,k))/kappaEdx
-      + Jy
+      - Jy
     );
 
   (*pEz)(i,j,k) =
     dt*(
         ((*pBy)(i,j,k) - (*pBy)(i-1,j,k))/kappaEdx
       - ((*pBx)(i,j,k) - (*pBx)(i,j-1,k))/kappaEdy
-      + Jz
+      - Jz
     );
 }
 
@@ -97,21 +97,21 @@ inline void Fields::fdtdStepB(double dt,
     + dt*(
         ((*pEy)(i,j,k+1) - (*pEy)(i,j,k))/kappaHdz
       - ((*pEz)(i,j+1,k) - (*pEz)(i,j,k))/kappaHdy
-     + Jx
+     - Jx
     );
 
   (*pBy)(i,j,k) = (*pBy)(i,j,k)
     + dt*(
         ((*pEz)(i+1,j,k) - (*pEz)(i,j,k))/kappaHdx
       - ((*pEx)(i,j,k+1) - (*pEx)(i,j,k))/kappaHdz
-     + Jy
+     - Jy
     );
 
   (*pBz)(i,j,k) = (*pBz)(i,j,k)
     + dt*(
         ((*pEx)(i,j+1,k) - (*pEx)(i,j,k))/kappaHdy
       - ((*pEy)(i+1,j,k) - (*pEy)(i,j,k))/kappaHdx
-     + Jz
+     - Jz
     );
 }
 
@@ -125,7 +125,6 @@ void Fields::stepD(double dt)
   SVector dx = Globals::instance().getDx();
 
   double jx(0), jy(0), jz(0);
-  Currents::instance().update();
 
   for (int i=low[0]+1; i<high[0]; ++i)
     for (int j=low[1]+1; j<high[1]; ++j)
@@ -219,20 +218,20 @@ inline void Fields::fdtdStepD(double dt,
   (*pEx)(i,j) +=
     dt*(
         ((*pBz)(i,j) - (*pBz)(i,j-1))/kappaEdy
-      + Jx
+      - Jx
     );
 
   (*pEy)(i,j) +=
     dt*(
       - ((*pBz)(i,j) - (*pBz)(i-1,j))/kappaEdx
-      + Jy
+      - Jy
     );
 
   (*pEz)(i,j) +=
     dt*(
         ((*pBy)(i,j) - (*pBy)(i-1,j))/kappaEdx
       - ((*pBx)(i,j) - (*pBx)(i,j-1))/kappaEdy
-      + Jz
+      - Jz
     );
 }
 
@@ -252,13 +251,13 @@ inline void Fields::fdtdStepB(double dt,
   (*pBx)(i,j) +=
     + dt*(
       - ((*pEz)(i,j+1) - (*pEz)(i,j))/kappaHdy
-     + Jx
+     - Jx
     );
 
   (*pBy)(i,j) +=
     + dt*(
         ((*pEz)(i+1,j) - (*pEz)(i,j))/kappaHdx
-     + Jy
+     - Jy
     );
   SCHNEK_TRACE_LOG(6, i << " " << j << " " << (*pBz)(i,j))
 
@@ -266,7 +265,7 @@ inline void Fields::fdtdStepB(double dt,
     + dt*(
         ((*pEx)(i,j+1) - (*pEx)(i,j))/kappaHdy
       - ((*pEy)(i+1,j) - (*pEy)(i,j))/kappaHdx
-     + Jz
+     - Jz
     );
   SCHNEK_TRACE_LOG(6,(*pBz)(i,j))
 
@@ -283,7 +282,6 @@ void Fields::stepD(double dt)
   SVector dx = Globals::instance().getDx();
 
   double jx(0), jy(0), jz(0);
-  Currents::instance().update();
 
   for (int i=low[0]+1; i<high[0]; ++i)
     for (int j=low[1]+1; j<high[1]; ++j)
@@ -372,18 +370,18 @@ inline void Fields::fdtdStepD(double dt,
 //  double kappaEdy = (*pKappaEdy)(j)*dy;
 //  double kappaEdz = (*pKappaEdz)(k)*dz;
 
-  (*pEx)(i) += dt*Jx;
+  (*pEx)(i) -= dt*Jx;
 
   (*pEy)(i) +=
     dt*(
       - ((*pBz)(i) - (*pBz)(i-1))/kappaEdx
-      + Jy
+      - Jy
     );
 
   (*pEz)(i) +=
     dt*(
         ((*pBy)(i) - (*pBy)(i-1))/kappaEdx
-      + Jz
+      - Jz
     );
 }
 
@@ -399,19 +397,19 @@ inline void Fields::fdtdStepB(double dt,
 //  double kappaHdy = (*pKappaHdy)(j)*dy;
 //  double kappaHdz = (*pKappaHdz)(k)*dz;
 
-  (*pBx)(i) += dt*Jx;
+  (*pBx)(i) -= dt*Jx;
 
   (*pBy)(i) +=
     + dt*(
         ((*pEz)(i+1) - (*pEz)(i))/kappaHdx
-     + Jy
+     - Jy
     );
   SCHNEK_TRACE_LOG(6, i << " " << j << " " << (*pBz)(i))
 
   (*pBz)(i) +=
     + dt*(
       - ((*pEy)(i+1) - (*pEy)(i))/kappaHdx
-     + Jz
+     - Jz
     );
   SCHNEK_TRACE_LOG(6,(*pBz)(i))
 
@@ -428,7 +426,6 @@ void Fields::stepD(double dt)
   SVector dx = Globals::instance().getDx();
 
   double jx(0), jy(0), jz(0);
-  Currents::instance().update();
 
   for (int i=low[0]+1; i<high[0]; ++i)
   {
@@ -521,8 +518,10 @@ void Fields::stepScheme(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
+  debug_check_out_of_bounds("Fields A");
   Currents::instance().update();
 
+  debug_check_out_of_bounds("Fields B");
   stepD(dt);
 
 //  BOOST_FOREACH(Current *cur, this->magCurrents)
@@ -531,6 +530,7 @@ void Fields::stepScheme(double dt)
 //  }
 
   stepB(dt);
+  debug_check_out_of_bounds("Fields C");
 }
 
 
@@ -570,8 +570,8 @@ void Fields::init()
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   dynamic_cast<OPar&>(*this->getParent()).addField(this);
 
-  SIntVector low  = Globals::instance().getLocalGridMin();
-  SIntVector high = Globals::instance().getLocalGridMax();
+  SIntVector low  = Globals::instance().getLocalInnerGridMin();
+  SIntVector high = Globals::instance().getLocalInnerGridMax();
   SRange grange = Globals::instance().getLocalDomainRange();
 
   pEx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
@@ -582,9 +582,9 @@ void Fields::init()
   pBy = pDataField(new DataField(low, high, grange, byStaggerYee, 2));
   pBz = pDataField(new DataField(low, high, grange, bzStaggerYee, 2));
 
-  pJx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
-  pJy = pDataField(new DataField(low, high, grange, eyStaggerYee, 2));
-  pJz = pDataField(new DataField(low, high, grange, ezStaggerYee, 2));
+  pJx = pDataField(new DataField(low, high, grange, exStaggerYee, 3));
+  pJy = pDataField(new DataField(low, high, grange, eyStaggerYee, 3));
+  pJz = pDataField(new DataField(low, high, grange, ezStaggerYee, 3));
 
   Currents::instance().setGlobalCurrent(pJx, pJy, pJz);
 //  for (int i=0; i<dimension; ++i)

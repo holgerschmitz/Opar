@@ -28,10 +28,14 @@
 
 #include "config.hpp"
 
+#undef LOGLEVEL
+#define LOGLEVEL 2
 #include <schnek/grid.hpp>
 #include <schnek/variables.hpp>
 
 #include <boost/shared_ptr.hpp>
+#undef LOGLEVEL
+#define LOGLEVEL 0
 
 #ifdef ONE_DIMENSIONAL
 static const int dimension = 1;
@@ -57,6 +61,7 @@ typedef double real;
 #else
 #define ArrayArgCheck schnek::ArrayNoArgCheck
 #define GridArgCheck schnek::GridAssertCheck
+//#define GridArgCheck schnek::GridDebugCheck
 #endif
 
 class TriangularWeighting;
@@ -127,5 +132,7 @@ static const SStagger bxStaggerYee(false);
 static const SStagger byStaggerYee(true );
 static const SStagger bzStaggerYee(true );
 #endif
+
+void debug_check_out_of_bounds(std::string checkpoint);
 
 #endif /* CONFIG_HPP_ */

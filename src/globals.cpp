@@ -23,13 +23,16 @@
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#undef LOGLEVEL
-#define LOGLEVEL 2
 
 #include "globals.hpp"
+#include "random.hpp"
+
 #include <schnek/grid/mpisubdivision.hpp>
 #include <schnek/diagnostic/diagnostic.hpp>
 #include <schnek/util/logger.hpp>
+
+#undef LOGLEVEL
+#define LOGLEVEL 5
 
 void Globals::initCommonParameters(BlockParameters &blockPars)
 {
@@ -68,22 +71,31 @@ void Globals::init()
 #else
   subdivision = pSubdivision(new SerialSubdivision<DataField>());
 #endif
-  subdivision->init(SIntVector(0), globalGridSize, 2);
+  subdivision->init(globalGridSize, 2);
   localGridMin = subdivision->getLo();
   localGridMax = subdivision->getHi();
+
+  localInnerGridMin = subdivision->getInnerLo();
+  localInnerGridMax = subdivision->getInnerHi();
 
   for (int i=0; i<dimension; ++i)
   {
     dx[i] = (domainMax[i]-domainMin[i]) / (real)globalGridSize[i]; // account for ghost cells
-    localDomainMin[i] = domainMin[i] + localGridMin[i]*dx[i];
-    localDomainMax[i] = domainMin[i] + localGridMax[i]*dx[i];
+    localDomainMin[i] = domainMin[i] + localInnerGridMin[i]*dx[i];
+    localDomainMax[i] = domainMin[i] + (localInnerGridMax[i]+1)*dx[i];
 
-//    std::cout << "Extent: "<< subdivision->getUniqueId() << " " << i << " " << localDomainMin[i] << " " << localDomainMax[i] << std::endl;
+    std::cout << "II Domain: "<< subdivision->getUniqueId() << " " << i << " " << localGridMin[i] << " " << localGridMax[i] << std::endl;
+    std::cout << "II Inner Domain: "<< subdivision->getUniqueId() << " " << i << " " << localInnerGridMin[i] << " " << localInnerGridMax[i] << std::endl;
+    std::cout << "II Extent: "<< subdivision->getUniqueId() << " " << i << " " << localDomainMin[i] << " " << localDomainMax[i] << std::endl;
   }
 
   DiagnosticManager::instance().setTimeCounter(&t_count);
   DiagnosticManager::instance().setMaster(subdivision->master());
+
+  SCHNEK_TRACE_LOG(2,"Setting Rank: calling getUniqueId " << subdivision->getUniqueId())
   DiagnosticManager::instance().setRank(subdivision->getUniqueId());
+
+  Random::seed(subdivision->getUniqueId());
 }
 
 bool Globals::stepTime()

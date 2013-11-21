@@ -45,12 +45,26 @@
 #undef LOGLEVEL
 #define LOGLEVEL 1
 
+void debug_check_out_of_bounds(std::string checkpoint)
+{
+//  if (GridArgCheck<dimension>::getErrorFlag())
+//  {
+//    std::cerr << "Index out of bounds at checkpoint " << checkpoint << std::endl;
+//    std::cerr << "offending " << GridArgCheck<dimension>::getOffending()[0] << std::endl;
+//    std::cerr << "Grid " << Globals::instance().getLocalGridMin()[0] << " "
+//        << Globals::instance().getLocalGridMax()[0] << std::endl;
+//    std::cerr << "Limits " << Globals::instance().getLocalDomainMin()[0] << " "
+//        << Globals::instance().getLocalDomainMax()[0] << std::endl;
+//    exit(-1);
+//  }
+}
+
 
 class FieldDiagnostic : public schnek::HDFGridDiagnostic<DataField, pDataField>
 {
   protected:
     FieldIndex getGlobalMin() { return FieldIndex(0); }
-    FieldIndex getGlobalMax() { return Globals::instance().getGlobalGridSize(); }
+    FieldIndex getGlobalMax() { FieldIndex max = Globals::instance().getGlobalGridSize(); max-=1; return max; }
 };
 
 void OPar::initParameters(BlockParameters &blockPars)
@@ -72,14 +86,18 @@ void OPar::execute()
   do
   {
     std::cout << "Time = " << Globals::instance().getT() << std::endl;
+    debug_check_out_of_bounds("A");
     // Advance electromagnetic fields
     BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
+    debug_check_out_of_bounds("B");
 
     // Advance particle species
     BOOST_FOREACH(Species *s, species) s->pushParticles(dt);
+    debug_check_out_of_bounds("C");
 
     // run diagnostics
     DiagnosticManager::instance().execute();
+    debug_check_out_of_bounds("D");
 
     //if ((++n % 10) == 0) { BOOST_FOREACH(Fields *f, fields) f->writeAsTextFiles(n); }
   } while (Globals::instance().stepTime());

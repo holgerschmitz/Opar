@@ -27,8 +27,12 @@
 #include "particle_exchange.hpp"
 #include "species.hpp"
 
+#include <schnek/util/logger.hpp>
+
 #include <boost/foreach.hpp>
 
+#undef LOGLEVEL
+#define LOGLEVEL 0
 
 ParticleExchange::ParticleExchange(Species& species_) : species(species_) {}
 
@@ -49,11 +53,12 @@ void ParticleExchange::exchange(ParticleStorage &particles)
         it != particles.end();
         ++it)
     {
-      if ((*it).x[d] <  locMin[d]) listSend.push_front(it);
+      if (it->x[d] <  locMin[d]) listSend.push_front(it);
     }
 
-//    std::cerr << "Pushing " << listSend.size() << " particles < " << locMin[0] << std::endl;
-    species.getBoundaryLo(d).apply(listSend);
+    SCHNEK_TRACE_LOG(2,"Pushing " << listSend.size() << " particles < " << locMin[d])
+    if (Globals::instance().getSubdivision()->isBoundLo(d))
+      species.getBoundaryLo(d).apply(listSend);
 
     doExchange(particles, d, -1);
 
@@ -65,11 +70,12 @@ void ParticleExchange::exchange(ParticleStorage &particles)
         it != particles.end();
         ++it)
     {
-      if ((*it).x[d] >= locMax[d]) listSend.push_front(it);
+      if (it->x[d] >= locMax[d]) listSend.push_front(it);
     }
 
-//    std::cerr << "Pushing " << listSend.size() << " particles > " << locMax[0] << std::endl;
-    species.getBoundaryHi(d).apply(listSend);
+    SCHNEK_TRACE_LOG(2,"Pushing " << listSend.size() << " particles > " << locMax[d])
+    if (Globals::instance().getSubdivision()->isBoundHi(d))
+      species.getBoundaryHi(d).apply(listSend);
 
     doExchange(particles, d, +1);
   }
@@ -82,6 +88,10 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direc
 
   while (!listSend.empty())
   {
+
+    SCHNEK_TRACE_LOG(2,"doExchange send " << listSend.front()->x[0] << " : "
+        << Globals::instance().getLocalDomainMin()[0] << " "
+        << Globals::instance().getLocalDomainMax()[0])
     particles.removeParticle(listSend.front());
     listSend.pop_front();
   }
@@ -91,6 +101,9 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direc
   for (ParticleBuffer::iterator it = bufferReceive.begin(); it != bufferReceive.end(); ++it)
   {
     particles.addParticle() = *it;
+    SCHNEK_TRACE_LOG(2,"doExchange receive " << it->x[0] << " : "
+        << Globals::instance().getLocalDomainMin()[0] << " "
+        << Globals::instance().getLocalDomainMax()[0])
   }
 }
 

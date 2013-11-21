@@ -26,23 +26,30 @@
 
 #include "particle_boundary.hpp"
 
+#include <schnek/util/logger.hpp>
+
+#undef LOGLEVEL
+#define LOGLEVEL 0
+
 ParticleBoundary::ParticleBoundary(int dim_, int direction_) :
     dim(dim_), direction(direction_)
 {
   if (direction > 0)
-    limit = (Globals::instance().getLocalDomainMax())[dim];
+    limit = (Globals::instance().getDomainMax())[dim];
   else
-    limit = (Globals::instance().getLocalDomainMin())[dim];
+    limit = (Globals::instance().getDomainMin())[dim];
 }
 
 PeriodicParticleBoundary::PeriodicParticleBoundary(int dim_, int direction_)
   : ParticleBoundary(dim_, direction_)
 {
-  shift = (Globals::instance().getLocalDomainMax())[dim] - (Globals::instance().getLocalDomainMin())[dim];
+  shift = (Globals::instance().getDomainMax())[dim] - (Globals::instance().getDomainMin())[dim];
 }
 
 void PeriodicParticleBoundary::apply(ParticleExchange::PartList &particles)
 {
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+
   // wrapping the coordinates. We do not remove the particle from the list
   // because it still needs to be transferred to the right node.
 
@@ -51,6 +58,7 @@ void PeriodicParticleBoundary::apply(ParticleExchange::PartList &particles)
     for (ParticleExchange::PartList::iterator it = particles.begin();
         it != particles.end(); ++it)
     {
+      SCHNEK_TRACE_LOG(5,"Shifting particle from "<<(*it)->x[dim]<<" by "<< -shift)
       (*it)->x[dim] -= shift;
     }
   }
@@ -59,6 +67,7 @@ void PeriodicParticleBoundary::apply(ParticleExchange::PartList &particles)
     for (ParticleExchange::PartList::iterator it = particles.begin();
         it != particles.end(); ++it)
     {
+      SCHNEK_TRACE_LOG(5,"Shifting particle from "<<(*it)->x[dim]<<" by "<< shift)
       (*it)->x[dim] += shift;
     }
   }

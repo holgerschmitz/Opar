@@ -59,6 +59,13 @@ class Random
     {
       return stddev*normal_(generator_);
     }
+
+    static void seed(uint32_t value)
+    {
+      generator_.seed(value);
+      uniform_.reset();
+      normal_.reset();
+    }
 };
 
 #endif // RANDOM_HPP_ 

@@ -263,8 +263,6 @@ void debug_check_out_of_bounds(std::string checkpoint, Particle p_debug_old, Par
  *
  * This is a relativistic particle pusher based on Boris' scheme
  *
- * @todo check normalisation
- * @todo double check the Esirkepov current calculation and document the maths somewhere
  * @param dt time step
  */
 void Species::pushParticles(double dt)
@@ -364,8 +362,6 @@ void Species::pushParticles(double dt)
     for (int i=0; i<3; ++i) tau2[i] *= tau[i];
     double tau_ifac = 1.0 / (tau2[0] + tau2[1] + tau2[2] + 1.0);
 
-    // This is the EPOCH rotation code translated
-    // TODO Check the two algorithms against each other
     PVector ur(
         ((1.0 + tau2[0] - tau2[1] - tau2[2]) * um[0]
             + 2.0

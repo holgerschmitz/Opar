@@ -24,14 +24,16 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([OPar],[0.1])
+AC_PREREQ([2.65])
+AC_INIT([OPar],[0.9.0])
 
 AC_CONFIG_SRCDIR([src/opar.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([src/config.hpp])
+
 AM_INIT_AUTOMAKE
-# VERSION="0.1"
-# PACKAGE="opar"
+VERSION="0.9.0"
+PACKAGE="opar"
 
 AC_LANG(C++)
 
@@ -61,74 +63,52 @@ AC_ARG_WITH(mpi, [AS_HELP_STRING([--with-mpi],
            MPI is not used. Default: auto])
        ],,[with_mpi=auto])
        
+# Search for MPI support
+# allows the  --with-mpi option (yes, no, auto)
+AC_ARG_WITH(mpi, [AS_HELP_STRING([--with-mpi],
+           [compile with MPI (parallelization) support. If none is found,
+           MPI is not used. Default: auto])
+       ],,[with_mpi=auto])
+       
 if test x"$with_mpi" != xno; then
-#  CXXFLAGS_save=$CXXFLAGS
-#  LDFLAGS_save=$LDFLAGS
-#  CXXFLAGS=""
-#  LDFLAGS=""
   AX_MPI([
-#    MPI_CXXFLAGS=`$MPICXX --showme:compile`
-#    [echo Using MPI_CXXFLAGS=$MPI_CXXFLAGS]
-#    AC_SUBST(MPI_CXXFLAGS)
-#    MPI_LDFLAGS=`$MPICXX --showme:link`
-#    [echo Using MPI_LDFLAGS=$MPI_LDFLAGS]
-#    AC_SUBST(MPI_LDFLAGS)
-#    CXXFLAGS="$CXXFLAGS_save $MPI_CXXFLAGS"
-#    LDFLAGS="$LDFLAGS_save $MPI_LDFLAGS"
-     CXX="mpic++"
-    AC_DEFINE([HAVE_MPI],[1],[Define this macro if OPar is compiled with MPI support])
+    using_mpi=yes
+    CXX=$MPICXX
+    CC=$MPICXX
+    CPP=$MPICXX
+    AC_DEFINE([SCHNEK_HAVE_MPI],[1],[Define this macro if Schnek is compiled with MPI support])
   ],[
+    using_mpi=no
     if test x"$with_mpi" = xyes; then
       AC_MSG_ERROR([MPI support requested but no MPI library found!])
     fi
   ])
+else
+  using_mpi=no
 fi
 
+AX_HDF5([
+  have_hdf5="yes"
+  EXTRA_CPPFLAGS="$EXTRA_CPPFLAGS $HDF5_CFLAGS"
+  EXTRA_LDFLAGS="$EXTRA_LDFLAGS $HDF5_LDFLAGS"
+  EXTRA_LIBS="$EXTRA_LIBS $HDF5_LIBS"
+],[
+  have_hdf5="no"
+])
 
-# Search for HDF5 libraries
-# To distinguish between serial and parallel, use the H5_HAVE_PARALLEL macro
-# supplied by HDF5 itself
-# Checks for libraries.
-# start: Check for HDF5 support
-AC_ARG_WITH(hdf5, [AC_HELP_STRING([--without-hdf5],[do not allow HDF5 output])], ok=$withval, ok=yes)
-if test "$ok" = "yes"; then
-  AC_CHECK_LIB(z,deflate, [],[AC_MSG_WARN([zlib is required for HDF5!])])
-
-  save_LIBS_0="$LIBS" # save, to check later if we found any library
-  AC_CHECK_LIB(hdf5, H5Pcreate, [
-    AC_CHECK_HEADERS(hdf5.h, [LIBS="-lhdf5 $LIBS"
-                     AC_DEFINE([SCHNEK_HAVE_HDF5],[1],[Define this macro if Schnek is compiled with HDF5 support])])])
-  if test x"$save_LIBS_0" = x"$LIBS"; then
-    AC_MSG_WARN([Couldn't find the HDF5 library!!  Switching to --without-hdf5.])
-  fi
-
-  if test "x$with_mpi" = "xyes"; then
-    AC_CHECK_FUNCS(H5Pset_mpi H5Pset_fapl_mpio)
-  fi
-fi
-
-AC_ARG_ENABLE([parallel-hdf5],
-          [AS_HELP_STRING([--enable-parallel-hdf5], [use parallel file access for HDF5 (mpio) if available.])], 
-          [],[])
-
-if test x"$enable-parallel-hdf5" != "xno" ; then
-  AC_DEFINE([SCHNEK_USE_HDF_PARALLEL],[1],[Defined if we use parallel file access for HDF5 (mpio) if available.])
-fi
-
-AC_LANG_PUSH([C++])
-OLDCPPFLAGS=$CPPFLAGS
-OLDLDFLAGS=$LDFLAGS
-CPPFLAGS=$hdf5_CFLAGS
-LDFLAGS=$hdf5_LIBS
-
-CPPFLAGS=$OLDCPPFLAGS
-LDFLAGS=$OLDLDFLAGS
-AC_LANG_POP([C++])
 #End :: Check HDF5 support
 
+AX_SCHNEK([0.9.0],[
+  EXTRA_CPPFLAGS="$EXTRA_CPPFLAGS $SCHNEK_CPPFLAGS"
+  EXTRA_LDFLAGS="$EXTRA_LDFLAGS $SCHNEK_LDFLAGS"
+  EXTRA_LIBS="$EXTRA_LIBS $SCHNEK_LIBS"
+],[
+  AC_MSG_ERROR([Schnek library needed by OPar but could not be found!])
+])
 
-
-
+CPPFLAGS="$EXTRA_CPPFLAGS"
+LDFLAGS="$EXTRA_LDFLAGS"
+LIBS="$EXTRA_LIBS"
 
 # Checks for header files.
 

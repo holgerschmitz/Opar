@@ -55,6 +55,4 @@ opar_SOURCES =             \
   util.cpp                 \
   weighting.hpp
 
-opar_LDADD = -lschnek $(INTI_LIBS)
-
 

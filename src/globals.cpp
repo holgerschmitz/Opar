@@ -38,11 +38,11 @@ void Globals::initCommonParameters(BlockParameters &blockPars)
 {
   std::cout << "Setting common parameters\n";
 
-  blockPars.addParameter("end_time", &endTime);
-  blockPars.addParameter("dt", &dt);
-  blockPars.addArrayParameter("min_", domainMin);
-  blockPars.addArrayParameter("max_", domainMax);
-  blockPars.addArrayParameter("N_", globalGridSize);
+  blockPars.addParameter("end_time", &endTime, 1.0);
+  blockPars.addParameter("dt", &dt, 0.005);
+  blockPars.addArrayParameter("min_", domainMin, 0.0);
+  blockPars.addArrayParameter("max_", domainMax, 1.0);
+  blockPars.addArrayParameter("N_", globalGridSize, 100);
 }
 
 void Globals::initGlobalParameters(BlockParameters &blockPars)

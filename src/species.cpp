@@ -74,16 +74,16 @@ void Species::initParameters(BlockParameters &blockPars)
 
   blockPars.addParameter("name", &name);
 
-  blockPars.addParameter("charge", &charge);
-  blockPars.addParameter("mass", &mass);
-  blockPars.addParameter("ppc", &ppc);
+  blockPars.addParameter("charge", &charge, 1.0);
+  blockPars.addParameter("mass", &mass, 1.0);
+  blockPars.addParameter("ppc", &ppc, 100);
 
-  densityParam = blockPars.addParameter("density", &density);
+  densityParam = blockPars.addParameter("density", &density, 1.0);
   temperatureParam = blockPars.addArrayParameter("temperature", temperature);
-  driftParam = blockPars.addArrayParameter("drift", drift);
+  driftParam = blockPars.addArrayParameter("drift", drift, 0.0);
 
-  blockPars.addArrayParameter("boundary_min", bcNamesLo);
-  blockPars.addArrayParameter("boundary_max", bcNamesHi);
+  blockPars.addArrayParameter("boundary_min", bcNamesLo, std::string("periodic"));
+  blockPars.addArrayParameter("boundary_max", bcNamesHi, std::string("periodic"));
 
   particleBCFactories["periodic"] = boost::factory<PeriodicParticleBoundary*>();
   particleBCFactories["open"] = boost::factory<OpenParticleBoundary*>();

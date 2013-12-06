@@ -540,11 +540,11 @@ void Fields::initParameters(BlockParameters &blockPars)
   SCHNEK_TRACE_ENTER_FUNCTION(3)
 
   std::cout << "Fields::initParameters()" << std::endl;
-  EParam = blockPars.addArrayParameter("E", EInit);
-  BParam = blockPars.addArrayParameter("B", BInit);
+  EParam = blockPars.addArrayParameter("E", EInit, 0.0);
+  BParam = blockPars.addArrayParameter("B", BInit, 0.0);
 
-  blockPars.addArrayParameter("boundary_min", bcNamesLo);
-  blockPars.addArrayParameter("boundary_max", bcNamesHi);
+  blockPars.addArrayParameter("boundary_min", bcNamesLo, std::string("periodic"));
+  blockPars.addArrayParameter("boundary_max", bcNamesHi, std::string("periodic"));
 
   fieldBCFactories["periodic"] = boost::factory<FieldPeriodicBC*>();
   fieldBCFactories["conducting"] = boost::factory<FieldConductingBC*>();

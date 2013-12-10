@@ -76,7 +76,7 @@ if test x"$with_mpi" != xno; then
     CXX=$MPICXX
     CC=$MPICXX
     CPP=$MPICXX
-    AC_DEFINE([SCHNEK_HAVE_MPI],[1],[Define this macro if Schnek is compiled with MPI support])
+    AC_DEFINE([HAVE_MPI],[1],[Define this macro if Opar is compiled with MPI support])
   ],[
     using_mpi=no
     if test x"$with_mpi" = xyes; then

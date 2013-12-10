@@ -35,6 +35,7 @@
 
 #include <schnek/grid.hpp>
 #include <schnek/util/logger.hpp>
+#include <schnek/tools/literature.hpp>
 
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
@@ -113,6 +114,14 @@ Species* Species::getSpecies(std::string name)
 
 void Species::init()
 {
+  static schnek::LiteratureArticle Esirkepov2001("Esirkepov2001", "Esirkepov, T Z",
+      "Exact charge conservation scheme for Particle-in-Cell simulation with an arbitrary form-factor",
+      "Computer Physics Communications", "2001", "135", "144--153");
+
+  schnek::LiteratureManager::instance().addReference(
+      "Particle weighting for calculation of currents uses charge conserving scheme by Esirkepov.",
+      Esirkepov2001);
+
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   dynamic_cast<OPar&>(*this->getParent()).addSpecies(this);
 

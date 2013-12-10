@@ -51,7 +51,7 @@ void ParticleDiagnostic::write()
   totalCount = 0;
   for (int i=0; i<procCount; ++i) totalCount += sizes(i);
 #else
-  sizes(IndexType(0)) = localCount;
+  sizes(0) = localCount;
   totalCount = localCount;
   localStart = 0;
 #endif

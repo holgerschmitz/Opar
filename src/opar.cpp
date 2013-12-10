@@ -35,6 +35,7 @@
 
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
+#include <schnek/tools/literature.hpp>
 #include <schnek/diagnostic/diagnostic.hpp>
 #include <schnek/diagnostic/hdfdiagnostic.hpp>
 
@@ -194,6 +195,16 @@ int main(int argc, char **argv)
     exit(-1);
   }
 
+  if (Globals::instance().getSubdivision()->master())
+  {
+    std::ofstream referencesText("information.tex");
+    std::ofstream referencesBib("references.bib");
+
+    schnek::LiteratureManager::instance().writeInformation(referencesText,"references.bib");
+    schnek::LiteratureManager::instance().writeBibTex(referencesBib);
+    referencesText.close();
+    referencesBib.close();
+  }
   opar.execute();
 
 #ifdef HAVE_MPI

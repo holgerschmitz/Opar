@@ -31,6 +31,7 @@
 
 #include <schnek/tools/fieldtools.hpp>
 #include <schnek/util/logger.hpp>
+#include <schnek/tools/literature.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
@@ -568,6 +569,15 @@ void Fields::registerData()
 void Fields::init()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
+
+  static schnek::LiteratureArticle Yee1966("Yee1966", "Yee, K",
+      "Numerical solution of initial boundary value problems involving Maxwell's equations in isotropic media.",
+      "IEEE Transactions on Antennas and Propagation", "1966", "AP-14", "302--307");
+
+  schnek::LiteratureManager::instance().addReference(
+      "Integration of electrodynamic fields by Finite Difference Time Domain method.",
+      Yee1966);
+
   dynamic_cast<OPar&>(*this->getParent()).addField(this);
 
   SIntVector low  = Globals::instance().getLocalInnerGridMin();

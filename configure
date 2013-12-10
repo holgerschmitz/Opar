@@ -4623,7 +4623,7 @@ else
     CC=$MPICXX
     CPP=$MPICXX
 
-$as_echo "#define SCHNEK_HAVE_MPI 1" >>confdefs.h
+$as_echo "#define HAVE_MPI 1" >>confdefs.h
 
 
         :

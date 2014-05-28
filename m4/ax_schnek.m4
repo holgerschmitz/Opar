@@ -2,7 +2,7 @@
 AC_DEFUN([AX_SCHNEK],
 [
 AC_ARG_WITH([schnek],
-  [AS_HELP_STRING([--with-schnek<:@=ARG@:>@],
+  [AS_HELP_STRING([--with-schnek@<:@=ARG@:>@],
     [use Schnek library from a standard location (ARG=yes),
      from the specified location (ARG=<path>),
      or disable it (ARG=no)

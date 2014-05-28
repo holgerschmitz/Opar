@@ -36,6 +36,7 @@
 #include <schnek/grid.hpp>
 #include <schnek/util/logger.hpp>
 #include <schnek/tools/literature.hpp>
+#include <schnek/functions.hpp>
 
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
@@ -44,7 +45,7 @@
 #include <fstream>
 
 #undef LOGLEVEL
-#define LOGLEVEL 0
+#define LOGLEVEL 3
 
 int debug_particle_number = 9702;
 
@@ -190,24 +191,16 @@ void Species::initParticles()
   updater->addDependentArray(temperatureParam);
   updater->addDependentArray(driftParam);
 
-  double weight_factor = 1.0 / (double)ppc;
+  double weight_factor = dx.product() / (double)ppc;
 
-  // TODO this loop should be somewhere in schnek
-  for (int i = 0; i < dimension; ++i)
-  {
-    weight_factor *= dx[i];
-  }
-
-  FieldIndex pos;
+  SIntVector pos;
   int debug_count = 0;
   double debug_min_x = hi[0];
   double debug_max_x = lo[0];
-  int debug_pro_id = Globals::instance().getSubdivision()->procnum();
+//  int debug_pro_id = Globals::instance().getSubdivision()->procnum();
+
   SCHNEK_TRACE_LOG(4,"ppc = " << ppc)
   SCHNEK_TRACE_LOG(4,"dx[0] = " << dx[0])
-
-//  std::string fname = str(boost::format("init%1%.out")%debug_pro_id);
-//  std::ofstream debug_out(fname.c_str());
 
   SPACE_LOOP(pos,lo,hi)
   {
@@ -248,7 +241,7 @@ void Species::initParticles()
 
 }
 
-void debug_check_out_of_bounds(std::string checkpoint, Particle p_debug_old, Particle p_old, FieldIndex debug_cell1, FieldIndex debug_cell2)
+void debug_check_out_of_bounds(std::string checkpoint, Particle p_debug_old, Particle p_old, SIntVector debug_cell1, SIntVector debug_cell2)
 {
 //  if (GridArgCheck<dimension>::getErrorFlag())
 //  {
@@ -300,25 +293,19 @@ void Species::pushParticles(double dt)
 #endif
 
   const double idt = 1.0 / dt;
-  const double dto2 = dt / 2.0;
-  const double dtco2 = clight * dto2;
+
   // particle weighting multiplication factor
-  const double fac = Weighting::particleShapeFactor();
-  const double facd = ipow(fac, dimension) * charge;
+  const double fac = ipow(Weighting::particleShapeFactor(), dimension) * charge;
 
-  const double part_mc = clight * mass;
-  const double ipart_mc = 1.0 / part_mc;
-
-  const double cmratio = charge * dto2 * ipart_mc;
-  const double ccmratio = clight * cmratio;
+  const double cmratio = fac * dt / (0.5 * clight * mass);
 
 //  int debug_count = 0;
   for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
   {
 //    ++debug_count;
-    Particle &p_old = *it;
-    Particle p_debug_old(p_old);
-    Particle p(p_old);
+    Particle &particle = *it;
+    Particle p_debug_old(particle);
+    Particle p(particle);
 
 //    if (debug_count==debug_particle_number)
 //    {
@@ -327,29 +314,26 @@ void Species::pushParticles(double dt)
 //      std::cerr << "Before " << p.x[0] << " (" <<p.u[0]<<", "<<p.u[1]<<", "<<p.u[2]<<")"<< std::endl;
 //    }
 
-    double weight = p.weight;
+    double wfac = p.weight*fac;
 
-    double gamma = sqrt(
+    double dt_gamma = 0.5*dt/sqrt(
         p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[2] * p.u[2] + 1.0);
 
     for (int i=0; i<dimension; ++i)
-      p.x[i] = p.x[i] + p.u[i] * (0.5 * dt / gamma);
+      p.x[i] = p.x[i] + p.u[i] * dt_gamma;
 
-    FieldIndex cell1, cell2, dcell;
-    FieldIndex debug_cell1, debug_cell2;
+    SIntVector cell1, cell2, dcell;
+    SIntVector debug_cell1, debug_cell2;
     SVector cell_frac;
     SVector cell_pos(p.x);
 
-    debug_check_out_of_bounds("AA", p_debug_old, p_old, debug_cell1, debug_cell2);
+    debug_check_out_of_bounds("AA", p_debug_old, particle, debug_cell1, debug_cell2);
 
     for (int i=0; i<dimension; ++i) cell_pos[i] *= idx[i];
 
     Weighting::toCellIndex(cell_pos, cell1, cell_frac);
-
     Weighting::getShape(cell1, cell_frac, gx);
-
     Weighting::toCellIndexStagger(cell_pos, cell2, cell_frac);
-
     Weighting::getShape(cell2, cell_frac, hx);
 
     debug_cell1 = cell1;
@@ -362,48 +346,33 @@ void Species::pushParticles(double dt)
     for (int i=0; i<3; ++i)
       um[i] = p.u[i] + cmratio * E[i];
 
-    gamma = sqrt(um[0] * um[0] + um[1] * um[1] + um[1] * um[1] + 1.0);
+    dt_gamma = 0.5*dt/sqrt(um[0] * um[0] + um[1] * um[1] + um[2] * um[2] + 1.0);
 
     PVector tau;
-    for (int i=0; i<3; ++i) tau[i] = B[i] * (0.5 * dt / gamma);
+    PVector ud, urot;
+    for (int i=0; i<3; ++i) tau[i] = B[i] * dt_gamma;
 
-    PVector tau2 = tau;
+    PVector tau2(tau);
     for (int i=0; i<3; ++i) tau2[i] *= tau[i];
-    double tau_ifac = 1.0 / (tau2[0] + tau2[1] + tau2[2] + 1.0);
+    const double tau_ifac = 2.0 / (tau2[0] + tau2[1] + tau2[2] + 1.0);
 
-    PVector ur(
-        ((1.0 + tau2[0] - tau2[1] - tau2[2]) * um[0]
-            + 2.0
-                * ((tau[0] * tau[1] + tau[2]) * um[1]
-                    + (tau[0] * tau[2] - tau[1]) * um[2])) * tau_ifac,
-        ((1.0 - tau2[0] + tau2[1] - tau2[2]) * um[1]
-            + 2.0
-                * ((tau[1] * tau[2] + tau[0]) * um[2]
-                    + (tau[1] * tau[0] - tau[2]) * um[0])) * tau_ifac,
-        ((1.0 - tau2[0] - tau2[1] + tau2[2]) * um[2]
-            + 2.0
-                * ((tau[2] * tau[0] + tau[1]) * um[0]
-                    + (tau[2] * tau[1] - tau[0]) * um[1])) * tau_ifac);
+    schnek::crossProduct(ud, um, tau);
+    ud += um;
+    schnek::crossProduct(urot, ud,tau);
 
-    // This is the original OPar rotation code translated
-    //    PVector ur(
-    //        ((1.0 - tau2[1] - tau2[2]) * um[0] + (tau[0] * tau[1] + tau[2]) * um[1]
-    //            + (tau[0] * tau[2] - tau[1]) * um[2]) * tau_ifac,
-    //        ((1.0 - tau2[0] - tau2[2]) * um[1] + (tau[0] * tau[1] - tau[2]) * um[0]
-    //            + (tau[1] * tau[2] + tau[0]) * um[2]) * tau_ifac,
-    //        ((1.0 - tau2[0] - tau2[1]) * um[2] + (tau[0] * tau[2] + tau[1]) * um[0]
-    //            + (tau[1] * tau[2] - tau[0]) * um[1]) * tau_ifac);
+    for (int i=0; i<3; ++i)
+      p.u[i] = um[i] + tau_ifac*urot[i] + cmratio * E[i];
 
-    for (int i=0; i<3; ++i) p.u[i] = ur[i] + cmratio * E[i];
+//    const double igamma = 1.0/sqrt((um[0] + tau_ifac*urot[0])*(um[0] + tau_ifac*urot[0])+
+//        (um[1] + tau_ifac*urot[1])*(um[1] + tau_ifac*urot[1])+
+//        (um[2] + tau_ifac*urot[2])*(um[2] + tau_ifac*urot[2])+ 1.0);
 
-    gamma = sqrt(p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[1] * p.u[1] + 1.0);
+    const double igamma = 1.0/sqrt(p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[2] * p.u[2] + 1.0);
 
-    SVector delta;
+    for (int i=0; i<dimension; ++i)
+      p.x[i] = p.x[i] + p.u[i] * (0.5 * dt * igamma);
 
-    for (int i=0; i<3; ++i) delta[i] = p.u[i] * (0.5 * dt / gamma);
-    for (int i=0; i<dimension; ++i) p.x[i] = p.x[i] + delta[i];
-
-    p_old = p;
+    particle = p;
 
 //    if (debug_count==debug_particle_number)
 //    {
@@ -433,38 +402,37 @@ void Species::pushParticles(double dt)
     SIntVector hi, dhi = d.getHi();
     for (int i=0; i<dimension; ++i)
     {
-      //lo[i] = d.getLo()[i] + (dcell[i] - 1) / 2;
-      //hi[i] = d.getHi()[i] + (dcell[i] + 1) / 2;
-
       lo[i] = d.getLo()[i] + std::min(0,dcell[i]);
       hi[i] = d.getHi()[i] + std::max(0,dcell[i]);
     }
 
     const double sixth = 1.0 / 6.0;
+#ifndef THREE_DIMENSIONAL
     const double half = 1.0 / 2.0;
-    FieldIndex l_ind;
+#endif
+    SIntVector l_ind;
 
-    debug_check_out_of_bounds("AM", p_debug_old, p_old, debug_cell1, debug_cell2);
+    debug_check_out_of_bounds("AM", p_debug_old, particle, debug_cell1, debug_cell2);
 
 #ifdef ONE_DIMENSIONAL
-    const double vy = p.u[1] / gamma;
-    const double vz = p.u[2] / gamma;
-    const double fjx = idt * facd * weight;
-    const double fjy = idx[0] * facd * weight * vy;
-    const double fjz = idx[0] * facd * weight * vz;
+    const double vy = p.u[1] * igamma;
+    const double vz = p.u[2] * igamma;
+    const double fjx = idt * wfac;
+    const double fjy = idx[0] * wfac * vy;
+    const double fjz = idx[0] * wfac * vz;
 #endif
 
 #ifdef TWO_DIMENSIONAL
-    const double vz = p.u[2] / gamma;
-    const double fjx = idt * idx[1] * facd * weight;
-    const double fjy = idt * idx[0] * facd * weight;
-    const double fjz = idx[0] * idx[1] * facd * weight * vz;
+    const double vz = p.u[2] * igamma;
+    const double fjx = idt * idx[1] * wfac;
+    const double fjy = idt * idx[0] * wfac;
+    const double fjz = idx[0] * idx[1] * wfac * vz;
 #endif
 
 #ifdef THREE_DIMENSIONAL
-    const double fjx = idt * idx[1] * idx[2] * facd * weight;
-    const double fjy = idt * idx[0] * idx[2] * facd * weight;
-    const double fjz = idt * idx[0] * idx[1] * facd * weight;
+    const double fjx = idt * idx[1] * idx[2] * wfac;
+    const double fjy = idt * idx[0] * idx[2] * wfac;
+    const double fjz = idt * idx[0] * idx[1] * wfac;
 #endif
 
     SPACE_LOOP (l_ind, lo, hi)
@@ -485,7 +453,7 @@ void Species::pushParticles(double dt)
       jxHelper[l_ind] = jxHelper(i - 1) - fjx * wx;
       jyHelper[l_ind] = fjy * wy;
       jzHelper[l_ind] = fjz * wy;
-      SCHNEK_TRACE_LOG(5,"particle current bits "<< l_ind[0] << " " << fjx << " " << wx << " " << idt << " " << facd << " " << weight)
+      SCHNEK_TRACE_LOG(5,"particle current bits "<< l_ind[0] << " " << fjx << " " << wx << " " << idt << " " << wfac << " " << weight)
 #endif
 
 #ifdef TWO_DIMENSIONAL
@@ -519,9 +487,9 @@ void Species::pushParticles(double dt)
       const double sy = ((j<dlo[1])||(j>dhi[1]))?0.0:gx[j][1];
       const double sz = ((k<dlo[2])||(k>dhi[2]))?0.0:gx[k][2];
 
-      const double rx = ((ih<dlo[0])||(ih>dhi[0])?0.0:hx[ih][0];
-      const double ry = ((jh<dlo[1])||(jh>dhi[1])?0.0:hx[jh][1];
-      const double rz = ((kh<dlo[2])||(kh>dhi[2])?0.0:hx[kh][2];
+      const double rx = ((ih<dlo[0])||(ih>dhi[0]))?0.0:hx[ih][0];
+      const double ry = ((jh<dlo[1])||(jh>dhi[1]))?0.0:hx[jh][1];
+      const double rz = ((kh<dlo[2])||(kh>dhi[2]))?0.0:hx[kh][2];
 
       const double wx = sixth * (rx - sx)
           * (sy * (2 * sz + rz) + ry * (sz + 2 * rz));
@@ -535,9 +503,9 @@ void Species::pushParticles(double dt)
       jzHelper[l_ind] = jzHelper(i, j, k - 1) - fjz * wz;
 #endif
 
-      debug_check_out_of_bounds("AS", p_debug_old, p_old, debug_cell1, debug_cell2);
+      debug_check_out_of_bounds("AS", p_debug_old, particle, debug_cell1, debug_cell2);
 
-      FieldIndex g_ind;
+      SIntVector g_ind;
       for (int i=0; i<dimension; ++i)
         g_ind[i] = cell1[i] + l_ind[i];
 
@@ -547,10 +515,10 @@ void Species::pushParticles(double dt)
 
       SCHNEK_TRACE_LOG(5,"particle current "<< l_ind[0] << " " << jxHelper[l_ind] << " " << jyHelper[l_ind] << " " << jyHelper[l_ind])
 
-      debug_check_out_of_bounds("AY", p_debug_old, p_old, debug_cell1, debug_cell2);
+      debug_check_out_of_bounds("AY", p_debug_old, particle, debug_cell1, debug_cell2);
     }
 
-    debug_check_out_of_bounds("AZ", p_debug_old, p_old, debug_cell1, debug_cell2);
+    debug_check_out_of_bounds("AZ", p_debug_old, particle, debug_cell1, debug_cell2);
   }
 
   // here all the boundary conditions and the MPI happens

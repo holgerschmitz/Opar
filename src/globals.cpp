@@ -84,7 +84,7 @@ void Globals::init()
     localDomainMin[i] = domainMin[i] + localInnerGridMin[i]*dx[i];
     localDomainMax[i] = domainMin[i] + (localInnerGridMax[i]+1)*dx[i];
 
-    std::cout << "II Domain: "<< subdivision->getUniqueId() << " " << i << " " << localGridMin[i] << " " << localGridMax[i] << std::endl;
+    std::cout << "II Domain: " << subdivision->getUniqueId() << " " << i << " " << localGridMin[i] << " " << localGridMax[i] << std::endl;
     std::cout << "II Inner Domain: "<< subdivision->getUniqueId() << " " << i << " " << localInnerGridMin[i] << " " << localInnerGridMax[i] << std::endl;
     std::cout << "II Extent: "<< subdivision->getUniqueId() << " " << i << " " << localDomainMin[i] << " " << localDomainMax[i] << std::endl;
   }

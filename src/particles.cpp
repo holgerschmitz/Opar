@@ -56,6 +56,7 @@ Particle &ParticleStorage::DataBlock::addParticle()
 Particle &ParticleStorage::addParticle()
 {
   // find a free block or create one
+
   if ((STORAGE_BLOCK_SIZE == freeBlock->count) || (freeBlock == blocks.end()))
   {
     bool foundBlock = false;

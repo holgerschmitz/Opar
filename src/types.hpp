@@ -26,6 +26,7 @@
 #ifndef CONFIG_HPP_
 #define CONFIG_HPP_
 
+#include <iostream>
 #include "config.hpp"
 
 #undef LOGLEVEL
@@ -34,6 +35,7 @@
 #include <schnek/variables.hpp>
 
 #include <boost/shared_ptr.hpp>
+
 #undef LOGLEVEL
 #define LOGLEVEL 0
 
@@ -55,14 +57,10 @@ typedef float real;
 typedef double real;
 #endif
 
-#ifdef NDEBUG
 #define ArrayArgCheck schnek::ArrayNoArgCheck
 #define GridArgCheck schnek::GridNoArgCheck
-#else
-#define ArrayArgCheck schnek::ArrayNoArgCheck
-#define GridArgCheck schnek::GridAssertCheck
-//#define GridArgCheck schnek::GridDebugCheck
-#endif
+//#define ArrayArgCheck schnek::ArrayAssertArgCheck
+//#define GridArgCheck schnek::GridAssertCheck
 
 class TriangularWeighting;
 typedef TriangularWeighting Weighting;
@@ -73,7 +71,6 @@ typedef schnek::Field<real, 3, GridArgCheck> DataField3d;
 typedef DataField1d DataLine;
 
 typedef schnek::Field<real, dimension, GridArgCheck> DataField;
-typedef DataField::IndexType FieldIndex;
 
 typedef boost::shared_ptr<DataField1d> pDataField1d;
 typedef boost::shared_ptr<DataField2d> pDataField2d;

@@ -64,8 +64,9 @@ void debug_check_out_of_bounds(std::string checkpoint)
 class FieldDiagnostic : public schnek::HDFGridDiagnostic<DataField, pDataField>
 {
   protected:
-    FieldIndex getGlobalMin() { return FieldIndex(0); }
-    FieldIndex getGlobalMax() { FieldIndex max = Globals::instance().getGlobalGridSize(); max-=1; return max; }
+    typedef typename HDFGridDiagnostic<DataField, pDataField>::IndexType IndexType;
+    IndexType getGlobalMin() { return IndexType(0); }
+    IndexType getGlobalMax() { IndexType max = Globals::instance().getGlobalGridSize(); max-=1; return max; }
 };
 
 void OPar::initParameters(BlockParameters &blockPars)
@@ -86,17 +87,19 @@ void OPar::execute()
 
   do
   {
-    std::cout << "Time = " << Globals::instance().getT() << std::endl;
+    std::cerr << "Time = " << Globals::instance().getT() << std::endl;
     debug_check_out_of_bounds("A");
     // Advance electromagnetic fields
     BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
     debug_check_out_of_bounds("B");
 
     // Advance particle species
+    std::cerr << "push" << std::endl;
     BOOST_FOREACH(Species *s, species) s->pushParticles(dt);
     debug_check_out_of_bounds("C");
 
     // run diagnostics
+    std::cerr << "diagnostic" << std::endl;
     DiagnosticManager::instance().execute();
     debug_check_out_of_bounds("D");
 

@@ -26,7 +26,7 @@
 #include <boost/variant.hpp>
 #include "currents.hpp"
 
-#include <schnek/grid/domain.hpp>
+#include <schnek/grid/range.hpp>
 #include <schnek/util/logger.hpp>
 
 #include <boost/foreach.hpp>
@@ -57,9 +57,8 @@ void Currents::updateCurrent(pDataField j, const std::list<pDataField> &jl)
   BOOST_FOREACH(pDataField jc, jl)
   {
     SCHNEK_TRACE_LOG(4,"Summing up current")
-    RecDomain<dimension> domain(jc->getLo(), jc->getHi());
-    for (RecDomain<dimension>::iterator it = domain.begin(); it != domain.end(); ++it)
-    //BOOST_FOREACH(RecDomain<dimension>::LimitType pos, domain)
+    Range<int, dimension> domain(jc->getLo(), jc->getHi());
+    for (Range<int, dimension>::iterator it = domain.begin(); it != domain.end(); ++it)
     {
       SCHNEK_TRACE_LOG(5,"at "<< it.getPos()[0] << " " << (*jc)[*it])
       (*j)[*it] += (*jc)[*it];

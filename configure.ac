@@ -25,14 +25,14 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.65])
-AC_INIT([OPar],[0.9.0])
+AC_INIT([OPar],[0.9.1])
 
 AC_CONFIG_SRCDIR([src/opar.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([src/config.hpp])
 
 AM_INIT_AUTOMAKE
-VERSION="0.9.0"
+VERSION="0.9.1"
 PACKAGE="opar"
 
 AC_LANG(C++)

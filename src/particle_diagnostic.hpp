@@ -45,7 +45,7 @@ class ParticleDiagnostic : public schnek::HDFGridDiagnostic<DataField1d> {
     long localCount;
     long localStart;
   protected:
-    typedef typename schnek::HDFGridDiagnostic<DataField1d>::IndexType IndexType;
+    typedef schnek::HDFGridDiagnostic<DataField1d>::IndexType IndexType;
     void write();
     void registerData();
     void init();

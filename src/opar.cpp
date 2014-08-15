@@ -64,7 +64,7 @@ void debug_check_out_of_bounds(std::string checkpoint)
 class FieldDiagnostic : public schnek::HDFGridDiagnostic<DataField, pDataField>
 {
   protected:
-    typedef typename HDFGridDiagnostic<DataField, pDataField>::IndexType IndexType;
+    typedef HDFGridDiagnostic<DataField, pDataField>::IndexType IndexType;
     IndexType getGlobalMin() { return IndexType(0); }
     IndexType getGlobalMax() { IndexType max = Globals::instance().getGlobalGridSize(); max-=1; return max; }
 };

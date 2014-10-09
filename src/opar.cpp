@@ -33,6 +33,8 @@
 #include "particle_diagnostic.hpp"
 #include "species.hpp"
 
+#include "constants.hpp"
+
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
 #include <schnek/tools/literature.hpp>
@@ -73,7 +75,14 @@ void OPar::initParameters(BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
-  //schnek::Logger::instance().out() << "Entering " << BOOST_CURRENT_FUNCTION << std::endl;
+  blockPars.addConstant("pi", M_PI);
+  blockPars.addConstant("clight", clight);
+  blockPars.addConstant("me", mass_e);
+  blockPars.addConstant("mp", mass_p);
+  blockPars.addConstant("e", unit_charge);
+  blockPars.addConstant("mu0", mu_0);
+  blockPars.addConstant("eps0", eps_0);
+
   Globals::instance().initGlobalParameters(blockPars);
 }
 
@@ -87,19 +96,19 @@ void OPar::execute()
 
   do
   {
-    std::cerr << "Time = " << Globals::instance().getT() << std::endl;
+    //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
     debug_check_out_of_bounds("A");
     // Advance electromagnetic fields
     BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
     debug_check_out_of_bounds("B");
 
     // Advance particle species
-    std::cerr << "push" << std::endl;
+    //std::cerr << "push" << std::endl;
     BOOST_FOREACH(Species *s, species) s->pushParticles(dt);
     debug_check_out_of_bounds("C");
 
     // run diagnostics
-    std::cerr << "diagnostic" << std::endl;
+    //std::cerr << "diagnostic" << std::endl;
     DiagnosticManager::instance().execute();
     debug_check_out_of_bounds("D");
 
@@ -174,7 +183,9 @@ int main(int argc, char **argv)
   }
   try
   {
-    application = P.parse(in, "test_parser_sample.txt");
+    SCHNEK_TRACE_ERR(1,"Parsing opar.config");
+    application = P.parse(in, "opar.config");
+    SCHNEK_TRACE_ERR(1,"Done parsing opar.config");
   }
   catch (ParserError &e)
   {
@@ -185,6 +196,7 @@ int main(int argc, char **argv)
   OPar &opar = dynamic_cast<OPar&>(*application);
   try
   {
+    SCHNEK_TRACE_ERR(1,"Initialising Variables");
     opar.initAll();
   }
   catch (VariableNotInitialisedException &e)

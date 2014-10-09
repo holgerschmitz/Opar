@@ -30,7 +30,7 @@
 #include <algorithm>
 
 #undef LOGLEVEL
-#define LOGLEVEL 1
+#define LOGLEVEL 0
 
 static const long STORAGE_BLOCK_SIZE = 1000000;
 

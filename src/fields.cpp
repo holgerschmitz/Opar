@@ -23,11 +23,14 @@
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.hpp"
 #include "currents.hpp"
 #include "fields.hpp"
 #include "globals.hpp"
 #include "opar.hpp"
 #include "util.hpp"
+
+#include "constants.hpp"
 
 #include <schnek/tools/fieldtools.hpp>
 #include <schnek/util/logger.hpp>
@@ -40,7 +43,7 @@
 
 
 #undef LOGLEVEL
-#define LOGLEVEL 1
+#define LOGLEVEL 0
 
 #ifdef THREE_DIMENSIONAL
 
@@ -365,24 +368,24 @@ inline void Fields::fdtdStepD(double dt,
                               double Jx, double Jy, double Jz)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(5)
-  double kappaEdx = dx[0];
+  double kappaEdx = dx[0]/clight2;
 
 //  double kappaEdx = (*pKappaEdx)(i)*dx;
 //  double kappaEdy = (*pKappaEdy)(j)*dy;
 //  double kappaEdz = (*pKappaEdz)(k)*dz;
 
-  (*pEx)(i) -= dt*Jx;
+  (*pEx)(i) -= eps_0_inv*dt*Jx;
 
   (*pEy)(i) +=
     dt*(
       - ((*pBz)(i) - (*pBz)(i-1))/kappaEdx
-      - Jy
+      - eps_0_inv*Jy
     );
 
   (*pEz)(i) +=
     dt*(
         ((*pBy)(i) - (*pBy)(i-1))/kappaEdx
-      - Jz
+      - eps_0_inv*Jz
     );
 }
 
@@ -570,7 +573,7 @@ void Fields::init()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
-  static schnek::LiteratureArticle Yee1966("Yee1966", "Yee, K",
+  static schnek::LiteratureArticle Yee1966("Yee:1966", "Yee, K",
       "Numerical solution of initial boundary value problems involving Maxwell's equations in isotropic media.",
       "IEEE Transactions on Antennas and Propagation", "1966", "AP-14", "302--307");
 

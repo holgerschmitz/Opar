@@ -32,7 +32,7 @@
 #include <schnek/util/logger.hpp>
 
 #undef LOGLEVEL
-#define LOGLEVEL 5
+#define LOGLEVEL 0
 
 void Globals::initCommonParameters(BlockParameters &blockPars)
 {

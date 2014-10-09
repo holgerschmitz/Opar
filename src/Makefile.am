@@ -27,6 +27,7 @@ opar_SOURCES =             \
   common.cpp               \
   common.hpp               \
   config.hpp               \
+  constants.hpp            \
   currents.cpp             \
   currents.hpp             \
   defs.hpp                 \

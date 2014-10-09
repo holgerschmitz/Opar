@@ -32,6 +32,7 @@
 #include "particle_boundary.hpp"
 #include "opar.hpp"
 #include "util.hpp"
+#include "constants.hpp"
 
 #include <schnek/grid.hpp>
 #include <schnek/util/logger.hpp>
@@ -45,7 +46,7 @@
 #include <fstream>
 
 #undef LOGLEVEL
-#define LOGLEVEL 3
+#define LOGLEVEL 0
 
 int debug_particle_number = 9702;
 
@@ -274,30 +275,16 @@ void Species::pushParticles(double dt)
   (*pJy) = 0.0;
   (*pJz) = 0.0;
 
-
-  const double clight = 1.0;
-
   // Unvarying multiplication factor
   const SVector dx = Globals::instance().getDx();
 
-#ifdef ONE_DIMENSIONAL
-  const SVector idx(1.0/dx[0]);
-#endif
-
-#ifdef TWO_DIMENSIONAL
-  const SVector idx(1.0/dx[0], 1.0/dx[1]);
-#endif
-
-#ifdef THREE_DIMENSIONAL
-  const SVector idx(1.0/dx[0], 1.0/dx[1], 1.0/dx[2]);
-#endif
-
+  const SVector idx(1.0/dx);
   const double idt = 1.0 / dt;
 
   // particle weighting multiplication factor
   const double fac = ipow(Weighting::particleShapeFactor(), dimension) * charge;
 
-  const double cmratio = fac * dt / (0.5 * clight * mass);
+  const double cmratio = 0.5* fac * dt / mass;
 
 //  int debug_count = 0;
   for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
@@ -315,21 +302,18 @@ void Species::pushParticles(double dt)
 //    }
 
     double wfac = p.weight*fac;
+    double dt_gamma = 0.5*dt/sqrt(p.u.sqr()/clight2 + 1.0);
 
-    double dt_gamma = 0.5*dt/sqrt(
-        p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[2] * p.u[2] + 1.0);
+    p.x = p.x + p.u.project<dimension>() * dt_gamma;
 
-    for (int i=0; i<dimension; ++i)
-      p.x[i] = p.x[i] + p.u[i] * dt_gamma;
+    SCHNEK_TRACE_LOG(3,"particle " << p.x[0] << " " << p.u[0] << " " << dt << " " << p.u[0] * dt_gamma)
 
     SIntVector cell1, cell2, dcell;
     SIntVector debug_cell1, debug_cell2;
     SVector cell_frac;
-    SVector cell_pos(p.x);
+    SVector cell_pos(p.x*idx);
 
     debug_check_out_of_bounds("AA", p_debug_old, particle, debug_cell1, debug_cell2);
-
-    for (int i=0; i<dimension; ++i) cell_pos[i] *= idx[i];
 
     Weighting::toCellIndex(cell_pos, cell1, cell_frac);
     Weighting::getShape(cell1, cell_frac, gx);
@@ -342,18 +326,14 @@ void Species::pushParticles(double dt)
     PVector E = Weighting::interpolateE(gx, hx, cell1, cell2, *pEx, *pEy, *pEz);
     PVector B = Weighting::interpolateB(gx, hx, cell1, cell2, *pBx, *pBy, *pBz);
 
-    PVector um;
-    for (int i=0; i<3; ++i)
-      um[i] = p.u[i] + cmratio * E[i];
+    PVector um = p.u + cmratio * E;
 
-    dt_gamma = 0.5*dt/sqrt(um[0] * um[0] + um[1] * um[1] + um[2] * um[2] + 1.0);
+    dt_gamma = 0.5*dt/sqrt(um.sqr()/clight2 + 1.0);
 
-    PVector tau;
+    const PVector tau = B * dt_gamma;
+    const PVector tau2 = tau*tau;
     PVector ud, urot;
-    for (int i=0; i<3; ++i) tau[i] = B[i] * dt_gamma;
 
-    PVector tau2(tau);
-    for (int i=0; i<3; ++i) tau2[i] *= tau[i];
     const double tau_ifac = 2.0 / (tau2[0] + tau2[1] + tau2[2] + 1.0);
 
     schnek::crossProduct(ud, um, tau);
@@ -363,11 +343,8 @@ void Species::pushParticles(double dt)
     for (int i=0; i<3; ++i)
       p.u[i] = um[i] + tau_ifac*urot[i] + cmratio * E[i];
 
-//    const double igamma = 1.0/sqrt((um[0] + tau_ifac*urot[0])*(um[0] + tau_ifac*urot[0])+
-//        (um[1] + tau_ifac*urot[1])*(um[1] + tau_ifac*urot[1])+
-//        (um[2] + tau_ifac*urot[2])*(um[2] + tau_ifac*urot[2])+ 1.0);
 
-    const double igamma = 1.0/sqrt(p.u[0] * p.u[0] + p.u[1] * p.u[1] + p.u[2] * p.u[2] + 1.0);
+    const double igamma = 1.0/sqrt(p.u.sqr()/clight2 + 1.0);
 
     for (int i=0; i<dimension; ++i)
       p.x[i] = p.x[i] + p.u[i] * (0.5 * dt * igamma);
@@ -379,8 +356,7 @@ void Species::pushParticles(double dt)
 //      std::cerr << "After " << p.x[0] << " (" <<p.u[0]<<", "<<p.u[1]<<", "<<p.u[2]<<")"<< std::endl;
 //    }
 
-    cell_pos = p.x;
-    for (int i=0; i<dimension; ++i) cell_pos[i] *= idx[i];
+    cell_pos = p.x*idx;
 
     // Calculate the current using the charge conserving algorithm by Esirkepov
     // T.Z. Esirkepov, Comp. Phys. Comm., vol 135, p.144 (2001)
@@ -389,7 +365,14 @@ void Species::pushParticles(double dt)
     Weighting::toCellIndex(cell_pos, cell2, cell_frac);
 
     for (int i=0; i<dimension; ++i)
+    {
       dcell[i] = cell2[i] - cell1[i];
+      if ((dcell[i]>1) || (dcell[i]<-1))
+      {
+        std::cerr << "Particle is moving more that one grid cell per time step.\nStopping now!\n";
+        exit(-1);
+      }
+    }
 
     Weighting::getShape(cell2, cell_frac, hx);
 
@@ -435,6 +418,7 @@ void Species::pushParticles(double dt)
     const double fjz = idt * idx[0] * idx[1] * wfac;
 #endif
 
+    SCHNEK_TRACE_LOG(5,"loop "<< lo[0] << " " << hi[0] << " " << d.getLo()[0] << " " << d.getHi()[0] << " " << dcell[0])
     SPACE_LOOP (l_ind, lo, hi)
     {
       // Particle weighting according to
@@ -508,6 +492,8 @@ void Species::pushParticles(double dt)
       SIntVector g_ind;
       for (int i=0; i<dimension; ++i)
         g_ind[i] = cell1[i] + l_ind[i];
+
+      SCHNEK_TRACE_LOG(5,"pos "<< cell1[0] << " " << l_ind[0] << " " << g_ind[0] << " " << jxHelper.getLo()[0] << " " << jxHelper.getHi()[0] << " " << pJx->getLo()[0] << " " << pJx->getHi()[0])
 
       (*pJx)[g_ind] += jxHelper[l_ind];
       (*pJy)[g_ind] += jyHelper[l_ind];

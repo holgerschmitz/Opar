@@ -30,7 +30,7 @@
 #include "config.hpp"
 
 #undef LOGLEVEL
-#define LOGLEVEL 2
+#define LOGLEVEL 0
 #include <schnek/grid.hpp>
 #include <schnek/variables.hpp>
 

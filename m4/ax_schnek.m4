@@ -75,7 +75,7 @@ if test "x$want_schnek" = "xyes"; then
         fi
         
         if test "$SCHNEK_LIBDIR" != ""; then
-            SCHNEK_LDFLAGS="-L$HDF5_LIBDIR"
+            SCHNEK_LDFLAGS="-L$SCHNEK_LIBDIR"
         fi
     fi
 

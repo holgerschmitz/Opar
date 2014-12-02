@@ -134,7 +134,7 @@ void initBlockLayout(BlockClasses &blocks)
 {
 
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-  blocks.addBlock("opar");
+  blocks.registerBlock("opar");
   blocks("opar").addChildren("Common")("Fields")
       ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 

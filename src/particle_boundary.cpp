@@ -35,15 +35,15 @@ ParticleBoundary::ParticleBoundary(int dim_, int direction_) :
     dim(dim_), direction(direction_)
 {
   if (direction > 0)
-    limit = (Globals::instance().getDomainMax())[dim];
+    limit = 2*(Globals::instance().getGlobalGridSize())[dim];
   else
-    limit = (Globals::instance().getDomainMin())[dim];
+    limit = 0;
 }
 
 PeriodicParticleBoundary::PeriodicParticleBoundary(int dim_, int direction_)
   : ParticleBoundary(dim_, direction_)
 {
-  shift = (Globals::instance().getDomainMax())[dim] - (Globals::instance().getDomainMin())[dim];
+  shift = 2*(Globals::instance().getGlobalGridSize())[dim];
 }
 
 void PeriodicParticleBoundary::apply(ParticleExchange::PartList &particles)
@@ -58,8 +58,8 @@ void PeriodicParticleBoundary::apply(ParticleExchange::PartList &particles)
     for (ParticleExchange::PartList::iterator it = particles.begin();
         it != particles.end(); ++it)
     {
-      SCHNEK_TRACE_LOG(5,"Shifting particle from "<<(*it)->x[dim]<<" by "<< -shift)
-      (*it)->x[dim] -= shift;
+      SCHNEK_TRACE_LOG(5,"Shifting particle from "<<(*it)->xi[dim]<<" by "<< -shift)
+      (*it)->xi[dim] -= shift;
     }
   }
   else
@@ -67,8 +67,8 @@ void PeriodicParticleBoundary::apply(ParticleExchange::PartList &particles)
     for (ParticleExchange::PartList::iterator it = particles.begin();
         it != particles.end(); ++it)
     {
-      SCHNEK_TRACE_LOG(5,"Shifting particle from "<<(*it)->x[dim]<<" by "<< shift)
-      (*it)->x[dim] += shift;
+      SCHNEK_TRACE_LOG(5,"Shifting particle from "<<(*it)->xi[dim]<<" by "<< shift)
+      (*it)->xi[dim] += shift;
     }
   }
 
@@ -80,7 +80,8 @@ void ReflectingParticleBoundary::apply(ParticleExchange::PartList &particles)
   {
     Particle &p = *(particles.front());
 
-    p.x[dim] = 2.0 * limit - p.x[dim];
+    p.xi[dim] = 2 * limit - p.xi[dim] - 1;
+    p.xf[dim] = 1.0 - p.xf[dim];
     p.u[dim] = -p.u[dim];
 
     particles.pop_front();

@@ -119,7 +119,6 @@ class Globals : public Singleton<Globals>
     SRange getLocalDomainRange() const { return  SRange(localDomainMin, localDomainMax); }
 
     const SIntVector &getGlobalGridSize() const { return globalGridSize; }
-    const SIntVector &getGlobalGridMin() const { return globalGridSize; }
 
     const SIntVector &getLocalGridMin() const { return localGridMin; }
     const SIntVector &getLocalGridMax() const { return localGridMax; }

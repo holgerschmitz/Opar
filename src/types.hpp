@@ -35,6 +35,7 @@
 #include <schnek/variables.hpp>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/cstdint.hpp>
 
 #undef LOGLEVEL
 #define LOGLEVEL 0
@@ -85,6 +86,12 @@ typedef schnek::Array<real, 3, ArrayArgCheck> PVector;
 
 typedef schnek::Array<int, dimension, ArrayArgCheck> SIntVector;
 typedef schnek::Array<int, 3, ArrayArgCheck> PIntVector;
+
+// These types are used to store the particle positions
+// I will have to test how much impact this has on memory compared to the
+// full sized number formats
+typedef schnek::Array<boost::int32_t, dimension, ArrayArgCheck> SSmallIntVector;
+typedef schnek::Array<float, dimension, ArrayArgCheck> SSmallVector;
 
 typedef schnek::Array<schnek::pParameter, dimension, ArrayArgCheck> SParameterVector;
 typedef schnek::Array<schnek::pParameter, 3, ArrayArgCheck> PParameterVector;

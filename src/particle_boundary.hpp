@@ -41,7 +41,7 @@ class ParticleBoundary
     /// The direction either -1 for the lower bound or +1 for the higher bound
     int direction;
     /// The limiting value of the coordinate
-    double limit;
+    int limit;
   public:
     /** Constructor of the boundary class
      *
@@ -68,7 +68,7 @@ typedef boost::shared_ptr<ParticleBoundary> pParticleBoundary;
 class PeriodicParticleBoundary : public ParticleBoundary
 {
   private:
-    double shift;
+    int shift;
   public:
     /** Constructor of the boundary class
      *

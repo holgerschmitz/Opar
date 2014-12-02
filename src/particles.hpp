@@ -41,8 +41,14 @@ class Particle
     static long nextIndex;
     long index;
   public:
-    /// This is the position
-    SVector x;
+    /** This is the position, normalised to half the grid cell on the global grid
+     *
+     * This should make it easy to calculate the grid index for staggered and unstaggered grids.
+     */
+    SSmallIntVector xi;
+    /// The offset of the particle position
+    SSmallVector xf;
+
     /// This is the relativistic four velocity
     PVector u;
     real weight;
@@ -50,18 +56,21 @@ class Particle
     Particle() : index(0), weight(1.0)
     {
     }
-    Particle(const SVector &x_, const PVector &u_, real weight_) :
-      index(++nextIndex), x(x_), u(u_), weight(weight_)
+
+    Particle(const SSmallIntVector &xi_, const SSmallVector &xf_, const PVector &u_, real weight_) :
+      index(++nextIndex), xi(xi_), xf(xf_), u(u_), weight(weight_)
     {
     }
+
     Particle(const Particle &P) :
-      index(P.index), x(P.x), u(P.u), weight(P.weight)
+      index(P.index), xi(P.xi), xf(P.xf), u(P.u), weight(P.weight)
     {
     }
 
     Particle &operator=(const Particle &P)
     {
-      x = P.x;
+      xi = P.xi;
+      xf = P.xf;
       u = P.u;
       weight = P.weight;
       index = P.index;
@@ -70,7 +79,8 @@ class Particle
 
     void copyFrom(const Particle &P)
     {
-      x = P.x;
+      xi = P.xi;
+      xf = P.xf;
       u = P.u;
       weight = P.weight;
       index = ++nextIndex;
@@ -81,16 +91,18 @@ class Particle
       return index;
     }
 
-    void setValues(SVector &x_, PVector &u_, real weight_)
+    void setValues(const SSmallIntVector &xi_, const SSmallVector &xf_, PVector &u_, real weight_)
     {
-      x = x_;
+      xi = xi_;
+      xf = xf_;
       u = u_;
       weight = weight_;
     }
 
-    void setValues(SVector &x_, PVector &u_)
+    void setValues(const SSmallIntVector &xi_, const SSmallVector &xf_, PVector &u_)
     {
-      x = x_;
+      xi = xi_;
+      xf = xf_;
       u = u_;
     }
 };

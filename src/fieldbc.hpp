@@ -35,6 +35,7 @@ class FieldBC
   public:
     typedef enum {lo = 1, hi = -1} Direction;
     FieldBC() {}
+    virtual ~FieldBC() {}
     virtual void applyEx(DataField &grid, int dim, Direction dir) = 0;
     virtual void applyEy(DataField &grid, int dim, Direction dir) = 0;
     virtual void applyEz(DataField &grid, int dim, Direction dir) = 0;

@@ -63,12 +63,23 @@ void debug_check_out_of_bounds(std::string checkpoint)
 }
 
 
-class FieldDiagnostic : public schnek::HDFGridDiagnostic<DataField, pDataField>
+class FieldDiagnostic : public schnek::HDFGridDiagnostic<
+    typename DataField::BaseType, pDataField>
 {
   protected:
-    typedef HDFGridDiagnostic<DataField, pDataField>::IndexType IndexType;
-    IndexType getGlobalMin() { return IndexType(0); }
-    IndexType getGlobalMax() { IndexType max = Globals::instance().getGlobalGridSize(); max-=1; return max; }
+    typedef HDFGridDiagnostic<typename DataField::BaseType, pDataField>::IndexType IndexType;
+    IndexType getGlobalMin()
+    {
+      // return IndexType(0);
+      return IndexType(-2); // we want to write out the ghost cells
+    }
+    IndexType getGlobalMax()
+    {
+      IndexType max = Globals::instance().getGlobalGridSize();
+//      max -= 1;
+      max += 1;  // we want to write out the ghost cells
+      return max;
+    }
 };
 
 void OPar::initParameters(BlockParameters &blockPars)
@@ -134,7 +145,7 @@ void initBlockLayout(BlockClasses &blocks)
 {
 
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-  blocks.addBlock("opar");
+  blocks.registerBlock("opar");
   blocks("opar").addChildren("Common")("Fields")
       ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 

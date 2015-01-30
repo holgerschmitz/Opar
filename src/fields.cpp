@@ -618,6 +618,7 @@ void Fields::init()
   fill_field(*pBy, coords, BInit[1], *updater, BParam[1]);
   fill_field(*pBz, coords, BInit[2], *updater, BParam[2]);
 
+
   for (int i=0; i<dimension; ++i)
   {
     if (fieldBCFactories.count(bcNamesLo[i]) == 0)

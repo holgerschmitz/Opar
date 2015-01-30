@@ -233,6 +233,7 @@ int runOpar(int argc, char **argv)
     referencesBib.close();
   }
   opar.execute();
+  return 0;
 }
 
 int main(int argc, char **argv)

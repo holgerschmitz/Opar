@@ -55,6 +55,9 @@
 /* Defined if the OPar is compiled in 1D configuration */
 #undef ONE_DIMENSIONAL
 
+/* Defined if the OPar is compiled with Vtk support */
+#undef OPAR_HAVE_VTK
+
 /* Name of package */
 #undef PACKAGE
 

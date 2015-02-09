@@ -108,7 +108,7 @@ DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_base.m4 \
 	$(top_srcdir)/m4/ax_hdf5.m4 $(top_srcdir)/m4/ax_schnek.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/ax_vtk.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -294,6 +294,9 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VTK_CPPFLAGS = @VTK_CPPFLAGS@
+VTK_LIBS = @VTK_LIBS@
+VTK_RPATH = @VTK_RPATH@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@

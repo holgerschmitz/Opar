@@ -636,6 +636,9 @@ LIBOBJS
 SCHNEK_LDFLAGS
 SCHNEK_LIBS
 SCHNEK_CPPFLAGS
+VTK_RPATH
+VTK_LIBS
+VTK_CPPFLAGS
 HDF5_LDFLAGS
 HDF5_LIBS
 HDF5_CFLAGS
@@ -782,6 +785,9 @@ with_boost_libdir
 with_mpi
 with_hdf5
 with_hdf5_libdir
+with_vtk
+with_vtk_version
+with_vtk_lib_suffix
 with_schnek
 with_schnek_libdir
 with_dimension
@@ -1459,6 +1465,14 @@ Optional Packages:
                           this parameter only if default library detection
                           fails and you know exactly where your HDF5 libraries
                           are located.
+  --with-vtk              The prefix where VTK is installed (default is
+                          /usr/local)
+  --with-vtk-version      VTK's include directory name is vtk-suffix, e.g.
+                          vtk-5.0. What's the suffix? (Finds highest available
+                          by default). NOTE YOU MUST INCLUDE THE DASH.
+  --with-vtk-lib-suffix   VTK's lib directory name is usually something like
+                          lib/vtk-suffix. This defaults to the same string
+                          supplied to vtk-version, but can be different.
   --with-schnek[=ARG]     use Schnek library from a standard location
                           (ARG=yes), from the specified location (ARG=<path>),
                           or disable it (ARG=no) [ARG=yes]
@@ -15990,6 +16004,189 @@ $as_echo "#define HAVE_HDF5 /**/" >>confdefs.h
     LDFLAGS="$LDFLAGS_SAVED"
 fi
 
+
+
+
+# Check whether --with-vtk was given.
+if test "${with_vtk+set}" = set; then :
+  withval=$with_vtk; with_vtk=$withval
+else
+  with_vtk="/usr/local"
+fi
+
+
+
+# Check whether --with-vtk-version was given.
+if test "${with_vtk_version+set}" = set; then :
+  withval=$with_vtk_version; vtk_suffix=-$withval
+else
+  vtk_include_dir="$with_vtk/include"
+               vtk_suffix=`ls $vtk_include_dir | sort -r | head -1 | sed 's/^vtk//'`
+               if test "x$vtk_suffix" = "x"; then
+                 with_vtk=no
+                 echo "Couldn't find VTK include directory."
+               fi
+
+fi
+
+
+
+# Check whether --with-vtk-lib-suffix was given.
+if test "${with_vtk_lib_suffix+set}" = set; then :
+  withval=$with_vtk_lib_suffix; vtk_libsuffix=$withval
+else
+  vtk_libsuffix=$vtk_suffix
+fi
+
+
+
+
+        # do we want to check for VTK ?
+        if [ $with_vtk = "yes" ]; then
+            # in case user wrote --with-vtk=yes
+            with_vtk="/usr/local"
+        fi
+
+        if [ $with_vtk != "no" ]; then
+            VTK_PREFIX="$with_vtk"
+            as_ac_File=`$as_echo "ac_cv_file_$VTK_PREFIX/include/vtk$vtk_suffix/vtkCommonCoreInstantiator.h" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $VTK_PREFIX/include/vtk$vtk_suffix/vtkCommonCoreInstantiator.h" >&5
+$as_echo_n "checking for $VTK_PREFIX/include/vtk$vtk_suffix/vtkCommonCoreInstantiator.h... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "$VTK_PREFIX/include/vtk$vtk_suffix/vtkCommonCoreInstantiator.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+  vtkFound="OK"
+fi
+
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking if VTK is installed in $VTK_PREFIX" >&5
+$as_echo_n "checking if VTK is installed in $VTK_PREFIX... " >&6; }
+            if [ -z "$vtkFound" ]; then
+                # not found !
+                { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+  have_vtk="no"
+
+            else
+                # found !
+                { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+                # these are the VTK libraries of a default build
+                VTK_DEFAULT_LIBS="-lvtkCommonCore -lvtkRenderingCore -lvtkImagingCore -lvtkImagingGeneral -lvtkImagingSources -lvtkCommonExecutionModel -lvtkIOImage -lvtkInteractionStyle -lvtkRenderingFreeType -lvtkRenderingFreeTypeOpenGL -lvtkRenderingOpenGL -lboost_system -lboost_thread"
+
+                # set VTK c,cpp,ld flags
+                VTK_CPPFLAGS="-I$VTK_PREFIX/include/vtk$vtk_suffix"
+                VTK_LIB_PATH="$VTK_PREFIX/lib/vtk$vtk_libsuffix"
+                VTK_LIBS="-L$VTK_LIB_PATH $VTK_DEFAULT_LIBS"
+                VTK_RPATH="-R $VTK_LIB_PATH"
+
+                # now, eventually check version
+                if [ -n "" ]; then
+
+                    # the version of VTK we need:
+                    maj=`echo  | sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\1/'`
+                    min=`echo  | sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\2/'`
+                    rel=`echo  | sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if VTK version is at least $maj.$min.$rel" >&5
+$as_echo_n "checking if VTK version is at least $maj.$min.$rel... " >&6; }
+
+                    # in order to be able to compile the following test program, we need to add
+                    # to the current flags, the VTK settings...
+                    OLD_CPPFLAGS=$CPPFLAGS
+                    OLD_LIBS=$LIBS
+
+                    CPPFLAGS="$VTK_CPPFLAGS $CFLAGS"
+                    LIBS="$VTK_LIBS $VTK_RPATH $LIBS"
+
+                    # check if the installed VTK is greater or not
+                    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+                            #include <vtkConfigure.h>
+                            #include <stdio.h>
+
+int
+main ()
+{
+
+                             printf("VTK version is: %d.%d.%d", VTK_MAJOR_VERSION, VTK_MINOR_VERSION, VTK_BUILD_VERSION);
+                             #if VTK_MAJOR_VERSION < $maj
+                                 #error Installed VTK is too old !
+                             #endif
+                             #if VTK_MINOR_VERSION < $min
+                                 #error Installed VTK is too old !
+                             #endif
+                             #if VTK_BUILD_VERSION < $rel
+                                 #error Installed VTK is too old !
+                             #endif
+
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  vtkVersion="OK"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+                    if [ "$vtkVersion" = "OK" ]; then
+
+
+
+                        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+
+$as_echo "#define OPAR_HAVE_VTK 1" >>confdefs.h
+
+  EXTRA_CPPFLAGS="$EXTRA_CPPFLAGS $VTK_CPPFLAGS"
+  EXTRA_LIBS="$EXTRA_LIBS $VTK_LIBS"
+
+                    else
+                        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+  have_vtk="no"
+
+                   fi
+
+                   #Reset CPPFLAGS, etc. to their original state after we are done with the test.
+                   CPPFLAGS="$OLD_CPPFLAGS"
+                   LIBS="$OLD_LIBS"
+               else
+                    # if we don't have to check for minimum version (because the user did not set that option),
+                    # then we can execute here the block action-if-found
+
+
+
+
+
+$as_echo "#define OPAR_HAVE_VTK 1" >>confdefs.h
+
+  EXTRA_CPPFLAGS="$EXTRA_CPPFLAGS $VTK_CPPFLAGS"
+  EXTRA_LIBS="$EXTRA_LIBS $VTK_LIBS"
+
+               fi
+           fi
+       else
+
+  have_vtk="no"
+
+       fi
 
 
 #End :: Check HDF5 support

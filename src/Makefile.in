@@ -108,7 +108,7 @@ DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_base.m4 \
 	$(top_srcdir)/m4/ax_hdf5.m4 $(top_srcdir)/m4/ax_schnek.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/ax_vtk.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -121,7 +121,7 @@ am_opar_OBJECTS = common.$(OBJEXT) currents.$(OBJEXT) fields.$(OBJEXT) \
 	globals.$(OBJEXT) opar.$(OBJEXT) particles.$(OBJEXT) \
 	particle_boundary.$(OBJEXT) particle_exchange.$(OBJEXT) \
 	particle_diagnostic.$(OBJEXT) random.$(OBJEXT) \
-	species.$(OBJEXT) util.$(OBJEXT)
+	species.$(OBJEXT) util.$(OBJEXT) vtkdisplay.$(OBJEXT)
 opar_OBJECTS = $(am_opar_OBJECTS)
 opar_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -287,6 +287,9 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VTK_CPPFLAGS = @VTK_CPPFLAGS@
+VTK_LIBS = @VTK_LIBS@
+VTK_RPATH = @VTK_RPATH@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -371,6 +374,8 @@ opar_SOURCES = \
   types.hpp                \
   util.hpp                 \
   util.cpp                 \
+  vtkdisplay.hpp           \
+  vtkdisplay.cpp           \
   weighting.hpp
 
 all: config.hpp
@@ -495,6 +500,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/random.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/species.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtkdisplay.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

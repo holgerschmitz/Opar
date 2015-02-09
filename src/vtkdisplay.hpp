@@ -26,15 +26,29 @@
 #ifndef SRC_VTKDISPLAY_HPP_
 #define SRC_VTKDISPLAY_HPP_
 
+#include "config.hpp"
+
+#ifdef OPAR_HAVE_VTK
 
 #include <schnek/diagnostic/diagnostic.hpp>
 
+#define vtkRenderingCore_AUTOINIT 4 (vtkInteractionStyle, vtkRenderingFreeType, vtkRenderingFreeTypeOpenGL, vtkRenderingOpenGL)
+#define vtkRenderingVolume_AUTOINIT 1 (vtkRenderingVolumeOpenGL)
+
+#include <vtkSmartPointer.h>
+#include <vtkImageImport.h>
+#include <vtkRenderWindowInteractor.h>
+
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
+#include <list>
+
 
 template<typename Type, typename PointerType = boost::shared_ptr<Type> >
 class VTKGridDisplay : public schnek::SimpleDiagnostic<Type, PointerType> {
-  protected:
-
+  private:
+    vtkSmartPointer<vtkImageImport> imageImport;
   protected:
     typedef typename Type::IndexType IndexType;
     void write();
@@ -45,7 +59,13 @@ class VTKGridDisplay : public schnek::SimpleDiagnostic<Type, PointerType> {
 };
 
 
+template<typename Type>
+struct TypeToVtk
+{
+    static const int value;
+};
 
+#include "vtkdisplay.t"
 
-
-#endif /* SRC_VTKDIAGNOSTIC_HPP_ */
+#endif // OPAR_HAVE_VTK
+#endif // SRC_VTKDIAGNOSTIC_HPP_

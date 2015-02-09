@@ -40,6 +40,9 @@ class OPar : public Block
   private:
     std::list<Fields*> fields;
     std::list<Species*> species;
+    bool stop;
+    void doExecute();
+    friend class OParRunner;
   protected:
     void initParameters(BlockParameters &blockPars);
   public:
@@ -50,6 +53,7 @@ class OPar : public Block
     void addDiagnostic(DiagnosticInterface *d);
 
 };
+
 
 
 #endif /* OPAR_HPP_ */

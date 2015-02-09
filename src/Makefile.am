@@ -54,6 +54,8 @@ opar_SOURCES =             \
   types.hpp                \
   util.hpp                 \
   util.cpp                 \
+  vtkdisplay.hpp           \
+  vtkdisplay.cpp           \
   weighting.hpp
 
 

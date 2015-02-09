@@ -101,6 +101,16 @@ AX_HDF5([
   have_hdf5="no"
 ])
 
+AC_OPTIONS_VTK
+
+AC_PATH_VTK([], [
+  AC_DEFINE([OPAR_HAVE_VTK],[1],[Defined if the OPar is compiled with Vtk support])
+  EXTRA_CPPFLAGS="$EXTRA_CPPFLAGS $VTK_CPPFLAGS"
+  EXTRA_LIBS="$EXTRA_LIBS $VTK_LIBS"
+],[
+  have_vtk="no"
+])
+
 #End :: Check HDF5 support
 
 AX_SCHNEK([0.9.1],[

@@ -32,6 +32,7 @@
 #include "globals.hpp"
 #include "particle_diagnostic.hpp"
 #include "species.hpp"
+#include "vtkdisplay.hpp"
 
 #include "constants.hpp"
 
@@ -40,6 +41,8 @@
 #include <schnek/tools/literature.hpp>
 #include <schnek/diagnostic/diagnostic.hpp>
 #include <schnek/diagnostic/hdfdiagnostic.hpp>
+
+#include <boost/thread.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -97,14 +100,44 @@ void OPar::initParameters(BlockParameters &blockPars)
   Globals::instance().initGlobalParameters(blockPars);
 }
 
+class OParRunner
+{
+  private:
+    OPar *opar;
+  public:
+    OParRunner(OPar *opar_) : opar(opar_) {}
+    void operator()() {
+      opar->doExecute();
+    }
+};
+
 void OPar::execute()
+{
+  stop = false;
+#ifndef OPAR_HAVE_VTK
+  doExecute();
+#else
+  if (Globals::instance().hasInteractor())
+  {
+    OParRunner runner(this);
+    boost::thread mainLoop(runner);
+    Globals::instance().getInteractor()->Start();
+    stop = true;
+    mainLoop.join();
+  }
+  else
+    doExecute();
+#endif
+
+}
+
+void OPar::doExecute()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
   double dt = Globals::instance().getDt();
 
   BOOST_FOREACH(Fields *f, fields) f->stepSchemeInit(dt);
-
   do
   {
     //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
@@ -123,8 +156,10 @@ void OPar::execute()
     DiagnosticManager::instance().execute();
     debug_check_out_of_bounds("D");
 
+    //Globals::instance().getInteractor()->GetRenderWindow()->Render();
+
     //if ((++n % 10) == 0) { BOOST_FOREACH(Fields *f, fields) f->writeAsTextFiles(n); }
-  } while (Globals::instance().stepTime());
+  } while (Globals::instance().stepTime() && !stop);
 
 
 }
@@ -147,7 +182,7 @@ void initBlockLayout(BlockClasses &blocks)
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   blocks.registerBlock("opar");
   blocks("opar").addChildren("Common")("Fields")
-      ("Species")("FieldDiagnostic")("ParticleDiagnostic");
+      ("Species")("FieldDiagnostic")("ParticleDiagnostic")("VTKGridDisplay");
 
   blocks("opar").setClass<OPar>();
   blocks("Common").setClass<CommonBlock>();
@@ -155,6 +190,7 @@ void initBlockLayout(BlockClasses &blocks)
   blocks("Species").setClass<Species>();
   blocks("FieldDiagnostic").setClass<FieldDiagnostic>();
   blocks("ParticleDiagnostic").setClass<ParticleDiagnostic>();
+  blocks("VTKGridDisplay").setClass< VTKGridDisplay<DataField2d> >();
 
   //blocks("Fields").addChildren("FieldBC")("FieldInit");
   //blocks("Species").addChildren("SpeciesBC")("SpeciesInit");

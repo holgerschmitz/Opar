@@ -32,6 +32,12 @@
 #include <schnek/grid/domainsubdivision.hpp>
 //#include <schnek/variables.hpp>
 
+
+#ifdef OPAR_HAVE_VTK
+#include <vtkSmartPointer.h>
+#include <vtkRenderWindowInteractor.h>
+#endif
+
 class CommonBlock;
 
 using namespace schnek;
@@ -96,6 +102,10 @@ class Globals : public Singleton<Globals>
     friend class Singleton<Globals>;
     friend class CreateUsingNew<Globals>;
 
+#ifdef OPAR_HAVE_VTK
+    std::list<vtkSmartPointer<vtkRenderWindowInteractor> > globalInteractors;
+#endif
+
     Globals() : t(0.0), t_count(0), spaceVars(new ParametersGroup()), timeVars(new ParametersGroup()) {}
   public:
     void setup(VariableStorage &vars);
@@ -141,6 +151,12 @@ class Globals : public Singleton<Globals>
 
     pDependencyUpdater getUpdater(VarGroup gr=var_none);
     pSubdivision getSubdivision() { return subdivision; }
+
+#ifdef OPAR_HAVE_VTK
+    void addInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor) { globalInteractors.push_back(interactor); }
+    vtkSmartPointer<vtkRenderWindowInteractor> getInteractor() { return globalInteractors.back(); }
+    bool hasInteractor() {return globalInteractors.size()>0; }
+#endif
 };
 
 #endif // GLOBALS_HPP_ 

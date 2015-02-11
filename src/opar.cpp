@@ -63,12 +63,23 @@ void debug_check_out_of_bounds(std::string checkpoint)
 }
 
 
-class FieldDiagnostic : public schnek::HDFGridDiagnostic<DataField, pDataField>
+class FieldDiagnostic : public schnek::HDFGridDiagnostic<
+    typename DataField::BaseType, pDataField>
 {
   protected:
-    typedef HDFGridDiagnostic<DataField, pDataField>::IndexType IndexType;
-    IndexType getGlobalMin() { return IndexType(0); }
-    IndexType getGlobalMax() { IndexType max = Globals::instance().getGlobalGridSize(); max-=1; return max; }
+    typedef HDFGridDiagnostic<typename DataField::BaseType, pDataField>::IndexType IndexType;
+    IndexType getGlobalMin()
+    {
+      // return IndexType(0);
+      return IndexType(-2); // we want to write out the ghost cells
+    }
+    IndexType getGlobalMax()
+    {
+      IndexType max = Globals::instance().getGlobalGridSize();
+//      max -= 1;
+      max += 1;  // we want to write out the ghost cells
+      return max;
+    }
 };
 
 void OPar::initParameters(BlockParameters &blockPars)
@@ -134,7 +145,7 @@ void initBlockLayout(BlockClasses &blocks)
 {
 
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-  blocks.addBlock("opar");
+  blocks.registerBlock("opar");
   blocks("opar").addChildren("Common")("Fields")
       ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 
@@ -156,13 +167,14 @@ void initFunctions(FunctionRegistry &freg)
   registerCMath(freg);
 }
 
-int main(int argc, char **argv)
+/** Runs the OPar simulation code
+ *
+ *  This is placed outside the main function so that we can return on error and still
+ *  be sure that MPI is properly closed down.
+ */
+int runOpar(int argc, char **argv)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-
-#ifdef HAVE_MPI
-    MPI_Init(&argc, &argv);
-#endif
 
   VariableStorage vars("opar", "opar");
   FunctionRegistry freg;
@@ -179,7 +191,7 @@ int main(int argc, char **argv)
   std::ifstream in("opar.config");
   if (!in) {
     std::cerr << "Could not open file\n";
-    exit(-1);
+    return -1;
   }
   try
   {
@@ -190,7 +202,7 @@ int main(int argc, char **argv)
   catch (ParserError &e)
   {
     std::cerr << "Parse error, " << e.atomToken.getFilename() << "(" << e.atomToken.getLine() << "): "<< e.message << "\n";
-    exit(-1);
+    return -1;
   }
 
   OPar &opar = dynamic_cast<OPar&>(*application);
@@ -202,12 +214,12 @@ int main(int argc, char **argv)
   catch (VariableNotInitialisedException &e)
   {
     std::cerr << "Variable was not initialised: " << e.getVarName() << std::endl;
-    exit(-1);
+    return -1;
   }
   catch (std::string &err)
   {
     std::cerr << "FATAL ERROR: >>" << err << "<<" << std::endl;
-    exit(-1);
+    return -1;
   }
 
   if (Globals::instance().getSubdivision()->master())
@@ -221,9 +233,23 @@ int main(int argc, char **argv)
     referencesBib.close();
   }
   opar.execute();
+  return 0;
+}
+
+int main(int argc, char **argv)
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+
+#ifdef HAVE_MPI
+    MPI_Init(&argc, &argv);
+#endif
+
+  int returnCode = runOpar(argc, argv);
 
 #ifdef HAVE_MPI
     MPI_Finalize();
 #endif
+
+  return returnCode;
 }
 

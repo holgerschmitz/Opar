@@ -53,29 +53,29 @@ inline void Fields::fdtdStepD(double dt,
                               double Jx, double Jy, double Jz)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(5)
-  double kappaEdx = 1.0;
-  double kappaEdy = 1.0;
-  double kappaEdz = 1.0;
+  double kappaEdx = dx[0]/clight2;
+  double kappaEdy = dx[1]/clight2;
+  double kappaEdz = dx[2]/clight2;
 
 //  double kappaEdx = (*pKappaEdx)(i)*dx;
 //  double kappaEdy = (*pKappaEdy)(j)*dy;
 //  double kappaEdz = (*pKappaEdz)(k)*dz;
 
-  (*pEx)(i,j,k) =
+  (*pEx)(i,j,k) +=
     dt*(
         ((*pBz)(i,j,k) - (*pBz)(i,j-1,k))/kappaEdy
       - ((*pBy)(i,j,k) - (*pBy)(i,j,k-1))/kappaEdz
       - Jx
     );
 
-  (*pEy)(i,j,k) =
+  (*pEy)(i,j,k) +=
     dt*(
         ((*pBx)(i,j,k) - (*pBx)(i,j,k-1))/kappaEdz
       - ((*pBz)(i,j,k) - (*pBz)(i-1,j,k))/kappaEdx
       - Jy
     );
 
-  (*pEz)(i,j,k) =
+  (*pEz)(i,j,k) +=
     dt*(
         ((*pBy)(i,j,k) - (*pBy)(i-1,j,k))/kappaEdx
       - ((*pBx)(i,j,k) - (*pBx)(i,j-1,k))/kappaEdy
@@ -89,29 +89,29 @@ inline void Fields::fdtdStepB(double dt,
                               double Jx, double Jy, double Jz)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(5)
-  double kappaHdx = 1.0;
-  double kappaHdy = 1.0;
-  double kappaHdz = 1.0;
+  double kappaHdx = dx[0];
+  double kappaHdy = dx[1];
+  double kappaHdz = dx[2];
 
 //  double kappaHdx = (*pKappaHdx)(i)*dx;
 //  double kappaHdy = (*pKappaHdy)(j)*dy;
 //  double kappaHdz = (*pKappaHdz)(k)*dz;
 
-  (*pBx)(i,j,k) = (*pBx)(i,j,k)
+  (*pBx)(i,j,k) +=
     + dt*(
         ((*pEy)(i,j,k+1) - (*pEy)(i,j,k))/kappaHdz
       - ((*pEz)(i,j+1,k) - (*pEz)(i,j,k))/kappaHdy
      - Jx
     );
 
-  (*pBy)(i,j,k) = (*pBy)(i,j,k)
+  (*pBy)(i,j,k) +=
     + dt*(
         ((*pEz)(i+1,j,k) - (*pEz)(i,j,k))/kappaHdx
       - ((*pEx)(i,j,k+1) - (*pEx)(i,j,k))/kappaHdz
      - Jy
     );
 
-  (*pBz)(i,j,k) = (*pBz)(i,j,k)
+  (*pBz)(i,j,k) +=
     + dt*(
         ((*pEx)(i,j+1,k) - (*pEx)(i,j,k))/kappaHdy
       - ((*pEy)(i+1,j,k) - (*pEy)(i,j,k))/kappaHdx
@@ -212,8 +212,8 @@ inline void Fields::fdtdStepD(double dt,
                               double Jx, double Jy, double Jz)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(5)
-  double kappaEdx = dx[0];
-  double kappaEdy = dx[1];
+  double kappaEdx = dx[0]/clight2;
+  double kappaEdy = dx[1]/clight2;
 
 //  double kappaEdx = (*pKappaEdx)(i)*dx;
 //  double kappaEdy = (*pKappaEdy)(j)*dy;
@@ -305,13 +305,13 @@ void Fields::stepD(double dt)
     sub->exchange(*pEy,i);
     sub->exchange(*pEz,i);
 
-    boundariesLo[i]->applyEx(*pEx,i,FieldBC::lo);
-    boundariesLo[i]->applyEy(*pEy,i,FieldBC::lo);
-    boundariesLo[i]->applyEy(*pEz,i,FieldBC::lo);
-
-    boundariesHi[i]->applyEx(*pEx,i,FieldBC::hi);
-    boundariesHi[i]->applyEy(*pEy,i,FieldBC::hi);
-    boundariesHi[i]->applyEy(*pEz,i,FieldBC::hi);
+//    boundariesLo[i]->applyEx(*pEx,i,FieldBC::lo);
+//    boundariesLo[i]->applyEy(*pEy,i,FieldBC::lo);
+//    boundariesLo[i]->applyEz(*pEz,i,FieldBC::lo);
+//
+//    boundariesHi[i]->applyEx(*pEx,i,FieldBC::hi);
+//    boundariesHi[i]->applyEy(*pEy,i,FieldBC::hi);
+//    boundariesHi[i]->applyEz(*pEz,i,FieldBC::hi);
   }
 }
 
@@ -348,13 +348,13 @@ void Fields::stepB(double dt)
     sub->exchange(*pBy,i);
     sub->exchange(*pBz,i);
 
-    boundariesLo[i]->applyBx(*pBx,i,FieldBC::lo);
-    boundariesLo[i]->applyBy(*pBy,i,FieldBC::lo);
-    boundariesLo[i]->applyBy(*pBz,i,FieldBC::lo);
-
-    boundariesHi[i]->applyBx(*pBx,i,FieldBC::hi);
-    boundariesHi[i]->applyBy(*pBy,i,FieldBC::hi);
-    boundariesHi[i]->applyBy(*pBz,i,FieldBC::hi);
+//    boundariesLo[i]->applyBx(*pBx,i,FieldBC::lo);
+//    boundariesLo[i]->applyBy(*pBy,i,FieldBC::lo);
+//    boundariesLo[i]->applyBy(*pBz,i,FieldBC::lo);
+//
+//    boundariesHi[i]->applyBx(*pBx,i,FieldBC::hi);
+//    boundariesHi[i]->applyBy(*pBy,i,FieldBC::hi);
+//    boundariesHi[i]->applyBy(*pBz,i,FieldBC::hi);
   }
 }
 
@@ -618,6 +618,7 @@ void Fields::init()
   fill_field(*pBy, coords, BInit[1], *updater, BParam[1]);
   fill_field(*pBz, coords, BInit[2], *updater, BParam[2]);
 
+
   for (int i=0; i<dimension; ++i)
   {
     if (fieldBCFactories.count(bcNamesLo[i]) == 0)
@@ -628,6 +629,19 @@ void Fields::init()
 
     boundariesLo[i] = pFieldBC(fieldBCFactories[bcNamesLo[i]]());
     boundariesHi[i] = pFieldBC(fieldBCFactories[bcNamesHi[i]]());
+  }
+
+  Globals::pSubdivision sub = Globals::instance().getSubdivision();
+
+  for (int i=0; i<dimension; ++i)
+  {
+    sub->exchange(*pEx,i);
+    sub->exchange(*pEy,i);
+    sub->exchange(*pEz,i);
+
+    sub->exchange(*pBx,i);
+    sub->exchange(*pBy,i);
+    sub->exchange(*pBz,i);
   }
 
 }

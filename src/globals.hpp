@@ -48,15 +48,21 @@ class Globals : public Singleton<Globals>
     /// The time step
     double dt;
 
-    /// The physical size of the simulation domain
+    /// The physical coordinate of the lower corner of the global simulation domain
     SVector domainMin;
+    /// The physical coordinate of the upper corner of the global simulation domain
     SVector domainMax;
 
-    /// The physical size of the local simulation domain
+    /// The physical coordinate of the lower corner of the local simulation domain
     SVector localDomainMin;
+    /// The physical coordinate of the upper corner of the local simulation domain
     SVector localDomainMax;
 
-    /// The global grid size of the simulation
+    /** The global grid size of the simulation
+     *
+     * This size is set from the configuration file and
+     * does NOT include the ghost cells
+     */
     SIntVector globalGridSize;
 
     // derived quantities
@@ -119,7 +125,7 @@ class Globals : public Singleton<Globals>
     SRange getLocalDomainRange() const { return  SRange(localDomainMin, localDomainMax); }
 
     const SIntVector &getGlobalGridSize() const { return globalGridSize; }
-    const SIntVector &getGlobalGridMin() const { return globalGridSize; }
+    //const SIntVector &getGlobalGridMin() const { return globalGridSize; }
 
     const SIntVector &getLocalGridMin() const { return localGridMin; }
     const SIntVector &getLocalGridMax() const { return localGridMax; }

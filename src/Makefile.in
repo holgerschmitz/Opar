@@ -118,10 +118,10 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_opar_OBJECTS = common.$(OBJEXT) currents.$(OBJEXT) fields.$(OBJEXT) \
-	globals.$(OBJEXT) opar.$(OBJEXT) particles.$(OBJEXT) \
-	particle_boundary.$(OBJEXT) particle_exchange.$(OBJEXT) \
-	particle_diagnostic.$(OBJEXT) random.$(OBJEXT) \
-	species.$(OBJEXT) util.$(OBJEXT)
+	functions.$(OBJEXT) globals.$(OBJEXT) opar.$(OBJEXT) \
+	particles.$(OBJEXT) particle_boundary.$(OBJEXT) \
+	particle_exchange.$(OBJEXT) particle_diagnostic.$(OBJEXT) \
+	random.$(OBJEXT) species.$(OBJEXT) util.$(OBJEXT)
 opar_OBJECTS = $(am_opar_OBJECTS)
 opar_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -351,6 +351,8 @@ opar_SOURCES = \
   fieldbc.hpp              \
   fields.hpp               \
   fields.cpp               \
+  functions.hpp            \
+  functions.cpp            \
   globals.hpp              \
   globals.cpp              \
   numboundary.hpp          \
@@ -486,6 +488,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/currents.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fields.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/functions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/globals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/particle_boundary.Po@am__quote@

@@ -61,11 +61,15 @@ Particle &ParticleStorage::addParticle()
   {
     bool foundBlock = false;
     freeBlock = blocks.begin();
+
+    foundBlock = (STORAGE_BLOCK_SIZE > freeBlock->count);
+
     while(!foundBlock && (freeBlock != blocks.end()))
     {
-      foundBlock = (STORAGE_BLOCK_SIZE > freeBlock->count);
       ++freeBlock;
+      foundBlock = (STORAGE_BLOCK_SIZE > freeBlock->count);
     }
+
     if (!foundBlock)
     {
       freeBlock = blocks.insert(blocks.begin(), DataBlock());
@@ -85,21 +89,23 @@ ParticleStorage::iterator ParticleStorage::removeParticle(const iterator &it_)
 
   if (last>pos) std::swap(data[pos], data[last]);
 
+  --(dblock.count);
   // if no more particles in the block then delete the block
-  if (0 == --dblock.count)
+  if (0 == dblock.count)
   {
     // manually free the data
     dblock.free();
     it.blockIter = blocks.erase(it.blockIter);
     it.pos = 0;
+    freeBlock = blocks.begin();
   }
 
   // for performance, see if there are more free spaces in this block than in the
   // freeBlock, and update freeBlock accordingly
-  if ((it.blockIter != blocks.end()) && (it.blockIter->count < freeBlock->count))
-  {
-    freeBlock = it.blockIter;
-  }
+//  if ((it.blockIter != blocks.end()) && (it.blockIter->count < freeBlock->count))
+//  {
+//    freeBlock = it.blockIter;
+//  }
   return it;
 }
 

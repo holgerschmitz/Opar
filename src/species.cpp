@@ -2,7 +2,7 @@
  * species.cpp
  *
  * Created on: 16 Nov 2012
- * Author: hschmitz
+ * Author: Holger Schmitz
  * Email: holger@notjustphysics.com
  *
  * Copyright 2012 Holger Schmitz
@@ -80,6 +80,7 @@ void Species::initParameters(BlockParameters &blockPars)
   blockPars.addParameter("charge", &charge, 1.0);
   blockPars.addParameter("mass", &mass, 1.0);
   blockPars.addParameter("ppc", &ppc, 100);
+  blockPars.addParameter("densityCutoff", &densityCutoff, 0.0);
 
   densityParam = blockPars.addParameter("density", &density, 1.0);
   temperatureParam = blockPars.addArrayParameter("temperature", temperature);
@@ -218,10 +219,11 @@ void Species::initParticles()
 //        debug_out << "pos[" << i << "] = " << pos[i] << std::endl;
       }
 
-      Particle &p = particles.addParticle();
-
       // The updater changes the value of densityInit and temperatureInit by calculating the formulas from the user input
       updater->update();
+      if (density < densityCutoff) continue;
+
+      Particle &p = particles.addParticle();
 
       SCHNEK_TRACE_LOG(5,"density=" << density << "    weight_factor="<<weight_factor)
 

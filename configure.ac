@@ -145,5 +145,6 @@ fi
 
 
 AC_CONFIG_FILES([Makefile
-                 src/Makefile])
+                 src/Makefile
+                 checks/Makefile])
 AC_OUTPUT

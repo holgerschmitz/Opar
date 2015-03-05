@@ -34,6 +34,7 @@
 #include "species.hpp"
 
 #include "constants.hpp"
+#include "functions.hpp"
 
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
@@ -165,6 +166,8 @@ void initFunctions(FunctionRegistry &freg)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   registerCMath(freg);
+  freg.registerFunction("step", step);
+  freg.registerFunction("logistic", logistic);
 }
 
 /** Runs the OPar simulation code

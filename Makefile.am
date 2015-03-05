@@ -22,6 +22,6 @@
 # along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  
  
-SUBDIRS = src
+SUBDIRS = src checks
 
 ACLOCAL_AMFLAGS = -I m4

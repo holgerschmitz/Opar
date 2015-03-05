@@ -102,8 +102,11 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direc
 
   for (ParticleBuffer::iterator it = bufferReceive.begin(); it != bufferReceive.end(); ++it)
   {
-    particles.addParticle() = *it;
-    SCHNEK_TRACE_LOG(5,"doExchange receive " << it->x[0] << " : "
+    SCHNEK_TRACE_LOG(5,"particles.count "<<particles.getCount())
+    SCHNEK_TRACE_LOG(5,"setting "<< it->x[0])
+    Particle &p = particles.addParticle();
+    p = *it;
+    SCHNEK_TRACE_LOG(5,"doExchange receive " << p.x[0] << " : "
         << Globals::instance().getLocalDomainMin()[0] << " "
         << Globals::instance().getLocalDomainMax()[0])
   }

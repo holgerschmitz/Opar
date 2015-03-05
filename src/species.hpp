@@ -61,6 +61,8 @@ class Species : public Block
     PVector temperature;
     PVector drift;
 
+    double densityCutoff;
+
     int ppc;
 
     pParameter densityParam;

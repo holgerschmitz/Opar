@@ -82,6 +82,7 @@ void ParticleExchange::exchange(ParticleStorage &particles)
   }
 }
 
+
 void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direction)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
@@ -114,5 +115,7 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direc
 }
 
 
+#undef LOGLEVEL
+#define LOGLEVEL 0
 
 

@@ -45,6 +45,8 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <fenv.h>
+
 
 #undef LOGLEVEL
 #define LOGLEVEL 1
@@ -108,6 +110,7 @@ void OPar::execute()
 
   do
   {
+    SCHNEK_TRACE_LOG(0,"Time "<<Globals::instance().getT());
     //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
     debug_check_out_of_bounds("A");
     // Advance electromagnetic fields
@@ -241,6 +244,9 @@ int runOpar(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+
+    feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
 #ifdef HAVE_MPI

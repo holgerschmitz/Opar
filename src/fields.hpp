@@ -73,6 +73,7 @@ class Fields : public Block
     void writeAsTextFiles(int n);
 
   private:
+    void checkField(std::string name, const DataField &field);
     void stepD(double dt);
     void stepB(double dt);
 #ifdef THREE_DIMENSIONAL

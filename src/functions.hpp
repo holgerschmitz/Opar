@@ -45,5 +45,10 @@ double step(double x);
  */
 double logistic(double x, double w, double x0);
 
+/** Produces a pulse with Gaussian amplitude profile and given wavelength
+ *
+ * \f$\text{pulse}(x) = \exp\left(\frac{x^2}{\text{length}^2}\right)sin\left(\frac{2\pi x}{\text{wavelength}} + \text{phase}\right) \f$
+ */
+double pulse1d(double x, double length, double wavelength, double phase);
 
 #endif /* SRC_FUNCTIONS_HPP_ */

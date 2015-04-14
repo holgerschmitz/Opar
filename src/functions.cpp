@@ -25,6 +25,7 @@
  */
 
 #include "functions.hpp"
+#include "constants.hpp"
 
 #include <cmath>
 #include <limits>
@@ -42,7 +43,12 @@ double logistic(double x, double w, double x0)
   if (z>lim)
     return 1.0;
   else if (z<-lim)
-    return exp(-z);
+    return exp(z);
   else
     return 1/(1+exp(-z));
+}
+
+double pulse1d(double x, double length, double wavelength, double phase)
+{
+  return exp(-x*x/(length*length))*sin(TWO_PI*x/wavelength + phase);
 }

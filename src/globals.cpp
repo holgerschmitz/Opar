@@ -82,11 +82,13 @@ void Globals::init()
   {
     dx[i] = (domainMax[i]-domainMin[i]) / (real)globalGridSize[i]; // account for ghost cells
     localDomainMin[i] = domainMin[i] + localInnerGridMin[i]*dx[i];
-    localDomainMax[i] = domainMin[i] + (localInnerGridMax[i]+1)*dx[i];
+    localDomainMax[i] = domainMin[i] + localInnerGridMax[i]*dx[i];
 
-    std::cout << "II Domain: " << subdivision->getUniqueId() << " " << i << " " << localGridMin[i] << " " << localGridMax[i] << std::endl;
-    std::cout << "II Inner Domain: "<< subdivision->getUniqueId() << " " << i << " " << localInnerGridMin[i] << " " << localInnerGridMax[i] << std::endl;
-    std::cout << "II Extent: "<< subdivision->getUniqueId() << " " << i << " " << localDomainMin[i] << " " << localDomainMax[i] << std::endl;
+    std::cout << "II Local Grid Domain: " << subdivision->getUniqueId() << " " << i << " " << localGridMin[i] << " " << localGridMax[i] << std::endl;
+    std::cout << "II Inner Grid Domain: "<< subdivision->getUniqueId() << " " << i << " " << localInnerGridMin[i] << " " << localInnerGridMax[i] << std::endl;
+    std::cout << "II Global Physical Extent: " << subdivision->getUniqueId() << " " << i << " " << domainMin[i] << " " << domainMax[i] << std::endl;
+    std::cout << "II Local Physical Extent: "<< subdivision->getUniqueId() << " " << i << " " << localDomainMin[i] << " " << localDomainMax[i] << std::endl;
+    std::cout << "II dx: "<< subdivision->getUniqueId() << " " << i << " " << dx[i] << std::endl;
   }
 
   DiagnosticManager::instance().setTimeCounter(&t_count);

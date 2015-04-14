@@ -58,6 +58,7 @@ class Species : public Block
     double charge;
     double mass;
     double density;
+    double minDensity;
     PVector temperature;
     PVector drift;
 

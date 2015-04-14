@@ -65,21 +65,21 @@ inline void Fields::fdtdStepD(double dt,
     dt*(
         ((*pBz)(i,j,k) - (*pBz)(i,j-1,k))/kappaEdy
       - ((*pBy)(i,j,k) - (*pBy)(i,j,k-1))/kappaEdz
-      - Jx
+      - eps_0_inv*Jx
     );
 
   (*pEy)(i,j,k) +=
     dt*(
         ((*pBx)(i,j,k) - (*pBx)(i,j,k-1))/kappaEdz
       - ((*pBz)(i,j,k) - (*pBz)(i-1,j,k))/kappaEdx
-      - Jy
+      - eps_0_inv*Jy
     );
 
   (*pEz)(i,j,k) +=
     dt*(
         ((*pBy)(i,j,k) - (*pBy)(i-1,j,k))/kappaEdx
       - ((*pBx)(i,j,k) - (*pBx)(i,j-1,k))/kappaEdy
-      - Jz
+      - eps_0_inv*Jz
     );
 }
 
@@ -222,20 +222,20 @@ inline void Fields::fdtdStepD(double dt,
   (*pEx)(i,j) +=
     dt*(
         ((*pBz)(i,j) - (*pBz)(i,j-1))/kappaEdy
-      - Jx
+      - eps_0_inv*Jx
     );
 
   (*pEy)(i,j) +=
     dt*(
       - ((*pBz)(i,j) - (*pBz)(i-1,j))/kappaEdx
-      - Jy
+      - eps_0_inv*Jy
     );
 
   (*pEz)(i,j) +=
     dt*(
         ((*pBy)(i,j) - (*pBy)(i-1,j))/kappaEdx
       - ((*pBx)(i,j) - (*pBx)(i,j-1))/kappaEdy
-      - Jz
+      - eps_0_inv*Jz
     );
 }
 
@@ -680,9 +680,9 @@ void Fields::init()
   pBy = pDataField(new DataField(low, high, grange, byStaggerYee, 2));
   pBz = pDataField(new DataField(low, high, grange, bzStaggerYee, 2));
 
-  pJx = pDataField(new DataField(low, high, grange, exStaggerYee, 3));
-  pJy = pDataField(new DataField(low, high, grange, eyStaggerYee, 3));
-  pJz = pDataField(new DataField(low, high, grange, ezStaggerYee, 3));
+  pJx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
+  pJy = pDataField(new DataField(low, high, grange, eyStaggerYee, 2));
+  pJz = pDataField(new DataField(low, high, grange, ezStaggerYee, 2));
 
   Currents::instance().setGlobalCurrent(pJx, pJy, pJz);
 //  for (int i=0; i<dimension; ++i)

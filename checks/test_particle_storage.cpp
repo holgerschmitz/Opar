@@ -43,8 +43,8 @@ ParticleStorage storage;
 
 boost::random::mt19937 rGen;
 
-const int NRepeat = 100;
-const int PartSize = 5000001;
+const int NRepeat = 1; //100;
+const int PartSize = 100; //5000001;
 
 //void diagStorage()
 //{

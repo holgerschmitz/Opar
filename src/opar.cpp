@@ -89,7 +89,7 @@ void OPar::initParameters(BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
-  blockPars.addConstant("pi", M_PI);
+  blockPars.addConstant("pi", PI);
   blockPars.addConstant("clight", clight);
   blockPars.addConstant("me", mass_e);
   blockPars.addConstant("mp", mass_p);
@@ -110,26 +110,30 @@ void OPar::execute()
 
   do
   {
+    // run diagnostics
+    //std::cerr << "diagnostic" << std::endl;
+    DiagnosticManager::instance().execute();
+    debug_check_out_of_bounds("A");
+
     SCHNEK_TRACE_LOG(0,"Time "<<Globals::instance().getT());
     //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
-    debug_check_out_of_bounds("A");
+    debug_check_out_of_bounds("B");
     // Advance electromagnetic fields
     BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
-    debug_check_out_of_bounds("B");
+    debug_check_out_of_bounds("C");
 
     // Advance particle species
     //std::cerr << "push" << std::endl;
     BOOST_FOREACH(Species *s, species) s->pushParticles(dt);
-    debug_check_out_of_bounds("C");
-
-    // run diagnostics
-    //std::cerr << "diagnostic" << std::endl;
-    DiagnosticManager::instance().execute();
     debug_check_out_of_bounds("D");
 
     //if ((++n % 10) == 0) { BOOST_FOREACH(Fields *f, fields) f->writeAsTextFiles(n); }
   } while (Globals::instance().stepTime());
 
+  // run diagnostics
+  //std::cerr << "diagnostic" << std::endl;
+  DiagnosticManager::instance().execute();
+  debug_check_out_of_bounds("E");
 
 }
 
@@ -171,6 +175,7 @@ void initFunctions(FunctionRegistry &freg)
   registerCMath(freg);
   freg.registerFunction("step", step);
   freg.registerFunction("logistic", logistic);
+  freg.registerFunction("pulse1d", pulse1d);
 }
 
 /** Runs the OPar simulation code
@@ -220,6 +225,11 @@ int runOpar(int argc, char **argv)
   catch (VariableNotInitialisedException &e)
   {
     std::cerr << "Variable was not initialised: " << e.getVarName() << std::endl;
+    return -1;
+  }
+  catch (EvaluationException &e)
+  {
+    std::cerr << "Error in evaluation: " << e.getMessage() << std::endl;
     return -1;
   }
   catch (std::string &err)

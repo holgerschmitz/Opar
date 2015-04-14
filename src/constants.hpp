@@ -25,18 +25,17 @@
 #ifndef CONSTANTS_HPP_
 #define CONSTANTS_HPP_
 
-
-#include <cmath>
-
 // Physical constants taken from http://physics.nist.gov/cuu/index.html
 // using CODATA values
 
+static const double PI     = 3.141592653589793238462643383279502884L;
+static const double TWO_PI = 6.283185307179586476925286766559005768L;
 static const double clight = 299792458;
 static const double clight2 = clight*clight;
 static const double mass_e = 9.10938291e-31;
 static const double mass_p = 1.672621777e-27;
 static const double unit_charge = 1.602176565e-19;
-static const double mu_0 = 4e-7*M_PI;
+static const double mu_0 = 4e-7*PI;
 static const double eps_0 = 1/(mu_0*clight2);
 static const double eps_0_inv = (mu_0*clight2);
 

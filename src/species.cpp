@@ -178,6 +178,9 @@ void Species::init()
   this->initParticles();
 }
 
+#undef LOGLEVEL
+#define LOGLEVEL 0
+
 void Species::initParticles()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
@@ -245,6 +248,9 @@ void Species::initParticles()
 //  debug_out.close();
 
 }
+
+#undef LOGLEVEL
+#define LOGLEVEL 0
 
 void debug_check_out_of_bounds(std::string checkpoint, Particle p_debug_old, Particle p_old, SIntVector debug_cell1, SIntVector debug_cell2)
 {
@@ -370,6 +376,7 @@ void Species::pushParticles(double dt)
     for (int i=0; i<3; ++i)
       p.u[i] = um[i] + tau_ifac*urot[i] + cmratio * E[i];
 
+#ifdef TWO_DIMENSIONAL
 
     if (debug_particle_nan("C", p))
     {
@@ -386,6 +393,7 @@ void Species::pushParticles(double dt)
       }
       exit(-1);
     }
+#endif
 
     const double igamma = 1.0/sqrt(p.u.sqr()/clight2 + 1.0);
 

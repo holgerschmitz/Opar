@@ -75,7 +75,7 @@ class TriangularWeighting
       for (int d = 0; d < dimension; ++d)
       {
         cell[d] = int(pos[d] + 0.5);
-        cell_frac[d] = cell[d] - pos[d];
+        cell_frac[d] = pos[d] - cell[d];
       }
     }
 
@@ -85,7 +85,7 @@ class TriangularWeighting
       for (int d = 0; d < dimension; ++d)
       {
         cell[d] = int(pos[d]);
-        cell_frac[d] = cell[d] - pos[d] + 0.5;
+        cell_frac[d] = pos[d] - cell[d] - 0.5;
       }
     }
 
@@ -94,11 +94,11 @@ class TriangularWeighting
     {
       for (int d = 0; d < dimension; ++d)
       {
-        double cf = cell_frac[d];
+        double cf = -cell_frac[d];
         double cf2 = cf * cf;
-        gx(-1)[d] = 0.25 + cf2 + cf;
-        gx(+0)[d] = 1.5 - 2.0 * cf2;
-        gx(+1)[d] = 0.25 + cf2 - cf;
+        gx(-1)[d] = 0.5*(0.25 + cf2 + cf);
+        gx(+0)[d] = 0.5*(1.5 - 2.0 * cf2);
+        gx(+1)[d] = 0.5*(0.25 + cf2 - cf);
       }
     }
 
@@ -124,7 +124,7 @@ class TriangularWeighting
 #ifdef ONE_DIMENSIONAL
       PVector result(0.0,0.0,0.0);
       SDomain d = getSDomain();
-      for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+      for (int i=d.getLo()[0]; i<=d.getHi()[0]; ++i)
       {
         result[0] += ws(i)[0]*Ex(is[0]+i);
         result[1] += wc(i)[0]*Ey(ic[0]+i);
@@ -148,11 +148,11 @@ class TriangularWeighting
       PVector result(0.0,0.0,0.0);
       SDomain d = getSDomain();
 
-      for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
+      for (int j=d.getLo()[1]; j<=d.getHi()[1]; ++j)
       {
         const double Wc = wc(j)[1];
         const double Ws = ws(j)[1];
-        for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+        for (int i=d.getLo()[0]; i<=d.getHi()[0]; ++i)
         {
           result[0] += Wc*ws(i)[0]*Ex(is[0]+i, ic[1]+j);
           result[1] += Ws*wc(i)[0]*Ey(ic[0]+i, is[1]+j);
@@ -194,15 +194,15 @@ class TriangularWeighting
       PVector result(0.0,0.0,0.0);
       SDomain d = getSDomain();
 
-      for (int k=d.getLo()[2]; k<d.getHi()[2]; ++k)
+      for (int k=d.getLo()[2]; k<=d.getHi()[2]; ++k)
       {
         const double Wzc = wc(k)[2];
         const double Wzs = ws(k)[2];
-        for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
+        for (int j=d.getLo()[1]; j<=d.getHi()[1]; ++j)
         {
           const double Wyc = wc(j)[1];
           const double Wys = ws(j)[1];
-          for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+          for (int i=d.getLo()[0]; i<=d.getHi()[0]; ++i)
           {
             result[0] += Wzc*Wyc*ws(i)[0]*Ex(is[0]+i, ic[1]+j, ic[2]+k);
             result[1] += Wzc*Wys*wc(i)[0]*Ey(ic[0]+i, is[1]+j, ic[2]+k);
@@ -308,7 +308,7 @@ class TriangularWeighting
 #ifdef ONE_DIMENSIONAL
       PVector result(0.0,0.0,0.0);
       SDomain d = getSDomain();
-      for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+      for (int i=d.getLo()[0]; i<=d.getHi()[0]; ++i)
       {
         result[0] += wc(i)[0]*Ex(ic[0]+i);
         result[1] += ws(i)[0]*Ey(is[0]+i);
@@ -321,11 +321,11 @@ class TriangularWeighting
       PVector result(0.0,0.0,0.0);
       SDomain d = getSDomain();
 
-      for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
+      for (int j=d.getLo()[1]; j<=d.getHi()[1]; ++j)
       {
         const double Wc = wc(j)[1];
         const double Ws = ws(j)[1];
-        for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+        for (int i=d.getLo()[0]; i<=d.getHi()[0]; ++i)
         {
           result[0] += Ws*wc(i)[0]*Ex(ic[0]+i, is[1]+j);
           result[1] += Wc*ws(i)[0]*Ey(is[0]+i, ic[1]+j);
@@ -339,15 +339,15 @@ class TriangularWeighting
       PVector result(0.0,0.0,0.0);
       SDomain d = getSDomain();
 
-      for (int k=d.getLo()[2]; k<d.getHi()[2]; ++k)
+      for (int k=d.getLo()[2]; k<=d.getHi()[2]; ++k)
       {
         const double Wzc = wc(k)[2];
         const double Wzs = ws(k)[2];
-        for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
+        for (int j=d.getLo()[1]; j<=d.getHi()[1]; ++j)
         {
           const double Wyc = wc(j)[1];
           const double Wys = ws(j)[1];
-          for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+          for (int i=d.getLo()[0]; i<=d.getHi()[0]; ++i)
           {
             result[0] += Wzs*Wys*wc(i)[0]*Ex(ic[0]+i, is[1]+j, is[2]+k);
             result[1] += Wzs*Wyc*ws(i)[0]*Ey(is[0]+i, ic[1]+j, is[2]+k);
@@ -373,7 +373,7 @@ class TriangularWeighting
 #ifdef ONE_DIMENSIONAL
       double result = 0.0;
       SDomain d = getSDomain();
-      for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+      for (int i=d.getLo()[0]; i<=d.getHi()[0]; ++i)
       {
         result += wc(i)[0]*F(ic[0]+i);
       }
@@ -384,10 +384,10 @@ class TriangularWeighting
       double result = 0.0;
       SDomain d = getSDomain();
 
-      for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
+      for (int j=d.getLo()[1]; j<=d.getHi()[1]; ++j)
       {
         const double Wc = wc(j)[1];
-        for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+        for (int i=d.getLo()[0]; i<=d.getHi()[0]; ++i)
         {
           result += Wc*wc(i)[0]*F(ic[0]+i, ic[1]+j);
         }
@@ -399,13 +399,13 @@ class TriangularWeighting
       double result = 0.0;
       SDomain d = getSDomain();
 
-      for (int k=d.getLo()[2]; k<d.getHi()[2]; ++k)
+      for (int k=d.getLo()[2]; k<=d.getHi()[2]; ++k)
       {
         const double Wzc = wc(k)[2];
-        for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
+        for (int j=d.getLo()[1]; j<=d.getHi()[1]; ++j)
         {
           const double Wyc = wc(j)[1];
-          for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+          for (int i=d.getLo()[0]; i<=d.getHi()[0]; ++i)
           {
             result += Wzc*Wyc*wc(i)[0]*F(ic[0]+i, ic[1]+j, ic[2]+k);
           }

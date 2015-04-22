@@ -25,6 +25,7 @@
 
 #include <boost/variant.hpp>
 #include "currents.hpp"
+#include "globals.hpp"
 
 #include <schnek/grid/range.hpp>
 #include <schnek/util/logger.hpp>
@@ -64,6 +65,8 @@ void Currents::updateCurrent(pDataField j, const std::list<pDataField> &jl)
       (*j)[*it] += (*jc)[*it];
     }
   }
+
+  Globals::instance().getSubdivision()->accumulate(*j);
 }
 
 void Currents::update()

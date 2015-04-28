@@ -115,7 +115,9 @@ void OPar::execute()
     DiagnosticManager::instance().execute();
     debug_check_out_of_bounds("A");
 
-    SCHNEK_TRACE_LOG(0,"Time "<<Globals::instance().getT());
+    if (Globals::instance().getSubdivision()->master())
+      schnek::Logger::instance().out() <<"Time "<<Globals::instance().getT() << std::endl;
+
     //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
     debug_check_out_of_bounds("B");
     // Advance electromagnetic fields

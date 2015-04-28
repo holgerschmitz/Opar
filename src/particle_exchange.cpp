@@ -43,6 +43,10 @@ void ParticleExchange::exchange(ParticleStorage &particles)
 
   SVector locMin = Globals::instance().getLocalDomainMin();
   SVector locMax = Globals::instance().getLocalDomainMax();
+  SVector dx = Globals::instance().getDx();
+
+  locMin = locMin - 0.5*dx;
+  locMax = locMax + 0.5*dx;
 
   for (int d=0; d<dimension; ++d)
   {

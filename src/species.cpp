@@ -84,7 +84,7 @@ void Species::initParameters(BlockParameters &blockPars)
   blockPars.addParameter("densityCutoff", &densityCutoff, 0.0);
 
   densityParam = blockPars.addParameter("density", &density, 1.0);
-  temperatureParam = blockPars.addArrayParameter("temperature", temperature);
+  temperatureParam = blockPars.addArrayParameter("temperature", temperature, 0.0);
   driftParam = blockPars.addArrayParameter("drift", drift, 0.0);
 
   blockPars.addArrayParameter("boundary_min", bcNamesLo, std::string("periodic"));
@@ -283,7 +283,7 @@ inline bool debug_particle_nan(std::string checkpoint, const Particle &p)
 }
 
 #undef LOGLEVEL
-#define LOGLEVEL 1
+#define LOGLEVEL 0
 
 /**
  * Push the particles and calulate the current.
@@ -316,6 +316,26 @@ void Species::pushParticles(double dt)
 //  double maxJyHelper = 0.0;
 //  double maxJzHelper = 0.0;
 
+#if BOOST_PP_GREATER_EQUAL( LOGLEVEL, 5 )
+  double minVal = 0, maxVal = 0;
+  for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
+  {
+    Particle &p = *it;
+    for (int i=0; i<dimension; ++i)
+    {
+      minVal = std::min(minVal, p.x[i]);
+      maxVal = std::max(maxVal, p.x[i]);
+    }
+    for (int i=0; i<3; ++i)
+    {
+      minVal = std::min(minVal, p.u[i]);
+      maxVal = std::max(maxVal, p.u[i]);
+    }
+  }
+
+  SCHNEK_TRACE_LOG(5,"Particle minimum val = " << minVal << "; maximum val " << maxVal)
+#endif
+
 //  int debug_count = 0;
   for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
   {
@@ -338,8 +358,6 @@ void Species::pushParticles(double dt)
 
     p.x = p.x + p.u.project<dimension>() * dt_gamma;
     debug_particle_nan("B", p);
-
-    SCHNEK_TRACE_LOG(3,"particle " << p.x[0] << " " << p.u[0] << " " << dt << " " << p.u[0] * dt_gamma)
 
     SIntVector cell1, cell2, dcell;
     SIntVector debug_cell1, debug_cell2;

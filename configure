@@ -15626,17 +15626,6 @@ else
 fi
 
 
-# Search for MPI support
-# allows the  --with-mpi option (yes, no, auto)
-
-# Check whether --with-mpi was given.
-if test "${with_mpi+set}" = set; then :
-  withval=$with_mpi;
-else
-  with_mpi=auto
-fi
-
-
 if test x"$with_mpi" != xno; then
 
 

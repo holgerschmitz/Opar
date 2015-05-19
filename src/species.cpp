@@ -134,11 +134,11 @@ void Species::init()
   SRange grange = Globals::instance().getDomainRange();
 
   pJx = pDataField(
-      new DataField(low, high, grange, exStaggerYee, 3));
+      new DataField(low, high, grange, exStaggerYee, 2));
   pJy = pDataField(
-      new DataField(low, high, grange, eyStaggerYee, 3));
+      new DataField(low, high, grange, eyStaggerYee, 2));
   pJz = pDataField(
-      new DataField(low, high, grange, ezStaggerYee, 3));
+      new DataField(low, high, grange, ezStaggerYee, 2));
 
   (*pJx) = 0.0;
   (*pJy) = 0.0;
@@ -309,7 +309,7 @@ void Species::pushParticles(double dt)
   // particle weighting multiplication factor
   const double fac = ipow(Weighting::particleShapeFactor(), dimension) * charge;
 
-  const double cmratio = 0.5* fac * dt / mass;
+  const double cmratio = fac * dt / mass;
 
 
 //  double maxJxHelper = 0.0;
@@ -377,11 +377,11 @@ void Species::pushParticles(double dt)
     PVector E = Weighting::interpolateE(gx, hx, cell1, cell2, *pEx, *pEy, *pEz);
     PVector B = Weighting::interpolateB(gx, hx, cell1, cell2, *pBx, *pBy, *pBz);
 
-    PVector um = p.u + cmratio * E;
+    PVector um = p.u + 0.5*cmratio * E;
 
-    dt_gamma = 0.5*dt/sqrt(um.sqr()/clight2 + 1.0);
+    dt_gamma = 1.0/sqrt(um.sqr()/clight2 + 1.0);
 
-    const PVector tau = B * dt_gamma;
+    const PVector tau = B * (cmratio*dt_gamma);
     const PVector tau2 = tau*tau;
     PVector ud, urot;
 
@@ -392,7 +392,7 @@ void Species::pushParticles(double dt)
     schnek::crossProduct(urot, ud,tau);
 
     for (int i=0; i<3; ++i)
-      p.u[i] = um[i] + tau_ifac*urot[i] + cmratio * E[i];
+      p.u[i] = um[i] + tau_ifac*urot[i] + 0.5*cmratio * E[i];
 
 #ifdef TWO_DIMENSIONAL
 
@@ -570,7 +570,12 @@ void Species::pushParticles(double dt)
 //      if (fabs(jzHelper[l_ind])>maxJzHelper) maxJzHelper=fabs(jzHelper[l_ind]);
 
 //      if ((jxHelper[l_ind]>0) || (jyHelper[l_ind]>0) || (jzHelper[l_ind]>0))
-      SCHNEK_TRACE_LOG(5,"pos "<< cell1[0] << " " << l_ind[0] << " " << g_ind[0] << " " << jxHelper.getLo()[0] << " " << jxHelper.getHi()[0] << " " << pJx->getLo()[0] << " " << pJx->getHi()[0])
+//      if ((Globals::instance().getTCount() == 358) || (Globals::instance().getTCount() == 300))
+//        SCHNEK_TRACE_LOG(0,"pos "<< Globals::instance().getTCount() << " "
+//                         << cell1[0] << " "  << cell1[1]  << " "
+//                         << l_ind[0] << " " << l_ind[1] << " "
+//                         << g_ind[0] << " " << g_ind[1] << " "
+//                         << jxHelper.getLo()[0] << " " << jxHelper.getHi()[0] << " " << pJx->getLo()[0] << " " << pJx->getHi()[0])
 
       (*pJx)[g_ind] += jxHelper[l_ind];
       (*pJy)[g_ind] += jyHelper[l_ind];

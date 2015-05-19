@@ -57,10 +57,10 @@ typedef float real;
 typedef double real;
 #endif
 
-#define ArrayArgCheck schnek::ArrayNoArgCheck
-#define GridArgCheck schnek::GridNoArgCheck
-//#define ArrayArgCheck schnek::ArrayAssertArgCheck
-//#define GridArgCheck schnek::GridAssertCheck
+//#define ArrayArgCheck schnek::ArrayNoArgCheck
+//#define GridArgCheck schnek::GridNoArgCheck
+#define ArrayArgCheck schnek::ArrayAssertArgCheck
+#define GridArgCheck schnek::GridAssertCheck
 
 class TriangularWeighting;
 typedef TriangularWeighting Weighting;

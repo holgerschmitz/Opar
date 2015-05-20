@@ -36,7 +36,7 @@ using namespace schnek;
 
 class Fields : public Block
 {
-  private:
+  protected:
     pDataField pEx;
     pDataField pEy;
     pDataField pEz;
@@ -44,6 +44,21 @@ class Fields : public Block
     pDataField pBy;
     pDataField pBz;
 
+    PVector EInit;
+    PVector BInit;
+
+    PParameterVector EParam;
+    PParameterVector BParam;
+
+    void checkField(std::string name, const DataField &field);
+  public:
+    virtual void stepSchemeInit(double dt) = 0;
+    virtual void stepScheme(double dt) = 0;
+};
+
+class EMFields : public Fields
+{
+  private:
     pDataField pJx;
     pDataField pJy;
     pDataField pJz;
@@ -73,7 +88,6 @@ class Fields : public Block
     void writeAsTextFiles(int n);
 
   private:
-    void checkField(std::string name, const DataField &field);
     void stepD(double dt);
     void stepB(double dt);
 #ifdef THREE_DIMENSIONAL
@@ -88,6 +102,17 @@ class Fields : public Block
     void fdtdStepD(double dt, int i, SVector dx, double Jx, double Jy, double Jz);
     void fdtdStepB(double dt, int i, SVector dx, double Jx, double Jy, double Jz);
 #endif
+};
+
+
+class ConstantFields : public Fields
+{
+  protected:
+    void init();
+
+  public:
+    void stepSchemeInit(double dt) {}
+    void stepScheme(double dt) {}
 };
 
 #endif /* FIELDS_HPP_ */

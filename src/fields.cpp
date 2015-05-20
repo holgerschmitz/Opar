@@ -45,9 +45,53 @@
 #undef LOGLEVEL
 #define LOGLEVEL 0
 
+void Fields::initParameters(BlockParameters &blockPars)
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(3)
+  EParam = blockPars.addArrayParameter("E", EInit, 0.0);
+  BParam = blockPars.addArrayParameter("B", BInit, 0.0);
+}
+
+
+void Fields::registerData()
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(3)
+  addData("Ex", pEx);
+  addData("Ey", pEy);
+  addData("Ez", pEz);
+  addData("Bx", pBx);
+  addData("By", pBy);
+  addData("Bz", pBz);
+}
+
+void Fields::checkField(std::string name, const DataField &field)
+{
+  SIntVector lo = field.getLo();
+  SIntVector hi = field.getHi();
+  SIntVector pos;
+  for (pos[0]=lo[0]; pos[0]<=hi[0]; ++pos[0])
+#ifndef ONE_DIMENSIONAL
+    for (pos[1]=lo[1]; pos[1]<=hi[1]; ++pos[1])
+#ifdef THREE_DIMENSIONAL
+      for (pos[2]=lo[2]; pos[2]<=hi[2]; ++pos[2])
+#endif
+#endif
+      {
+        if (isnan(field[pos]) || isinf(field[pos]))
+        {
+          std::string val = isnan(field[pos])?"NaN":"Inf";
+          std::cerr << "We have detected a "<<val<<" value in field '" << name
+              << "' at position " << pos << "\n"
+              << "You probably have an error in the formula initialising this field\n";
+          exit(-1);
+        }
+      }
+}
+
+
 #ifdef THREE_DIMENSIONAL
 
-inline void Fields::fdtdStepD(double dt,
+inline void EMFields::fdtdStepD(double dt,
                               int i, int j, int k,
                               SVector dx,
                               double Jx, double Jy, double Jz)
@@ -83,7 +127,7 @@ inline void Fields::fdtdStepD(double dt,
     );
 }
 
-inline void Fields::fdtdStepB(double dt,
+inline void EMFields::fdtdStepB(double dt,
                               int i, int j, int k,
                               SVector dx,
                               double Jx, double Jy, double Jz)
@@ -120,7 +164,7 @@ inline void Fields::fdtdStepB(double dt,
 }
 
 
-void Fields::stepD(double dt)
+void EMFields::stepD(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   SIntVector low  = Globals::instance().getLocalGridMin();
@@ -159,7 +203,7 @@ void Fields::stepD(double dt)
   }
 }
 
-void Fields::stepB(double dt)
+void EMFields::stepB(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   SIntVector low  = Globals::instance().getLocalGridMin();
@@ -206,7 +250,7 @@ void Fields::stepB(double dt)
 
 #ifdef TWO_DIMENSIONAL
 
-inline void Fields::fdtdStepD(double dt,
+inline void EMFields::fdtdStepD(double dt,
                               int i, int j,
                               SVector dx,
                               double Jx, double Jy, double Jz)
@@ -239,7 +283,7 @@ inline void Fields::fdtdStepD(double dt,
     );
 }
 
-inline void Fields::fdtdStepB(double dt,
+inline void EMFields::fdtdStepB(double dt,
                               int i, int j,
                               SVector dx,
                               double Jx, double Jy, double Jz)
@@ -276,7 +320,7 @@ inline void Fields::fdtdStepB(double dt,
 }
 
 
-void Fields::stepD(double dt)
+void EMFields::stepD(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
@@ -357,7 +401,7 @@ void Fields::stepD(double dt)
   }
 }
 
-void Fields::stepB(double dt)
+void EMFields::stepB(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
@@ -447,7 +491,7 @@ void Fields::stepB(double dt)
 
 #ifdef ONE_DIMENSIONAL
 
-inline void Fields::fdtdStepD(double dt,
+inline void EMFields::fdtdStepD(double dt,
                               int i,
                               SVector dx,
                               double Jx, double Jy, double Jz)
@@ -474,7 +518,7 @@ inline void Fields::fdtdStepD(double dt,
     );
 }
 
-inline void Fields::fdtdStepB(double dt,
+inline void EMFields::fdtdStepB(double dt,
                               int i,
                               SVector dx,
                               double Jx, double Jy, double Jz)
@@ -505,7 +549,7 @@ inline void Fields::fdtdStepB(double dt,
 }
 
 
-void Fields::stepD(double dt)
+void EMFields::stepD(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
@@ -543,7 +587,7 @@ void Fields::stepD(double dt)
   }
 }
 
-void Fields::stepB(double dt)
+void EMFields::stepB(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
@@ -588,7 +632,7 @@ void Fields::stepB(double dt)
 #endif
 
 
-void Fields::stepSchemeInit(double dt)
+void EMFields::stepSchemeInit(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   stepB(0.5*dt);
@@ -603,7 +647,7 @@ void Fields::stepSchemeInit(double dt)
 //    cur->stepSchemeInit(dt);
 //  }
 }
-void Fields::stepScheme(double dt)
+void EMFields::stepScheme(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
@@ -624,13 +668,12 @@ void Fields::stepScheme(double dt)
 
 
 
-void Fields::initParameters(BlockParameters &blockPars)
+void EMFields::initParameters(BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(3)
 
   std::cout << "Fields::initParameters()" << std::endl;
-  EParam = blockPars.addArrayParameter("E", EInit, 0.0);
-  BParam = blockPars.addArrayParameter("B", BInit, 0.0);
+  Fields::initParameters(blockPars);
 
   blockPars.addArrayParameter("boundary_min", bcNamesLo, std::string("periodic"));
   blockPars.addArrayParameter("boundary_max", bcNamesHi, std::string("periodic"));
@@ -640,21 +683,16 @@ void Fields::initParameters(BlockParameters &blockPars)
   fieldBCFactories["symmetric"] = boost::factory<FieldSymmetryBC*>();
 }
 
-void Fields::registerData()
+void EMFields::registerData()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(3)
-  addData("Ex", pEx);
-  addData("Ey", pEy);
-  addData("Ez", pEz);
-  addData("Bx", pBx);
-  addData("By", pBy);
-  addData("Bz", pBz);
+  Fields::registerData();
   addData("Jx", pJx);
   addData("Jy", pJy);
   addData("Jz", pJz);
 }
 
-void Fields::init()
+void EMFields::init()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
@@ -738,29 +776,56 @@ void Fields::init()
 
 }
 
-
-void Fields::checkField(std::string name, const DataField &field)
+void ConstantFields::init()
 {
-  SIntVector lo = field.getLo();
-  SIntVector hi = field.getHi();
-  SIntVector pos;
-  for (pos[0]=lo[0]; pos[0]<=hi[0]; ++pos[0])
-#ifndef ONE_DIMENSIONAL
-    for (pos[1]=lo[1]; pos[1]<=hi[1]; ++pos[1])
-#ifdef THREE_DIMENSIONAL
-      for (pos[2]=lo[2]; pos[2]<=hi[2]; ++pos[2])
-#endif
-#endif
-      {
-        if (isnan(field[pos]) || isinf(field[pos]))
-        {
-          std::string val = isnan(field[pos])?"NaN":"Inf";
-          std::cerr << "We have detected a "<<val<<" value in field '" << name
-              << "' at position " << pos << "\n"
-              << "You probably have an error in the formula initialising this field\n";
-          exit(-1);
-        }
-      }
-}
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
 
+  dynamic_cast<OPar&>(*this->getParent()).addField(this);
+
+  SIntVector low  = Globals::instance().getLocalInnerGridMin();
+  SIntVector high = Globals::instance().getLocalInnerGridMax();
+  SRange grange = Globals::instance().getLocalDomainRange();
+
+  pEx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
+  pEy = pDataField(new DataField(low, high, grange, eyStaggerYee, 2));
+  pEz = pDataField(new DataField(low, high, grange, ezStaggerYee, 2));
+
+  pBx = pDataField(new DataField(low, high, grange, bxStaggerYee, 2));
+  pBy = pDataField(new DataField(low, high, grange, byStaggerYee, 2));
+  pBz = pDataField(new DataField(low, high, grange, bzStaggerYee, 2));
+
+
+  SVector &coords = Globals::instance().getX();
+  pDependencyUpdater updater = Globals::instance().getUpdater(var_space);
+
+  fill_field(*pEx, coords, EInit[0], *updater, EParam[0]);
+  fill_field(*pEy, coords, EInit[1], *updater, EParam[1]);
+  fill_field(*pEz, coords, EInit[2], *updater, EParam[2]);
+
+  fill_field(*pBx, coords, BInit[0], *updater, BParam[0]);
+  fill_field(*pBy, coords, BInit[1], *updater, BParam[1]);
+  fill_field(*pBz, coords, BInit[2], *updater, BParam[2]);
+
+  checkField("Ex",*pEx);
+  checkField("Ey",*pEy);
+  checkField("Ez",*pEz);
+
+  checkField("Bx",*pBx);
+  checkField("By",*pBy);
+  checkField("Bz",*pBz);
+
+  Globals::pSubdivision sub = Globals::instance().getSubdivision();
+
+  for (int i=0; i<dimension; ++i)
+  {
+    sub->exchange(*pEx,i);
+    sub->exchange(*pEy,i);
+    sub->exchange(*pEz,i);
+
+    sub->exchange(*pBx,i);
+    sub->exchange(*pBy,i);
+    sub->exchange(*pBz,i);
+  }
+
+}
 

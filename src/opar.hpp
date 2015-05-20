@@ -32,7 +32,7 @@
 
 using namespace schnek;
 
-class Fields;
+class EMFields;
 class Species;
 
 class OPar : public Block
@@ -45,7 +45,7 @@ class OPar : public Block
   public:
     void execute();
 //    void init();
-    void addField(Fields *f);
+    void addField(EMFields *f);
     void addSpecies(Species *s);
     void addDiagnostic(DiagnosticInterface *d);
 

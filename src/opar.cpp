@@ -156,12 +156,13 @@ void initBlockLayout(BlockClasses &blocks)
 
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   blocks.registerBlock("opar");
-  blocks("opar").addChildren("Common")("Fields")
+  blocks("opar").addChildren("Common")("EMFields")("ConstFields")
       ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 
   blocks("opar").setClass<OPar>();
   blocks("Common").setClass<CommonBlock>();
-  blocks("Fields").setClass<Fields>();
+  blocks("EMFields").setClass<EMFields>();
+  blocks("ConstFields").setClass<ConstantFields>();
   blocks("Species").setClass<Species>();
   blocks("FieldDiagnostic").setClass<FieldDiagnostic>();
   blocks("ParticleDiagnostic").setClass<ParticleDiagnostic>();

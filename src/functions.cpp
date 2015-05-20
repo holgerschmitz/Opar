@@ -1,8 +1,8 @@
 /*
- * constants.hpp
+ * functions.cpp
  *
- * Created on: 6 Oct 2014
- * Author: Holger Schmitz
+ * Created on: 11 Feb 2015
+ * Author: hschmitz
  * Email: holger@notjustphysics.com
  *
  * Copyright 2012 Holger Schmitz
@@ -21,24 +21,34 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-#ifndef CONSTANTS_HPP_
-#define CONSTANTS_HPP_
 
-// Physical constants taken from http://physics.nist.gov/cuu/index.html
-// using CODATA values
+#include "functions.hpp"
+#include "constants.hpp"
 
-static const double PI     = 3.141592653589793238462643383279502884L;
-static const double TWO_PI = 6.283185307179586476925286766559005768L;
-static const double clight = 299792458;
-static const double clight2 = clight*clight;
-static const double mass_e = 9.10938291e-31;
-static const double mass_p = 1.672621777e-27;
-static const double unit_charge = 1.602176565e-19;
-static const double mu_0 = 4e-7*PI;
-static const double eps_0 = 1/(mu_0*clight2);
-static const double eps_0_inv = (mu_0*clight2);
+#include <cmath>
+#include <limits>
 
+double step(double x)
+{
+  return (x<0.0)?0.0:1.0;
+}
 
+double logistic(double x, double w, double x0)
+{
+  static const double lim = M_LN2*std::numeric_limits<double>::digits + 1;
 
-#endif /* CONSTANTS_HPP_ */
+  double z = (x-x0)/w;
+  if (z>lim)
+    return 1.0;
+  else if (z<-lim)
+    return exp(z);
+  else
+    return 1/(1+exp(-z));
+}
+
+double pulse1d(double x, double length, double wavelength, double phase)
+{
+  return exp(-x*x/(length*length))*sin(TWO_PI*x/wavelength + phase);
+}

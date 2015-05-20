@@ -1,0 +1,28 @@
+#!/bin/bash
+
+mkdir -p output
+
+for field in Ex Ey Ez Bx By Bz
+do
+  nlinex=`h5totxt -0 -x 0 ${field}_0.h5 | wc -l`
+  nliney=`h5totxt -0 -y 0 ${field}_0.h5 | wc -l`
+  ntime=650
+  
+  touch output/${field}_x.out
+  touch output/${field}_y.out
+  
+  for ((t=0; t<=6490; t+=10))
+  do 
+    echo ${field}${t}
+    f=${field}_${t}.h5
+    
+    h5totxt -0 -x 0 $f >> output/${field}_x.out
+    h5totxt -0 -y 0 $f >> output/${field}_y.out
+  done
+  
+  echo "h5fromtxt -n ${ntime}x${nlinex} output/${field}_x.h5 < output/${field}_x.out"
+  h5fromtxt -n ${ntime}x${nlinex} output/${field}_x.h5 < output/${field}_x.out
+  echo "h5fromtxt -n ${ntime}x${nliney} output/${field}_y.h5 < output/${field}_y.out"
+  h5fromtxt -n ${ntime}x${nliney} output/${field}_y.h5 < output/${field}_y.out
+  # rm -f output/${field}_[xy].out
+done

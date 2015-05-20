@@ -34,6 +34,8 @@ opar_SOURCES =             \
   fieldbc.hpp              \
   fields.hpp               \
   fields.cpp               \
+  functions.hpp            \
+  functions.cpp            \
   globals.hpp              \
   globals.cpp              \
   numboundary.hpp          \

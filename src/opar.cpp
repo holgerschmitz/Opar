@@ -34,6 +34,7 @@
 #include "species.hpp"
 
 #include "constants.hpp"
+#include "functions.hpp"
 
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
@@ -44,6 +45,8 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <fenv.h>
+
 
 #undef LOGLEVEL
 #define LOGLEVEL 1
@@ -86,7 +89,7 @@ void OPar::initParameters(BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
-  blockPars.addConstant("pi", M_PI);
+  blockPars.addConstant("pi", PI);
   blockPars.addConstant("clight", clight);
   blockPars.addConstant("me", mass_e);
   blockPars.addConstant("mp", mass_p);
@@ -107,25 +110,32 @@ void OPar::execute()
 
   do
   {
-    //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
+    // run diagnostics
+    //std::cerr << "diagnostic" << std::endl;
+    DiagnosticManager::instance().execute();
     debug_check_out_of_bounds("A");
+
+    if (Globals::instance().getSubdivision()->master())
+      schnek::Logger::instance().out() <<"Time "<<Globals::instance().getT() << std::endl;
+
+    //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
+    debug_check_out_of_bounds("B");
     // Advance electromagnetic fields
     BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
-    debug_check_out_of_bounds("B");
+    debug_check_out_of_bounds("C");
 
     // Advance particle species
     //std::cerr << "push" << std::endl;
     BOOST_FOREACH(Species *s, species) s->pushParticles(dt);
-    debug_check_out_of_bounds("C");
-
-    // run diagnostics
-    //std::cerr << "diagnostic" << std::endl;
-    DiagnosticManager::instance().execute();
     debug_check_out_of_bounds("D");
 
     //if ((++n % 10) == 0) { BOOST_FOREACH(Fields *f, fields) f->writeAsTextFiles(n); }
   } while (Globals::instance().stepTime());
 
+  // run diagnostics
+  //std::cerr << "diagnostic" << std::endl;
+  DiagnosticManager::instance().execute();
+  debug_check_out_of_bounds("E");
 
 }
 
@@ -165,6 +175,9 @@ void initFunctions(FunctionRegistry &freg)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   registerCMath(freg);
+  freg.registerFunction("step", step);
+  freg.registerFunction("logistic", logistic);
+  freg.registerFunction("pulse1d", pulse1d);
 }
 
 /** Runs the OPar simulation code
@@ -216,6 +229,11 @@ int runOpar(int argc, char **argv)
     std::cerr << "Variable was not initialised: " << e.getVarName() << std::endl;
     return -1;
   }
+  catch (EvaluationException &e)
+  {
+    std::cerr << "Error in evaluation: " << e.getMessage() << std::endl;
+    return -1;
+  }
   catch (std::string &err)
   {
     std::cerr << "FATAL ERROR: >>" << err << "<<" << std::endl;
@@ -238,6 +256,9 @@ int runOpar(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+
+    feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
 #ifdef HAVE_MPI

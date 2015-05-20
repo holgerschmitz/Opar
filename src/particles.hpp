@@ -61,7 +61,8 @@ class Particle
 
     Particle &operator=(const Particle &P)
     {
-      x = P.x;
+      SVector tmpx = P.x;
+      x = tmpx; // P.x;
       u = P.u;
       weight = P.weight;
       index = P.index;
@@ -174,12 +175,12 @@ class ParticleStorage
           return tmp;
         }
 
-        bool operator==(const iterator& rhs)
+        bool operator==(const iterator& rhs) const
         {
           return (blockIter == rhs.blockIter) && (pos == rhs.pos);
         }
 
-        bool operator!=(const iterator& rhs)
+        bool operator!=(const iterator& rhs) const
         {
           return (blockIter != rhs.blockIter) || (pos != rhs.pos);
         }

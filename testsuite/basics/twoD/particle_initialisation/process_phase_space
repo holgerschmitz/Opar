@@ -1,0 +1,26 @@
+#!/bin/sh
+
+rm -f phase.out
+touch phase.out
+
+for f in phase_*.h5
+do
+  b=`basename $f .h5`
+  n=${b:6}
+  echo $n
+  
+  for d in x y ux uy uz weight
+  do 
+    echo $d
+    h5totxt $f -d $d > ${b}_${d}.out
+  done
+  paste ${b}_x.out ${b}_y.out ${b}_weight.out | awk -f densityplot.awk > den_${n}.out
+  h5fromtxt -T den_${n}.h5 < den_${n}.out
+  h5topng den_${n}.h5
+  
+  for d in x y ux uy uz weight
+  do 
+    rm -f ${b}_${d}.out
+  done
+  rm -f den_${n}.h5
+done

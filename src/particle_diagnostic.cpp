@@ -91,6 +91,14 @@ void ParticleDiagnostic::write()
     output.writeGrid(container);
   }
 
+  long pos = localStart;
+  for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
+  {
+    (*data)(pos++) = it->weight;
+  }
+  output.setBlockName("weight");
+  output.writeGrid(container);
+
 }
 
 void ParticleDiagnostic::registerData()

@@ -60,13 +60,6 @@ CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
 LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
 
 # LDFLAGS="$LDFLAGS -lschnek"
-
-# Search for MPI support
-# allows the  --with-mpi option (yes, no, auto)
-AC_ARG_WITH(mpi, [AS_HELP_STRING([--with-mpi],
-           [compile with MPI (parallelization) support. If none is found,
-           MPI is not used. Default: auto])
-       ],,[with_mpi=auto])
        
 # Search for MPI support
 # allows the  --with-mpi option (yes, no, auto)
@@ -145,5 +138,6 @@ fi
 
 
 AC_CONFIG_FILES([Makefile
-                 src/Makefile])
+                 src/Makefile
+                 checks/Makefile])
 AC_OUTPUT

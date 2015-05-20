@@ -2,7 +2,7 @@
  * species.cpp
  *
  * Created on: 16 Nov 2012
- * Author: hschmitz
+ * Author: Holger Schmitz
  * Email: holger@notjustphysics.com
  *
  * Copyright 2012 Holger Schmitz
@@ -44,6 +44,7 @@
 #include <boost/functional/factory.hpp>
 
 #include <fstream>
+#include <limits>
 
 #undef LOGLEVEL
 #define LOGLEVEL 0
@@ -80,9 +81,10 @@ void Species::initParameters(BlockParameters &blockPars)
   blockPars.addParameter("charge", &charge, 1.0);
   blockPars.addParameter("mass", &mass, 1.0);
   blockPars.addParameter("ppc", &ppc, 100);
+  blockPars.addParameter("densityCutoff", &densityCutoff, 0.0);
 
   densityParam = blockPars.addParameter("density", &density, 1.0);
-  temperatureParam = blockPars.addArrayParameter("temperature", temperature);
+  temperatureParam = blockPars.addArrayParameter("temperature", temperature, 0.0);
   driftParam = blockPars.addArrayParameter("drift", drift, 0.0);
 
   blockPars.addArrayParameter("boundary_min", bcNamesLo, std::string("periodic"));
@@ -132,11 +134,11 @@ void Species::init()
   SRange grange = Globals::instance().getDomainRange();
 
   pJx = pDataField(
-      new DataField(low, high, grange, exStaggerYee, 3));
+      new DataField(low, high, grange, exStaggerYee, 2));
   pJy = pDataField(
-      new DataField(low, high, grange, eyStaggerYee, 3));
+      new DataField(low, high, grange, eyStaggerYee, 2));
   pJz = pDataField(
-      new DataField(low, high, grange, ezStaggerYee, 3));
+      new DataField(low, high, grange, ezStaggerYee, 2));
 
   (*pJx) = 0.0;
   (*pJy) = 0.0;
@@ -176,11 +178,15 @@ void Species::init()
   this->initParticles();
 }
 
+#undef LOGLEVEL
+#define LOGLEVEL 0
+
 void Species::initParticles()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-  SIntVector lo = Globals::instance().getLocalInnerGridMin();
-  SIntVector hi = Globals::instance().getLocalInnerGridMax();
+  const SIntVector lo = Globals::instance().getLocalInnerGridMin();
+  const SIntVector hi = Globals::instance().getLocalInnerGridMax();
+  const SVector dMin = Globals::instance().getDomainMin();
 
   SIntVector i;
 
@@ -211,17 +217,18 @@ void Species::initParticles()
       ++debug_count;
       for (int i = 0; i < dimension; ++i)
       {
-        coords[i] = (pos[i] + Random::uniform()) * dx[i];
+        coords[i] = (pos[i] + Random::uniform()) * dx[i] + dMin[i];
         SCHNEK_TRACE_LOG(4,debug_count <<": coords[" << i << "] = " << coords[i])
         SCHNEK_TRACE_LOG(4,"pos[" << i << "] = " << pos[i])
 //        debug_out << debug_count <<": coords[" << i << "] = " << coords[i] << std::endl;
 //        debug_out << "pos[" << i << "] = " << pos[i] << std::endl;
       }
 
-      Particle &p = particles.addParticle();
-
       // The updater changes the value of densityInit and temperatureInit by calculating the formulas from the user input
       updater->update();
+      if (density < densityCutoff) continue;
+
+      Particle &p = particles.addParticle();
 
       SCHNEK_TRACE_LOG(5,"density=" << density << "    weight_factor="<<weight_factor)
 
@@ -242,6 +249,9 @@ void Species::initParticles()
 
 }
 
+#undef LOGLEVEL
+#define LOGLEVEL 0
+
 void debug_check_out_of_bounds(std::string checkpoint, Particle p_debug_old, Particle p_old, SIntVector debug_cell1, SIntVector debug_cell2)
 {
 //  if (GridArgCheck<dimension>::getErrorFlag())
@@ -261,6 +271,20 @@ void debug_check_out_of_bounds(std::string checkpoint, Particle p_debug_old, Par
 
 }
 
+inline bool debug_particle_nan(std::string checkpoint, const Particle &p)
+{
+  if (isnan(p.x[0]) || isnan(p.x[1]) || isnan(p.u[0]) || isnan(p.u[1]) || isnan(p.u[2]))
+  {
+    std::cerr << "Particle NaN at checkpoint " << checkpoint << std::endl;
+    std::cerr << "X = " << p.x << "\nU = " << p.u << "\n";
+    return true;
+  }
+  return false;
+}
+
+#undef LOGLEVEL
+#define LOGLEVEL 0
+
 /**
  * Push the particles and calulate the current.
  *
@@ -277,6 +301,7 @@ void Species::pushParticles(double dt)
 
   // Unvarying multiplication factor
   const SVector dx = Globals::instance().getDx();
+  const SVector dMin = Globals::instance().getDomainMin();
 
   const SVector idx(1.0/dx);
   const double idt = 1.0 / dt;
@@ -284,7 +309,32 @@ void Species::pushParticles(double dt)
   // particle weighting multiplication factor
   const double fac = ipow(Weighting::particleShapeFactor(), dimension) * charge;
 
-  const double cmratio = 0.5* fac * dt / mass;
+  const double cmratio = fac * dt / mass;
+
+
+//  double maxJxHelper = 0.0;
+//  double maxJyHelper = 0.0;
+//  double maxJzHelper = 0.0;
+
+#if BOOST_PP_GREATER_EQUAL( LOGLEVEL, 5 )
+  double minVal = 0, maxVal = 0;
+  for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
+  {
+    Particle &p = *it;
+    for (int i=0; i<dimension; ++i)
+    {
+      minVal = std::min(minVal, p.x[i]);
+      maxVal = std::max(maxVal, p.x[i]);
+    }
+    for (int i=0; i<3; ++i)
+    {
+      minVal = std::min(minVal, p.u[i]);
+      maxVal = std::max(maxVal, p.u[i]);
+    }
+  }
+
+  SCHNEK_TRACE_LOG(5,"Particle minimum val = " << minVal << "; maximum val " << maxVal)
+#endif
 
 //  int debug_count = 0;
   for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
@@ -293,6 +343,8 @@ void Species::pushParticles(double dt)
     Particle &particle = *it;
     Particle p_debug_old(particle);
     Particle p(particle);
+    debug_particle_nan("A", particle);
+    debug_particle_nan("A+", p);
 
 //    if (debug_count==debug_particle_number)
 //    {
@@ -305,13 +357,12 @@ void Species::pushParticles(double dt)
     double dt_gamma = 0.5*dt/sqrt(p.u.sqr()/clight2 + 1.0);
 
     p.x = p.x + p.u.project<dimension>() * dt_gamma;
-
-    SCHNEK_TRACE_LOG(3,"particle " << p.x[0] << " " << p.u[0] << " " << dt << " " << p.u[0] * dt_gamma)
+    debug_particle_nan("B", p);
 
     SIntVector cell1, cell2, dcell;
     SIntVector debug_cell1, debug_cell2;
     SVector cell_frac;
-    SVector cell_pos(p.x*idx);
+    SVector cell_pos((p.x - dMin)*idx);
 
     debug_check_out_of_bounds("AA", p_debug_old, particle, debug_cell1, debug_cell2);
 
@@ -326,11 +377,11 @@ void Species::pushParticles(double dt)
     PVector E = Weighting::interpolateE(gx, hx, cell1, cell2, *pEx, *pEy, *pEz);
     PVector B = Weighting::interpolateB(gx, hx, cell1, cell2, *pBx, *pBy, *pBz);
 
-    PVector um = p.u + cmratio * E;
+    PVector um = p.u + 0.5*cmratio * E;
 
-    dt_gamma = 0.5*dt/sqrt(um.sqr()/clight2 + 1.0);
+    dt_gamma = 1.0/sqrt(um.sqr()/clight2 + 1.0);
 
-    const PVector tau = B * dt_gamma;
+    const PVector tau = B * (cmratio*dt_gamma);
     const PVector tau2 = tau*tau;
     PVector ud, urot;
 
@@ -341,13 +392,33 @@ void Species::pushParticles(double dt)
     schnek::crossProduct(urot, ud,tau);
 
     for (int i=0; i<3; ++i)
-      p.u[i] = um[i] + tau_ifac*urot[i] + cmratio * E[i];
+      p.u[i] = um[i] + tau_ifac*urot[i] + 0.5*cmratio * E[i];
 
+#ifdef TWO_DIMENSIONAL
+
+    if (debug_particle_nan("C", p))
+    {
+      std::cerr << "E = "<< E << "\nB = "<<B<< "\num = "<<um<<"\ntau_ifac = "<<tau_ifac<<"\nurot = "<<urot<<"\ncmratio = "<<cmratio<<"\n";
+      std::cerr << "gx = "<< gx<< "\nhx = "<< hx<< "\ncell1 = "<< cell1<< "\ncell2 = "<< cell2<<"\n";
+      SDomain d = Weighting::getSDomain();
+
+      for (int j=d.getLo()[1]; j<d.getHi()[1]; ++j)
+      {
+        for (int i=d.getLo()[0]; i<d.getHi()[0]; ++i)
+        {
+          std::cerr << "Ex("<< cell2[0]+i <<", "<< cell1[1]+j<<") = " << (*pEx)(cell2[0]+i, cell1[1]+j)<<"\n";
+        }
+      }
+      exit(-1);
+    }
+#endif
 
     const double igamma = 1.0/sqrt(p.u.sqr()/clight2 + 1.0);
 
     for (int i=0; i<dimension; ++i)
       p.x[i] = p.x[i] + p.u[i] * (0.5 * dt * igamma);
+
+    debug_particle_nan("D", p);
 
     particle = p;
 
@@ -356,7 +427,7 @@ void Species::pushParticles(double dt)
 //      std::cerr << "After " << p.x[0] << " (" <<p.u[0]<<", "<<p.u[1]<<", "<<p.u[2]<<")"<< std::endl;
 //    }
 
-    cell_pos = p.x*idx;
+    cell_pos = (p.x - dMin)*idx;
 
     // Calculate the current using the charge conserving algorithm by Esirkepov
     // T.Z. Esirkepov, Comp. Phys. Comm., vol 135, p.144 (2001)
@@ -370,6 +441,7 @@ void Species::pushParticles(double dt)
       if ((dcell[i]>1) || (dcell[i]<-1))
       {
         std::cerr << "Particle is moving more that one grid cell per time step.\nStopping now!\n";
+        std::cerr << "X = " << p.x << "\nU = " << p.u << "\ndt = " << dt << "\nigamma = "<<igamma<< "\n";
         exit(-1);
       }
     }
@@ -493,13 +565,24 @@ void Species::pushParticles(double dt)
       for (int i=0; i<dimension; ++i)
         g_ind[i] = cell1[i] + l_ind[i];
 
-      SCHNEK_TRACE_LOG(5,"pos "<< cell1[0] << " " << l_ind[0] << " " << g_ind[0] << " " << jxHelper.getLo()[0] << " " << jxHelper.getHi()[0] << " " << pJx->getLo()[0] << " " << pJx->getHi()[0])
+//      if (fabs(jxHelper[l_ind])>maxJxHelper) maxJxHelper=fabs(jxHelper[l_ind]);
+//      if (fabs(jyHelper[l_ind])>maxJyHelper) maxJyHelper=fabs(jyHelper[l_ind]);
+//      if (fabs(jzHelper[l_ind])>maxJzHelper) maxJzHelper=fabs(jzHelper[l_ind]);
+
+//      if ((jxHelper[l_ind]>0) || (jyHelper[l_ind]>0) || (jzHelper[l_ind]>0))
+//      if ((Globals::instance().getTCount() == 358) || (Globals::instance().getTCount() == 300))
+//        SCHNEK_TRACE_LOG(0,"pos "<< Globals::instance().getTCount() << " "
+//                         << cell1[0] << " "  << cell1[1]  << " "
+//                         << l_ind[0] << " " << l_ind[1] << " "
+//                         << g_ind[0] << " " << g_ind[1] << " "
+//                         << jxHelper.getLo()[0] << " " << jxHelper.getHi()[0] << " " << pJx->getLo()[0] << " " << pJx->getHi()[0])
 
       (*pJx)[g_ind] += jxHelper[l_ind];
       (*pJy)[g_ind] += jyHelper[l_ind];
       (*pJz)[g_ind] += jzHelper[l_ind];
 
-      SCHNEK_TRACE_LOG(5,"particle current "<< l_ind[0] << " " << jxHelper[l_ind] << " " << jyHelper[l_ind] << " " << jyHelper[l_ind])
+//      if ((jxHelper[l_ind]>0) || (jyHelper[l_ind]>0) || (jzHelper[l_ind]>0))
+      SCHNEK_TRACE_LOG(5,"particle current "<< l_ind[0] << " " << jxHelper[l_ind] << " " << jyHelper[l_ind] << " " << jzHelper[l_ind])
 
       debug_check_out_of_bounds("AY", p_debug_old, particle, debug_cell1, debug_cell2);
     }
@@ -507,8 +590,14 @@ void Species::pushParticles(double dt)
     debug_check_out_of_bounds("AZ", p_debug_old, particle, debug_cell1, debug_cell2);
   }
 
+//  std::cerr << "maxJxHelper = " << maxJxHelper << std::endl;
+//  std::cerr << "maxJyHelper = " << maxJyHelper << std::endl;
+//  std::cerr << "maxJzHelper = " << maxJzHelper << std::endl;
+
   // here all the boundary conditions and the MPI happens
   particleExchange->exchange(particles);
 }
 
 
+#undef LOGLEVEL
+#define LOGLEVEL 0

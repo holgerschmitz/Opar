@@ -43,6 +43,10 @@ void ParticleExchange::exchange(ParticleStorage &particles)
 
   SVector locMin = Globals::instance().getLocalDomainMin();
   SVector locMax = Globals::instance().getLocalDomainMax();
+  SVector dx = Globals::instance().getDx();
+
+  locMin = locMin - 0.5*dx;
+  locMax = locMax + 0.5*dx;
 
   for (int d=0; d<dimension; ++d)
   {
@@ -82,6 +86,7 @@ void ParticleExchange::exchange(ParticleStorage &particles)
   }
 }
 
+
 void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direction)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
@@ -102,8 +107,11 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direc
 
   for (ParticleBuffer::iterator it = bufferReceive.begin(); it != bufferReceive.end(); ++it)
   {
-    particles.addParticle() = *it;
-    SCHNEK_TRACE_LOG(5,"doExchange receive " << it->x[0] << " : "
+    SCHNEK_TRACE_LOG(5,"particles.count "<<particles.getCount())
+    SCHNEK_TRACE_LOG(5,"setting "<< it->x[0])
+    Particle &p = particles.addParticle();
+    p = *it;
+    SCHNEK_TRACE_LOG(5,"doExchange receive " << p.x[0] << " : "
         << Globals::instance().getLocalDomainMin()[0] << " "
         << Globals::instance().getLocalDomainMax()[0])
   }
@@ -111,5 +119,7 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direc
 }
 
 
+#undef LOGLEVEL
+#define LOGLEVEL 0
 
 

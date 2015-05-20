@@ -1,0 +1,17 @@
+#!/bin/sh
+
+rm -f phase.out
+touch phase.out
+
+for ((i=0; i<=$1; i++))
+do
+  echo $i
+  fname=phase_${i}.h5
+  px=`h5totxt -d x $fname`
+  py=`h5totxt -d y $fname`
+  ux=`h5totxt -d ux $fname`
+  uy=`h5totxt -d uy $fname`
+  uz=`h5totxt -d uz $fname`
+  weight=`h5totxt -d weight $fname`
+  echo $px $py $ux $uy $uz $weight >> phase.out
+done

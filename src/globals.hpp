@@ -113,6 +113,7 @@ class Globals : public Singleton<Globals>
 
     double getEndTime() const { return endTime; }
     double getDt() const { return dt; }
+    int getTCount() const { return t_count; }
     bool stepTime();
 
     const SVector &getDomainMin() const { return domainMin; }

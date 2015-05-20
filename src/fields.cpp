@@ -65,21 +65,21 @@ inline void Fields::fdtdStepD(double dt,
     dt*(
         ((*pBz)(i,j,k) - (*pBz)(i,j-1,k))/kappaEdy
       - ((*pBy)(i,j,k) - (*pBy)(i,j,k-1))/kappaEdz
-      - Jx
+      - eps_0_inv*Jx
     );
 
   (*pEy)(i,j,k) +=
     dt*(
         ((*pBx)(i,j,k) - (*pBx)(i,j,k-1))/kappaEdz
       - ((*pBz)(i,j,k) - (*pBz)(i-1,j,k))/kappaEdx
-      - Jy
+      - eps_0_inv*Jy
     );
 
   (*pEz)(i,j,k) +=
     dt*(
         ((*pBy)(i,j,k) - (*pBy)(i-1,j,k))/kappaEdx
       - ((*pBx)(i,j,k) - (*pBx)(i,j-1,k))/kappaEdy
-      - Jz
+      - eps_0_inv*Jz
     );
 }
 
@@ -222,20 +222,20 @@ inline void Fields::fdtdStepD(double dt,
   (*pEx)(i,j) +=
     dt*(
         ((*pBz)(i,j) - (*pBz)(i,j-1))/kappaEdy
-      - Jx
+      - eps_0_inv*Jx
     );
 
   (*pEy)(i,j) +=
     dt*(
       - ((*pBz)(i,j) - (*pBz)(i-1,j))/kappaEdx
-      - Jy
+      - eps_0_inv*Jy
     );
 
   (*pEz)(i,j) +=
     dt*(
         ((*pBy)(i,j) - (*pBy)(i-1,j))/kappaEdx
       - ((*pBx)(i,j) - (*pBx)(i,j-1))/kappaEdy
-      - Jz
+      - eps_0_inv*Jz
     );
 }
 
@@ -287,6 +287,19 @@ void Fields::stepD(double dt)
 
   double jx(0), jy(0), jz(0);
 
+//  double maxEx  = 0.0;
+//  double maxEy  = 0.0;
+//  double maxEz  = 0.0;
+//  double maxExa = 0.0;
+//  double maxEya = 0.0;
+//  double maxEza = 0.0;
+//  double maxBx  = 0.0;
+//  double maxBy  = 0.0;
+//  double maxBz  = 0.0;
+//  double maxJx  = 0.0;
+//  double maxJy  = 0.0;
+//  double maxJz  = 0.0;
+
   for (int i=low[0]+1; i<high[0]; ++i)
     for (int j=low[1]+1; j<high[1]; ++j)
       {
@@ -294,8 +307,37 @@ void Fields::stepD(double dt)
         jy = (*this->pJy)(i,j);
         jz = (*this->pJz)(i,j);
 
+//        if (fabs((*pEx)(i,j))>maxEx) maxEx=(*pEx)(i,j);
+//        if (fabs((*pEy)(i,j))>maxEy) maxEy=(*pEy)(i,j);
+//        if (fabs((*pEz)(i,j))>maxEz) maxEz=(*pEz)(i,j);
+//        if (fabs((*pBx)(i,j))>maxBx) maxBx=(*pBx)(i,j);
+//        if (fabs((*pBy)(i,j))>maxBy) maxBy=(*pBy)(i,j);
+//        if (fabs((*pBz)(i,j))>maxBz) maxBz=(*pBz)(i,j);
+//
+//        if (fabs(jx)>maxJx) maxJx=jx;
+//        if (fabs(jy)>maxJy) maxJy=jy;
+//        if (fabs(jz)>maxJz) maxJz=jz;
+
         this->fdtdStepD(dt, i, j, dx, jx, jy, jz);
+
+//        if (fabs((*pEx)(i,j))>maxExa) maxExa=(*pEx)(i,j);
+//        if (fabs((*pEy)(i,j))>maxEya) maxEya=(*pEy)(i,j);
+//        if (fabs((*pEz)(i,j))>maxEza) maxEza=(*pEz)(i,j);
       }
+
+//  std::cerr << "====== stepD ======\n";
+//  std::cerr << "Ex  = " << maxEx  << std::endl;
+//  std::cerr << "Ey  = " << maxEy  << std::endl;
+//  std::cerr << "Ez  = " << maxEz  << std::endl;
+//  std::cerr << "Exa = " << maxExa << std::endl;
+//  std::cerr << "Eya = " << maxEya << std::endl;
+//  std::cerr << "Eza = " << maxEza << std::endl;
+//  std::cerr << "Bx  = " << maxBx  << std::endl;
+//  std::cerr << "By  = " << maxBy  << std::endl;
+//  std::cerr << "Bz  = " << maxBz  << std::endl;
+//  std::cerr << "Jx  = " << maxJx  << std::endl;
+//  std::cerr << "Jy  = " << maxJy  << std::endl;
+//  std::cerr << "Jz  = " << maxJz  << std::endl;
 
   Globals::pSubdivision sub = Globals::instance().getSubdivision();
 
@@ -327,6 +369,19 @@ void Fields::stepB(double dt)
   double jx(0), jy(0), jz(0);
 //  if (this->pMx != 0) sumMagCurrents();
 
+//  double maxEx  = 0.0;
+//  double maxEy  = 0.0;
+//  double maxEz  = 0.0;
+//  double maxBxa = 0.0;
+//  double maxBya = 0.0;
+//  double maxBza = 0.0;
+//  double maxBx  = 0.0;
+//  double maxBy  = 0.0;
+//  double maxBz  = 0.0;
+//  double maxJx  = 0.0;
+//  double maxJy  = 0.0;
+//  double maxJz  = 0.0;
+
   for (int i=low[0]; i<high[0]; ++i)
     for (int j=low[1]; j<high[1]; ++j)
       {
@@ -337,8 +392,38 @@ void Fields::stepB(double dt)
 //          jz = (*this->pMz)(i,j,k);
 //        }
 
+
+//        if (fabs((*pEx)(i,j))>maxEx) maxEx=(*pEx)(i,j);
+//        if (fabs((*pEy)(i,j))>maxEy) maxEy=(*pEy)(i,j);
+//        if (fabs((*pEz)(i,j))>maxEz) maxEz=(*pEz)(i,j);
+//        if (fabs((*pBx)(i,j))>maxBx) maxBx=(*pBx)(i,j);
+//        if (fabs((*pBy)(i,j))>maxBy) maxBy=(*pBy)(i,j);
+//        if (fabs((*pBz)(i,j))>maxBz) maxBz=(*pBz)(i,j);
+//
+//        if (fabs(jx)>maxJx) maxJx=jx;
+//        if (fabs(jy)>maxJy) maxJy=jy;
+//        if (fabs(jz)>maxJz) maxJz=jz;
+
         this->fdtdStepB(dt, i, j, dx, jx, jy, jz);
+
+//        if (fabs((*pBx)(i,j))>maxBxa) maxBxa=(*pBx)(i,j);
+//        if (fabs((*pBy)(i,j))>maxBya) maxBya=(*pBy)(i,j);
+//        if (fabs((*pBz)(i,j))>maxBza) maxBza=(*pBz)(i,j);
       }
+
+//  std::cerr << "====== stepB ======\n";
+//  std::cerr << "Ex  = " << maxEx  << std::endl;
+//  std::cerr << "Ey  = " << maxEy  << std::endl;
+//  std::cerr << "Ez  = " << maxEz  << std::endl;
+//  std::cerr << "Bxa = " << maxBxa << std::endl;
+//  std::cerr << "Bya = " << maxBya << std::endl;
+//  std::cerr << "Bza = " << maxBza << std::endl;
+//  std::cerr << "Bx  = " << maxBx  << std::endl;
+//  std::cerr << "By  = " << maxBy  << std::endl;
+//  std::cerr << "Bz  = " << maxBz  << std::endl;
+//  std::cerr << "Jx  = " << maxJx  << std::endl;
+//  std::cerr << "Jy  = " << maxJy  << std::endl;
+//  std::cerr << "Jz  = " << maxJz  << std::endl;
 
   Globals::pSubdivision sub = Globals::instance().getSubdivision();
 
@@ -595,9 +680,9 @@ void Fields::init()
   pBy = pDataField(new DataField(low, high, grange, byStaggerYee, 2));
   pBz = pDataField(new DataField(low, high, grange, bzStaggerYee, 2));
 
-  pJx = pDataField(new DataField(low, high, grange, exStaggerYee, 3));
-  pJy = pDataField(new DataField(low, high, grange, eyStaggerYee, 3));
-  pJz = pDataField(new DataField(low, high, grange, ezStaggerYee, 3));
+  pJx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
+  pJy = pDataField(new DataField(low, high, grange, eyStaggerYee, 2));
+  pJz = pDataField(new DataField(low, high, grange, ezStaggerYee, 2));
 
   Currents::instance().setGlobalCurrent(pJx, pJy, pJz);
 //  for (int i=0; i<dimension; ++i)
@@ -618,6 +703,13 @@ void Fields::init()
   fill_field(*pBy, coords, BInit[1], *updater, BParam[1]);
   fill_field(*pBz, coords, BInit[2], *updater, BParam[2]);
 
+  checkField("Ex",*pEx);
+  checkField("Ey",*pEy);
+  checkField("Ez",*pEz);
+
+  checkField("Bx",*pBx);
+  checkField("By",*pBy);
+  checkField("Bz",*pBz);
 
   for (int i=0; i<dimension; ++i)
   {
@@ -646,5 +738,29 @@ void Fields::init()
 
 }
 
+
+void Fields::checkField(std::string name, const DataField &field)
+{
+  SIntVector lo = field.getLo();
+  SIntVector hi = field.getHi();
+  SIntVector pos;
+  for (pos[0]=lo[0]; pos[0]<=hi[0]; ++pos[0])
+#ifndef ONE_DIMENSIONAL
+    for (pos[1]=lo[1]; pos[1]<=hi[1]; ++pos[1])
+#ifdef THREE_DIMENSIONAL
+      for (pos[2]=lo[2]; pos[2]<=hi[2]; ++pos[2])
+#endif
+#endif
+      {
+        if (isnan(field[pos]) || isinf(field[pos]))
+        {
+          std::string val = isnan(field[pos])?"NaN":"Inf";
+          std::cerr << "We have detected a "<<val<<" value in field '" << name
+              << "' at position " << pos << "\n"
+              << "You probably have an error in the formula initialising this field\n";
+          exit(-1);
+        }
+      }
+}
 
 

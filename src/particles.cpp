@@ -32,7 +32,7 @@
 #undef LOGLEVEL
 #define LOGLEVEL 0
 
-static const long STORAGE_BLOCK_SIZE = 1000000;
+static const long STORAGE_BLOCK_SIZE = 10000000;
 
 ParticleStorage::DataBlock::DataBlock() : count(0)
 {
@@ -62,12 +62,10 @@ Particle &ParticleStorage::addParticle()
     bool foundBlock = false;
     freeBlock = blocks.begin();
 
-    foundBlock = (STORAGE_BLOCK_SIZE > freeBlock->count);
-
     while(!foundBlock && (freeBlock != blocks.end()))
     {
-      ++freeBlock;
       foundBlock = (STORAGE_BLOCK_SIZE > freeBlock->count);
+      if (!foundBlock) ++freeBlock;
     }
 
     if (!foundBlock)

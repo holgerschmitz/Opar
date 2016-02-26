@@ -71,7 +71,7 @@ void Globals::init()
 #else
   subdivision = pSubdivision(new SerialSubdivision<DataField>());
 #endif
-  subdivision->init(globalGridSize, 2);
+  subdivision->init(globalGridSize, ghostCells);
   localGridMin = subdivision->getLo();
   localGridMax = subdivision->getHi();
 
@@ -82,7 +82,7 @@ void Globals::init()
   {
     dx[i] = (domainMax[i]-domainMin[i]) / (real)globalGridSize[i]; // account for ghost cells
     localDomainMin[i] = domainMin[i] + localInnerGridMin[i]*dx[i];
-    localDomainMax[i] = domainMin[i] + localInnerGridMax[i]*dx[i];
+    localDomainMax[i] = domainMin[i] + (localInnerGridMax[i]+1)*dx[i];
 
     std::cout << "II Local Grid Domain: " << subdivision->getUniqueId() << " " << i << " " << localGridMin[i] << " " << localGridMax[i] << std::endl;
     std::cout << "II Inner Grid Domain: "<< subdivision->getUniqueId() << " " << i << " " << localInnerGridMin[i] << " " << localInnerGridMax[i] << std::endl;

@@ -116,10 +116,38 @@ class Globals : public Singleton<Globals>
     int getTCount() const { return t_count; }
     bool stepTime();
 
+    /** @brief The physical minimum of the simulation domain.
+     *
+     * This quantity is set by the configuration file.
+     * This denotes the lower left coordinate of the box that contains the simulation particles.
+     * The lower boundary conditions are applied to the walls defined by
+     *  \f$x_i = domainMin_i$\f
+     */
     const SVector &getDomainMin() const { return domainMin; }
+
+    /** @brief The physical maximum of the simulation domain.
+     *
+     * This quantity is set by the configuration file.
+     * This denotes the upper right coordinate of the box that contains the simulation particles.
+     * The upper boundary conditions are applied to the walls defined by
+     *  \f$x_i = domainMax_i$\f
+     */
     const SVector &getDomainMax() const { return domainMax; }
 
+    /** @brief The physical minimum of the simulation domain on the current process.
+     *
+     * This denotes the lower left coordinate of the box that contains the simulation particles
+     * in this process. Particles for which \f$x_i < localDomainMin_i$\f are transferred to the
+     * neighbouring process.
+     */
     const SVector &getLocalDomainMin() const { return localDomainMin; }
+
+    /** @brief The physical maximum of the simulation domain on the current process.
+     *
+     * This denotes the upper right coordinate of the box that contains the simulation particles
+     * in this process. Particles for which \f$x_i > localDomainMax_i$\f are transferred to the
+     * neighbouring process.
+     */
     const SVector &getLocalDomainMax() const { return localDomainMax; }
 
     SRange getDomainRange() const { return  SRange(domainMin, domainMax); }

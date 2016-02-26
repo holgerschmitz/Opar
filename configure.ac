@@ -30,8 +30,8 @@ AC_INIT([OPar],[0.9.1])
 AC_CONFIG_SRCDIR([src/opar.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([src/config.hpp])
-
-AM_INIT_AUTOMAKE
+  
+AM_INIT_AUTOMAKE([subdir-objects])
 VERSION="0.9.1"
 PACKAGE="opar"
 
@@ -50,7 +50,7 @@ AC_PROG_MAKE_SET
 LT_INIT
 AC_SUBST([LIBTOOL_DEPS])
 
-# AC_ARG_PROGRAM
+AC_LANG_PUSH([C++])
 
 # Checks for libraries.
 
@@ -85,6 +85,12 @@ else
   using_mpi=no
 fi
 
+# Search for HDF5 libraries
+# To distinguish between serial and parallel, use the H5_HAVE_PARALLEL macro
+# supplied by HDF5 itself
+# Checks for libraries.
+# start: Check for HDF5 support
+
 AX_HDF5([
   have_hdf5="yes"
   EXTRA_CPPFLAGS="$EXTRA_CPPFLAGS $HDF5_CFLAGS"
@@ -102,8 +108,8 @@ AX_SCHNEK([0.9.1],[
   EXTRA_LIBS="$EXTRA_LIBS $SCHNEK_LIBS"
 ],[
   AC_MSG_ERROR([Schnek library needed by OPar but could not be found!])
-])
-
+  ])
+  
 CPPFLAGS="$CPPFLAGS $EXTRA_CPPFLAGS"
 LDFLAGS="$LDFLAGS $EXTRA_LDFLAGS"
 LIBS="$EXTRA_LIBS"

@@ -131,6 +131,8 @@ static const SStagger byStaggerYee(true );
 static const SStagger bzStaggerYee(true );
 #endif
 
+static const int ghostCells = 3;
+
 void debug_check_out_of_bounds(std::string checkpoint);
 
 #endif /* CONFIG_HPP_ */

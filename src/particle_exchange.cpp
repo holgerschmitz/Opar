@@ -91,6 +91,7 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direc
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   bufferSend.makeBuffer(listSend);
+  ParticleBuffer::BufferType &buf = bufferSend.getBuffer();
 
   while (!listSend.empty())
   {

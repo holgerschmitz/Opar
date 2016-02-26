@@ -43,7 +43,7 @@ class Particle
   public:
     /// This is the position
     SVector x;
-    /// This is the relativistic four velocity
+    /// These are the three components of the relativistic four velocity
     PVector u;
     real weight;
 

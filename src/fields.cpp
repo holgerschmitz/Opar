@@ -31,6 +31,7 @@
 #include "util.hpp"
 
 #include "constants.hpp"
+#include "field_initialise.hpp"
 
 #include <schnek/tools/fieldtools.hpp>
 #include <schnek/util/logger.hpp>
@@ -48,8 +49,6 @@
 void Fields::initParameters(BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(3)
-  EParam = blockPars.addArrayParameter("E", EInit, 0.0);
-  BParam = blockPars.addArrayParameter("B", BInit, 0.0);
 }
 
 
@@ -64,30 +63,17 @@ void Fields::registerData()
   addData("Bz", pBz);
 }
 
-void Fields::checkField(std::string name, const DataField &field)
-{
-  SIntVector lo = field.getLo();
-  SIntVector hi = field.getHi();
-  SIntVector pos;
-  for (pos[0]=lo[0]; pos[0]<=hi[0]; ++pos[0])
-#ifndef ONE_DIMENSIONAL
-    for (pos[1]=lo[1]; pos[1]<=hi[1]; ++pos[1])
-#ifdef THREE_DIMENSIONAL
-      for (pos[2]=lo[2]; pos[2]<=hi[2]; ++pos[2])
-#endif
-#endif
-      {
-        if (isnan(field[pos]) || isinf(field[pos]))
-        {
-          std::string val = isnan(field[pos])?"NaN":"Inf";
-          std::cerr << "We have detected a "<<val<<" value in field '" << name
-              << "' at position " << pos << "\n"
-              << "You probably have an error in the formula initialising this field\n";
-          exit(-1);
-        }
-      }
-}
 
+
+void Fields::init()
+{
+  SCHNEK_TRACE_ENTER_FUNCTION(3)
+
+  BOOST_FOREACH(FieldInitialiser *init, initialisers)
+  {
+    init->initialiseFields(*this);
+  }
+}
 
 #ifdef THREE_DIMENSIONAL
 
@@ -710,19 +696,21 @@ void EMFields::init()
   SIntVector high = Globals::instance().getLocalInnerGridMax();
   SRange grange = Globals::instance().getLocalDomainRange();
 
-  pEx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
-  pEy = pDataField(new DataField(low, high, grange, eyStaggerYee, 2));
-  pEz = pDataField(new DataField(low, high, grange, ezStaggerYee, 2));
+  pEx = pDataField(new DataField(low, high, grange, exStaggerYee, ghostCells));
+  pEy = pDataField(new DataField(low, high, grange, eyStaggerYee, ghostCells));
+  pEz = pDataField(new DataField(low, high, grange, ezStaggerYee, ghostCells));
 
-  pBx = pDataField(new DataField(low, high, grange, bxStaggerYee, 2));
-  pBy = pDataField(new DataField(low, high, grange, byStaggerYee, 2));
-  pBz = pDataField(new DataField(low, high, grange, bzStaggerYee, 2));
+  pBx = pDataField(new DataField(low, high, grange, bxStaggerYee, ghostCells));
+  pBy = pDataField(new DataField(low, high, grange, byStaggerYee, ghostCells));
+  pBz = pDataField(new DataField(low, high, grange, bzStaggerYee, ghostCells));
 
-  pJx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
-  pJy = pDataField(new DataField(low, high, grange, eyStaggerYee, 2));
-  pJz = pDataField(new DataField(low, high, grange, ezStaggerYee, 2));
+  pJx = pDataField(new DataField(low, high, grange, exStaggerYee, ghostCells));
+  pJy = pDataField(new DataField(low, high, grange, eyStaggerYee, ghostCells));
+  pJz = pDataField(new DataField(low, high, grange, ezStaggerYee, ghostCells));
 
   Currents::instance().setGlobalCurrent(pJx, pJy, pJz);
+
+  Fields::init();
 //  for (int i=0; i<dimension; ++i)
 //  {
 //    std::cout << "Field: "<< Globals::instance().getSubdivision()->getUniqueId() << " " << i <<
@@ -730,24 +718,6 @@ void EMFields::init()
 //        ") (" << grange.getLo()[i] << " " << grange.getHi()[i] << ")" << std::endl;
 //  }
 
-  SVector &coords = Globals::instance().getX();
-  pDependencyUpdater updater = Globals::instance().getUpdater(var_space);
-
-  fill_field(*pEx, coords, EInit[0], *updater, EParam[0]);
-  fill_field(*pEy, coords, EInit[1], *updater, EParam[1]);
-  fill_field(*pEz, coords, EInit[2], *updater, EParam[2]);
-
-  fill_field(*pBx, coords, BInit[0], *updater, BParam[0]);
-  fill_field(*pBy, coords, BInit[1], *updater, BParam[1]);
-  fill_field(*pBz, coords, BInit[2], *updater, BParam[2]);
-
-  checkField("Ex",*pEx);
-  checkField("Ey",*pEy);
-  checkField("Ez",*pEz);
-
-  checkField("Bx",*pBx);
-  checkField("By",*pBy);
-  checkField("Bz",*pBz);
 
   for (int i=0; i<dimension; ++i)
   {
@@ -786,33 +756,15 @@ void ConstantFields::init()
   SIntVector high = Globals::instance().getLocalInnerGridMax();
   SRange grange = Globals::instance().getLocalDomainRange();
 
-  pEx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
-  pEy = pDataField(new DataField(low, high, grange, eyStaggerYee, 2));
-  pEz = pDataField(new DataField(low, high, grange, ezStaggerYee, 2));
+  pEx = pDataField(new DataField(low, high, grange, exStaggerYee, ghostCells));
+  pEy = pDataField(new DataField(low, high, grange, eyStaggerYee, ghostCells));
+  pEz = pDataField(new DataField(low, high, grange, ezStaggerYee, ghostCells));
 
-  pBx = pDataField(new DataField(low, high, grange, bxStaggerYee, 2));
-  pBy = pDataField(new DataField(low, high, grange, byStaggerYee, 2));
-  pBz = pDataField(new DataField(low, high, grange, bzStaggerYee, 2));
+  pBx = pDataField(new DataField(low, high, grange, bxStaggerYee, ghostCells));
+  pBy = pDataField(new DataField(low, high, grange, byStaggerYee, ghostCells));
+  pBz = pDataField(new DataField(low, high, grange, bzStaggerYee, ghostCells));
 
-
-  SVector &coords = Globals::instance().getX();
-  pDependencyUpdater updater = Globals::instance().getUpdater(var_space);
-
-  fill_field(*pEx, coords, EInit[0], *updater, EParam[0]);
-  fill_field(*pEy, coords, EInit[1], *updater, EParam[1]);
-  fill_field(*pEz, coords, EInit[2], *updater, EParam[2]);
-
-  fill_field(*pBx, coords, BInit[0], *updater, BParam[0]);
-  fill_field(*pBy, coords, BInit[1], *updater, BParam[1]);
-  fill_field(*pBz, coords, BInit[2], *updater, BParam[2]);
-
-  checkField("Ex",*pEx);
-  checkField("Ey",*pEy);
-  checkField("Ez",*pEz);
-
-  checkField("Bx",*pBx);
-  checkField("By",*pBy);
-  checkField("Bz",*pBz);
+  Fields::init();
 
   Globals::pSubdivision sub = Globals::instance().getSubdivision();
 

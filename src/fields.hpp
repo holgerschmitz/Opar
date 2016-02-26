@@ -32,6 +32,8 @@
 
 #include <schnek/variables.hpp>
 
+class FieldInitialiser;
+
 using namespace schnek;
 
 class Fields : public Block
@@ -44,16 +46,25 @@ class Fields : public Block
     pDataField pBy;
     pDataField pBz;
 
-    PVector EInit;
-    PVector BInit;
+    std::list<FieldInitialiser*> initialisers;
 
-    PParameterVector EParam;
-    PParameterVector BParam;
 
-    void checkField(std::string name, const DataField &field);
+    void initParameters(BlockParameters &blockPars);
+    void registerData();
+    void init();
   public:
+    void addInitialiser(FieldInitialiser *init) { initialisers.push_back(init); }
+
     virtual void stepSchemeInit(double dt) = 0;
     virtual void stepScheme(double dt) = 0;
+
+
+    pDataField getEx() { return pEx; }
+    pDataField getEy() { return pEy; }
+    pDataField getEz() { return pEz; }
+    pDataField getBx() { return pBx; }
+    pDataField getBy() { return pBy; }
+    pDataField getBz() { return pBz; }
 };
 
 class EMFields : public Fields
@@ -62,12 +73,6 @@ class EMFields : public Fields
     pDataField pJx;
     pDataField pJy;
     pDataField pJz;
-
-    PVector EInit;
-    PVector BInit;
-
-    PParameterVector EParam;
-    PParameterVector BParam;
 
     typedef boost::function<FieldBC*()> fieldBCFactoryFunction;
     std::map<std::string, fieldBCFactoryFunction> fieldBCFactories;

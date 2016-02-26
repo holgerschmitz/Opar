@@ -33,6 +33,8 @@ opar_SOURCES =             \
   defs.hpp                 \
   fieldbc.hpp              \
   fields.hpp               \
+  field_initialise.cpp     \
+  field_initialise.hpp     \
   fields.cpp               \
   functions.hpp            \
   functions.cpp            \
@@ -53,6 +55,8 @@ opar_SOURCES =             \
   random.hpp               \
   species.cpp              \
   species.hpp              \
+  species_initialise.cpp   \
+  species_initialise.hpp   \
   types.hpp                \
   util.hpp                 \
   util.cpp                 \

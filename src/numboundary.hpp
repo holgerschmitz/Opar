@@ -27,6 +27,8 @@
 #ifndef OPAR_NUMBOUNDARY_HPP_
 #define OPAR_NUMBOUNDARY_HPP_
 
+#include "types.hpp"
+
 class NumBoundary
 {
   private:
@@ -166,8 +168,8 @@ class FieldBoundary : public Implementation<ghostCells>
     }
 };
 
-typedef FieldBoundary<BoundDirichletImpl, 2> FieldDirichletBC;
-typedef FieldBoundary<BoundNeumannImpl, 2> FieldNeumannBC;
+typedef FieldBoundary<BoundDirichletImpl, ghostCells> FieldDirichletBC;
+typedef FieldBoundary<BoundNeumannImpl, ghostCells> FieldNeumannBC;
 
 
 #endif // OPAR_NUMBOUNDARY_HPP_

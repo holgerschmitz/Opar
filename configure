@@ -15340,7 +15340,12 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
-# AC_ARG_PROGRAM
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
 
 # Checks for libraries.
 
@@ -15827,6 +15832,12 @@ fi
 else
   using_mpi=no
 fi
+
+# Search for HDF5 libraries
+# To distinguish between serial and parallel, use the H5_HAVE_PARALLEL macro
+# supplied by HDF5 itself
+# Checks for libraries.
+# start: Check for HDF5 support
 
 
 

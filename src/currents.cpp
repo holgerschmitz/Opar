@@ -55,6 +55,7 @@ void Currents::updateCurrent(pDataField j, const std::list<pDataField> &jl)
 {
   (*j) = 0.0;
 
+//  std::cerr << "Current " << std::endl;
   BOOST_FOREACH(pDataField jc, jl)
   {
     SCHNEK_TRACE_LOG(4,"Summing up current")
@@ -62,9 +63,20 @@ void Currents::updateCurrent(pDataField j, const std::list<pDataField> &jl)
     for (Range<int, dimension>::iterator it = domain.begin(); it != domain.end(); ++it)
     {
       SCHNEK_TRACE_LOG(5,"at "<< it.getPos()[0] << " " << (*jc)[*it])
+//      double jpart = (*jc)[*it];
       (*j)[*it] += (*jc)[*it];
+//      if (jpart!=0.0)
+//      {
+//        std::cerr << "    j "<< it.getPos()[0] << " " << it.getPos()[1] << " " << jpart << std::endl;
+//      }
     }
   }
+
+//  for (int i=49; i<=51; ++i)
+//    for (int k=49; k<=51; ++k)
+//    {
+//      std::cerr << "     J " << i << " " << k << " " <<  (*j)(i,k) << std::endl;
+//    }
 
   Globals::instance().getSubdivision()->accumulate(*j);
 }

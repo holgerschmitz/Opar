@@ -29,10 +29,11 @@
 #include "opar.hpp"
 #include "common.hpp"
 #include "fields.hpp"
+#include "field_initialise.hpp"
 #include "globals.hpp"
 #include "particle_diagnostic.hpp"
 #include "species.hpp"
-
+#include "species_initialise.hpp"
 #include "constants.hpp"
 #include "functions.hpp"
 
@@ -66,11 +67,10 @@ void debug_check_out_of_bounds(std::string checkpoint)
 }
 
 
-class FieldDiagnostic : public schnek::HDFGridDiagnostic<
-    typename DataField::BaseType, pDataField>
+class FieldDiagnostic : public schnek::HDFGridDiagnostic<DataField, pDataField>
 {
   protected:
-    typedef HDFGridDiagnostic<typename DataField::BaseType, pDataField>::IndexType IndexType;
+    typedef HDFGridDiagnostic<DataField, pDataField>::IndexType IndexType;
     IndexType getGlobalMin()
     {
       // return IndexType(0);
@@ -112,21 +112,21 @@ void OPar::execute()
   {
     // run diagnostics
     //std::cerr << "diagnostic" << std::endl;
-    DiagnosticManager::instance().execute();
-    debug_check_out_of_bounds("A");
-
     if (Globals::instance().getSubdivision()->master())
       schnek::Logger::instance().out() <<"Time "<<Globals::instance().getT() << std::endl;
 
-    //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
-    debug_check_out_of_bounds("B");
-    // Advance electromagnetic fields
-    BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
-    debug_check_out_of_bounds("C");
+    DiagnosticManager::instance().execute();
+    debug_check_out_of_bounds("A");
 
     // Advance particle species
     //std::cerr << "push" << std::endl;
     BOOST_FOREACH(Species *s, species) s->pushParticles(dt);
+    debug_check_out_of_bounds("B");
+
+    //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
+    debug_check_out_of_bounds("C");
+    // Advance electromagnetic fields
+    BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
     debug_check_out_of_bounds("D");
 
     //if ((++n % 10) == 0) { BOOST_FOREACH(Fields *f, fields) f->writeAsTextFiles(n); }
@@ -156,20 +156,27 @@ void initBlockLayout(BlockClasses &blocks)
 
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   blocks.registerBlock("opar");
-  blocks("opar").addChildren("Common")("EMFields")("ConstFields")
-      ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 
   blocks("opar").setClass<OPar>();
   blocks("Common").setClass<CommonBlock>();
   blocks("EMFields").setClass<EMFields>();
   blocks("ConstFields").setClass<ConstantFields>();
   blocks("Species").setClass<Species>();
+  blocks("Maxwellian").setClass<MaxwellianInitialiser>();
+  blocks("TestParticle").setClass<TestParticle>();
   blocks("FieldDiagnostic").setClass<FieldDiagnostic>();
   blocks("ParticleDiagnostic").setClass<ParticleDiagnostic>();
+  blocks("FieldInit").setClass<ExpressionFieldInitialiser>();
+  blocks("FieldLoad").setClass<HdfFieldInitialiser>();
 
   //blocks("Fields").addChildren("FieldBC")("FieldInit");
-  //blocks("Species").addChildren("SpeciesBC")("SpeciesInit");
-  //blocks.addBlockClass("Collection").addChildren("Values")("Constants");
+  blocks("opar").addChildren("Common")("EMFields")("ConstFields")
+      ("Species")("FieldDiagnostic")("ParticleDiagnostic");
+
+  blocks("Species").addChildren("Maxwellian")("TestParticle");
+
+  blocks("EMFields").addChildren("FieldInit")("FieldLoad");
+  blocks("ConstFields").addChildren("FieldInit")("FieldLoad");
 }
 
 void initFunctions(FunctionRegistry &freg)
@@ -228,6 +235,11 @@ int runOpar(int argc, char **argv)
   catch (VariableNotInitialisedException &e)
   {
     std::cerr << "Variable was not initialised: " << e.getVarName() << std::endl;
+    return -1;
+  }
+  catch (VariableNotFoundException &e)
+  {
+    std::cerr << e.getMessage() << std::endl;
     return -1;
   }
   catch (EvaluationException &e)

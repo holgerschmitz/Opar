@@ -74,7 +74,7 @@ class TriangularWeighting
     {
       for (int d = 0; d < dimension; ++d)
       {
-        cell[d] = int(pos[d] + 0.5);
+        cell[d] = int(floor(pos[d] + 0.5));
         cell_frac[d] = pos[d] - cell[d];
       }
     }
@@ -84,7 +84,7 @@ class TriangularWeighting
     {
       for (int d = 0; d < dimension; ++d)
       {
-        cell[d] = int(pos[d]);
+        cell[d] = int(floor(pos[d]));
         cell_frac[d] = pos[d] - cell[d] - 0.5;
       }
     }

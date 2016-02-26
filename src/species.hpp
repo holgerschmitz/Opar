@@ -2,7 +2,7 @@
  * species.hpp
  *
  * Created on: 15 Nov 2012
- * Author: hschmitz
+ * Author: Holger Schmitz
  * Email: holger@notjustphysics.com
  *
  * Copyright 2012 Holger Schmitz
@@ -34,7 +34,9 @@
 
 #include <schnek/variables.hpp>
 
-class Species : public Block
+class SpeciesInitialiser;
+
+class Species : public schnek::Block
 {
   private:
     std::string name;
@@ -57,18 +59,8 @@ class Species : public Block
 
     double charge;
     double mass;
-    double density;
-    double minDensity;
-    PVector temperature;
-    PVector drift;
 
-    double densityCutoff;
-
-    int ppc;
-
-    pParameter densityParam;
-    PParameterVector temperatureParam;
-    PParameterVector driftParam;
+    std::list<SpeciesInitialiser*> initialisers;
 
     typedef Weighting::WeightingCoefficients WeightingCoefficients;
     WeightingCoefficients gx, hx;
@@ -95,6 +87,8 @@ class Species : public Block
     void pushParticles(double dt);
     Particle &addParticle();
     void removeParticle(const ParticleStorage::iterator &p);
+
+    void addInitialiser(SpeciesInitialiser *init) { initialisers.push_back(init); }
 
     ParticleBoundary &getBoundaryLo(int dim) { return *(boundariesLo[dim]); }
     ParticleBoundary &getBoundaryHi(int dim) { return *(boundariesHi[dim]); }

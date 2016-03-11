@@ -212,15 +212,15 @@ void debug_check_out_of_bounds(std::string checkpoint, Particle p_debug_old, Par
 
 inline bool debug_particle_nan(std::string checkpoint, const Particle &p)
 {
-  if (
+
 #ifdef ONE_DIMENSIONAL
-      isnan(p.x[0]) || isnan(p.u[0]) || isnan(p.u[1]) || isnan(p.u[2]))
+  if (isnan(p.x[0]) || isnan(p.u[0]) || isnan(p.u[1]) || isnan(p.u[2]))
 #endif // ONE_DIMEN
 #ifdef TWO_DIMENSIONAL
-      isnan(p.x[0]) || isnan(p.x[1]) || isnan(p.u[0]) || isnan(p.u[1]) || isnan(p.u[2]))
+  if (isnan(p.x[0]) || isnan(p.x[1]) || isnan(p.u[0]) || isnan(p.u[1]) || isnan(p.u[2]))
 #endif // TWO_DIMENSIONAL
 #ifdef THREE_DIMENSIONAL
-      isnan(p.x[0]) || isnan(p.x[1])  || isnan(p.x[2]) || isnan(p.u[0]) || isnan(p.u[1]) || isnan(p.u[2]))
+  if (isnan(p.x[0]) || isnan(p.x[1])  || isnan(p.x[2]) || isnan(p.u[0]) || isnan(p.u[1]) || isnan(p.u[2]))
 #endif // THREE_DIMENSIONAL
   {
     std::cerr << "Particle NaN at checkpoint " << checkpoint << std::endl;

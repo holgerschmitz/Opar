@@ -55,8 +55,8 @@ class Fields : public Block
   public:
     void addInitialiser(FieldInitialiser *init) { initialisers.push_back(init); }
 
-    virtual void stepSchemeInit(double dt) = 0;
-    virtual void stepScheme(double dt) = 0;
+    virtual void stepSchemeBefore(double dt) = 0;
+    virtual void stepSchemeAfter(double dt) = 0;
 
 
     pDataField getEx() { return pEx; }
@@ -87,8 +87,8 @@ class EMFields : public Fields
     // void postInit();
 
   public:
-    void stepSchemeInit(double dt);
-    void stepScheme(double dt);
+    void stepSchemeBefore(double dt);
+    void stepSchemeAfter(double dt);
 
     void writeAsTextFiles(int n);
 
@@ -116,8 +116,8 @@ class ConstantFields : public Fields
     void init();
 
   public:
-    void stepSchemeInit(double dt) {}
-    void stepScheme(double dt) {}
+    void stepSchemeBefore(double dt) {}
+    void stepSchemeAfter(double dt) {}
 };
 
 #endif /* FIELDS_HPP_ */

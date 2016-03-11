@@ -73,14 +73,14 @@ class FieldDiagnostic : public schnek::HDFGridDiagnostic<DataField, pDataField>
     typedef HDFGridDiagnostic<DataField, pDataField>::IndexType IndexType;
     IndexType getGlobalMin()
     {
-      // return IndexType(0);
-      return IndexType(-2); // we want to write out the ghost cells
+      return IndexType(0);
+      //return IndexType(-2); // we want to write out the ghost cells
     }
     IndexType getGlobalMax()
     {
       IndexType max = Globals::instance().getGlobalGridSize();
-//      max -= 1;
-      max += 1;  // we want to write out the ghost cells
+      max -= 1;
+      // max += 1;  // we want to write out the ghost cells
       return max;
     }
 };
@@ -106,7 +106,7 @@ void OPar::execute()
 
   double dt = Globals::instance().getDt();
 
-  BOOST_FOREACH(Fields *f, fields) f->stepSchemeInit(dt);
+  // BOOST_FOREACH(Fields *f, fields) f->stepSchemeInit(dt);
 
   do
   {
@@ -118,6 +118,9 @@ void OPar::execute()
     DiagnosticManager::instance().execute();
     debug_check_out_of_bounds("A");
 
+    BOOST_FOREACH(Fields *f, fields) f->stepSchemeBefore(dt);
+    debug_check_out_of_bounds("A+");
+
     // Advance particle species
     //std::cerr << "push" << std::endl;
     BOOST_FOREACH(Species *s, species) s->pushParticles(dt);
@@ -126,7 +129,7 @@ void OPar::execute()
     //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
     debug_check_out_of_bounds("C");
     // Advance electromagnetic fields
-    BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
+    BOOST_FOREACH(Fields *f, fields) f->stepSchemeAfter(dt);
     debug_check_out_of_bounds("D");
 
     //if ((++n % 10) == 0) { BOOST_FOREACH(Fields *f, fields) f->writeAsTextFiles(n); }

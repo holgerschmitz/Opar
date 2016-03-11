@@ -329,7 +329,6 @@ void EMFields::stepD(double dt)
 //  double maxJx  = 0.0;
 //  double maxJy  = 0.0;
 //  double maxJz  = 0.0;
-
   for (int i=low[0]+1; i<high[0]; ++i)
     for (int j=low[1]+1; j<high[1]; ++j)
       {
@@ -618,8 +617,11 @@ void EMFields::stepB(double dt)
 #endif
 
 
-void EMFields::stepSchemeInit(double dt)
+void EMFields::stepSchemeBefore(double dt)
 {
+  debug_check_out_of_bounds("Fields B");
+  stepD(0.5*dt);
+
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   stepB(0.5*dt);
 
@@ -633,23 +635,25 @@ void EMFields::stepSchemeInit(double dt)
 //    cur->stepSchemeInit(dt);
 //  }
 }
-void EMFields::stepScheme(double dt)
+
+void EMFields::stepSchemeAfter(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
   debug_check_out_of_bounds("Fields A");
   Currents::instance().update();
 
+  stepB(0.5*dt);
+  debug_check_out_of_bounds("Fields C");
+
   debug_check_out_of_bounds("Fields B");
-  stepD(dt);
+  stepD(0.5*dt);
 
 //  BOOST_FOREACH(Current *cur, this->magCurrents)
 //  {
 //    cur->stepScheme(dt);
 //  }
 
-  stepB(dt);
-  debug_check_out_of_bounds("Fields C");
 }
 
 

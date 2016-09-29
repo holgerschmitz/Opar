@@ -31,7 +31,7 @@ AC_CONFIG_SRCDIR([src/opar.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([src/config.hpp])
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 VERSION="0.9.1"
 PACKAGE="opar"
 

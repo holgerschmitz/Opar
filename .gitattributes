@@ -1,0 +1,6 @@
+config.guess linguist-vendored=true
+config.sub linguist-vendored=true
+depcomp linguist-vendored=true
+install-sh linguist-vendored=true
+missing linguist-vendored=true
+ltmain.sh linguist-vendored=true

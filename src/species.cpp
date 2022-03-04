@@ -170,8 +170,9 @@ void Species::init()
     if (particleBCFactories.count(bcNamesHi[i]) == 0) terminateSim(
         "Unknown boundary condition: " + bcNamesHi[i]);
 
-    boundariesLo[i] = pParticleBoundary(particleBCFactories[bcNamesLo[i]](i,-1));
-    boundariesHi[i] = pParticleBoundary(particleBCFactories[bcNamesHi[i]](i, 1));
+    int p1 = 1, m1 = -1;
+    boundariesLo[i] = pParticleBoundary(particleBCFactories[bcNamesLo[i]](i, p1));
+    boundariesHi[i] = pParticleBoundary(particleBCFactories[bcNamesHi[i]](i, m1));
   }
   particleExchange = pParticleExchange(new ParticleExchange(*this));
 

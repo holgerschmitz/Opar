@@ -44,9 +44,9 @@ class Species : public Block
     pDataField pJy;
     pDataField pJz;
 
-    DataField jxHelper;
-    DataField jyHelper;
-    DataField jzHelper;
+    DataGrid jxHelper;
+    DataGrid jyHelper;
+    DataGrid jzHelper;
     pDataField pEx;
     pDataField pEy;
     pDataField pEz;
@@ -73,7 +73,7 @@ class Species : public Block
     typedef Weighting::WeightingCoefficients WeightingCoefficients;
     WeightingCoefficients gx, hx;
 
-    typedef boost::function<ParticleBoundary*(int, int)> particleBCFactoryFunction;
+    typedef boost::function<ParticleBoundary*(int&, int&)> particleBCFactoryFunction;
     std::map<std::string, particleBCFactoryFunction> particleBCFactories;
 
     schnek::Array<std::string, dimension> bcNamesLo, bcNamesHi;

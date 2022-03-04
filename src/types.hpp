@@ -65,6 +65,12 @@ typedef double real;
 class TriangularWeighting;
 typedef TriangularWeighting Weighting;
 
+typedef schnek::Grid<real, 1, GridArgCheck> DataGrid1d;
+typedef boost::shared_ptr<DataGrid1d> pDataGrid1d;
+
+typedef schnek::Grid<real, dimension, GridArgCheck> DataGrid;
+typedef boost::shared_ptr<DataGrid> pDataGrid;
+
 typedef schnek::Field<real, 1, GridArgCheck> DataField1d;
 typedef schnek::Field<real, 2, GridArgCheck> DataField2d;
 typedef schnek::Field<real, 3, GridArgCheck> DataField3d;

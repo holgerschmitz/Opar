@@ -34,18 +34,18 @@
 #include <schnek/diagnostic/diagnostic.hpp>
 #include <schnek/diagnostic/hdfdiagnostic.hpp>
 
-class ParticleDiagnostic : public schnek::HDFGridDiagnostic<DataField1d> {
+class ParticleDiagnostic : public schnek::HDFGridDiagnostic<DataGrid1d> {
   private:
-    typedef schnek::HDFGridDiagnostic<DataField1d> Super;
+    typedef schnek::HDFGridDiagnostic<DataGrid1d> Super;
     Species *species;
-    pDataField1d data;
+    pDataGrid1d data;
 
     schnek::Grid<long, 1, GridArgCheck> sizes;
     long totalCount;
     long localCount;
     long localStart;
   protected:
-    typedef schnek::HDFGridDiagnostic<DataField1d>::IndexType IndexType;
+    typedef schnek::HDFGridDiagnostic<DataGrid1d>::IndexType IndexType;
     void write();
     void registerData();
     void init();

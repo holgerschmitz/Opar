@@ -1,0 +1,3 @@
+[submodule "huerto"]
+	path = huerto
+	url = git@github.com:holgerschmitz/huerto.git

@@ -27,7 +27,7 @@
 #define CONFIG_HPP_
 
 #include <iostream>
-#include "config.hpp"
+#include <schnek/config.hpp>
 
 #undef LOGLEVEL
 #define LOGLEVEL 0

@@ -89,7 +89,7 @@ class TriangularWeighting
       }
     }
 
-    static void getShape(const SIntVector cell, const SVector cell_frac,
+    static void getShape(const SIntVector, const SVector cell_frac,
         WeightingCoefficients &gx)
     {
       for (int d = 0; d < dimension; ++d)

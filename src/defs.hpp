@@ -27,7 +27,7 @@
 #ifndef SCHNEK_DEFS_HPP_
 #define SCHNEK_DEFS_HPP_
 
-#include "config.hpp"
+#include <schnek/config.hpp>
 
 #ifdef ONE_DIMENSIONAL
 

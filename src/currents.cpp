@@ -55,7 +55,7 @@ void Currents::updateCurrent(pDataField j, const std::list<pDataField> &jl)
 {
   (*j) = 0.0;
 
-  BOOST_FOREACH(pDataField jc, jl)
+  for (pDataField jc: jl)
   {
     SCHNEK_TRACE_LOG(4,"Summing up current")
     Range<int, dimension> domain(jc->getLo(), jc->getHi());

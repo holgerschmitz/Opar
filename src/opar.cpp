@@ -25,7 +25,7 @@
 
 // TODO Create JavaDoc comments everywhere
 
-#include "config.hpp"
+#include <schnek/config.hpp>
 #include "opar.hpp"
 #include "common.hpp"
 #include "fields.hpp"
@@ -51,7 +51,7 @@
 #undef LOGLEVEL
 #define LOGLEVEL 1
 
-void debug_check_out_of_bounds(std::string checkpoint)
+void debug_check_out_of_bounds(std::string)
 {
 //  if (GridArgCheck<dimension>::getErrorFlag())
 //  {
@@ -106,7 +106,7 @@ void OPar::execute()
 
   double dt = Globals::instance().getDt();
 
-  BOOST_FOREACH(Fields *f, fields) f->stepSchemeInit(dt);
+  for (Fields *f: fields) f->stepSchemeInit(dt);
 
   do
   {
@@ -121,15 +121,15 @@ void OPar::execute()
     //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
     debug_check_out_of_bounds("B");
     // Advance electromagnetic fields
-    BOOST_FOREACH(Fields *f, fields) f->stepScheme(dt);
+    for (Fields *f: fields) f->stepScheme(dt);
     debug_check_out_of_bounds("C");
 
     // Advance particle species
     //std::cerr << "push" << std::endl;
-    BOOST_FOREACH(Species *s, species) s->pushParticles(dt);
+    for (Species *s: species) s->pushParticles(dt);
     debug_check_out_of_bounds("D");
 
-    //if ((++n % 10) == 0) { BOOST_FOREACH(Fields *f, fields) f->writeAsTextFiles(n); }
+    //if ((++n % 10) == 0) { for (Fields *f: fields) f->writeAsTextFiles(n); }
   } while (Globals::instance().stepTime());
 
   // run diagnostics
@@ -185,7 +185,7 @@ void initFunctions(FunctionRegistry &freg)
  *  This is placed outside the main function so that we can return on error and still
  *  be sure that MPI is properly closed down.
  */
-int runOpar(int argc, char **argv)
+int runOpar(int, char **)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
@@ -256,18 +256,15 @@ int runOpar(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-
-    feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
-
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
-#ifdef HAVE_MPI
+#ifdef SCHNEK_HAVE_MPI
     MPI_Init(&argc, &argv);
 #endif
 
   int returnCode = runOpar(argc, argv);
 
-#ifdef HAVE_MPI
+#ifdef SCHNEK_HAVE_MPI
     MPI_Finalize();
 #endif
 

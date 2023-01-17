@@ -66,7 +66,7 @@ void Globals::init()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   //for (int i=0; i<dimension; ++i) globalGridSize[i] += 3;
-#ifdef HAVE_MPI
+#ifdef SCHNEK_SCHNEK_HAVE_MPI
   subdivision = pSubdivision(new MPICartSubdivision<DataField>());
 #else
   subdivision = pSubdivision(new SerialSubdivision<DataField>());

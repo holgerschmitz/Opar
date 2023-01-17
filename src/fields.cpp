@@ -23,7 +23,7 @@
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.hpp"
+#include <schnek/config.hpp>
 #include "currents.hpp"
 #include "fields.hpp"
 #include "globals.hpp"
@@ -593,12 +593,12 @@ void Fields::stepSchemeInit(double dt)
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   stepB(0.5*dt);
 
-//  BOOST_FOREACH(Current *cur, this->currents)
+//  for (Current *cur: this->currents)
 //  {
 //    cur->stepSchemeInit(dt);
 //  }
 //
-//  BOOST_FOREACH(Current *cur, this->magCurrents)
+//  for (Current *cur: this->magCurrents)
 //  {
 //    cur->stepSchemeInit(dt);
 //  }
@@ -613,7 +613,7 @@ void Fields::stepScheme(double dt)
   debug_check_out_of_bounds("Fields B");
   stepD(dt);
 
-//  BOOST_FOREACH(Current *cur, this->magCurrents)
+//  for (Current *cur: this->magCurrents)
 //  {
 //    cur->stepScheme(dt);
 //  }

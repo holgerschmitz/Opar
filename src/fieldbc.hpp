@@ -53,12 +53,12 @@ class FieldPeriodicBC : public FieldBC
     /** No need to do anything. This has been taken care of by the
      *  DomainSubdivision object
      */
-    void applyEx(DataField &grid, int, FieldBC::Direction) {}
-    void applyEy(DataField &grid, int, FieldBC::Direction) {}
-    void applyEz(DataField &grid, int, FieldBC::Direction) {}
-    void applyBx(DataField &grid, int, FieldBC::Direction) {}
-    void applyBy(DataField &grid, int, FieldBC::Direction) {}
-    void applyBz(DataField &grid, int, FieldBC::Direction) {}
+    void applyEx(DataField &, int, FieldBC::Direction) {}
+    void applyEy(DataField &, int, FieldBC::Direction) {}
+    void applyEz(DataField &, int, FieldBC::Direction) {}
+    void applyBx(DataField &, int, FieldBC::Direction) {}
+    void applyBy(DataField &, int, FieldBC::Direction) {}
+    void applyBz(DataField &, int, FieldBC::Direction) {}
 };
 
 class FieldConductingBC : public FieldBC

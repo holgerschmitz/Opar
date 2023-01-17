@@ -31,7 +31,7 @@
 
 #include <schnek/util/logger.hpp>
 
-#ifdef HAVE_MPI
+#ifdef SCHNEK_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -41,7 +41,7 @@
 void ParticleDiagnostic::write()
 {
   localCount = species->getStorage().getCount();
-#ifdef HAVE_MPI
+#ifdef SCHNEK_HAVE_MPI
   int rank;
   int procCount = Globals::instance().getSubdivision()->procCount();
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);

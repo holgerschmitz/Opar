@@ -253,7 +253,8 @@ void Species::initParticles()
 #undef LOGLEVEL
 #define LOGLEVEL 0
 
-void debug_check_out_of_bounds(std::string checkpoint, Particle p_debug_old, Particle p_old, SIntVector debug_cell1, SIntVector debug_cell2)
+// void debug_check_out_of_bounds(std::string checkpoint, Particle p_debug_old, Particle p_old, SIntVector debug_cell1, SIntVector debug_cell2)
+void debug_check_out_of_bounds(std::string, Particle, Particle, SIntVector, SIntVector)
 {
 //  if (GridArgCheck<dimension>::getErrorFlag())
 //  {
@@ -461,8 +462,10 @@ void Species::pushParticles(double dt)
       lo[i] = d.getLo()[i] + std::min(0,dcell[i]);
       hi[i] = d.getHi()[i] + std::max(0,dcell[i]);
     }
-
+#ifndef ONE_DIMENSIONAL
     const double sixth = 1.0 / 6.0;
+#endif
+
 #ifndef THREE_DIMENSIONAL
     const double half = 1.0 / 2.0;
 #endif

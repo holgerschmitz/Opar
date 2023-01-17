@@ -25,7 +25,7 @@
  */
 
 #include "util.hpp"
-#ifdef HAVE_MPI
+#ifdef SCHNEK_HAVE_MPI
 #include "mpi.h"
 #endif
 #include <iostream>
@@ -34,7 +34,7 @@
 void terminateSim(std::string msg)
 {
   std::cerr << msg << std::endl;
-#ifdef HAVE_MPI
+#ifdef SCHNEK_HAVE_MPI
   MPI_Finalize();
 #endif
   exit(-1);

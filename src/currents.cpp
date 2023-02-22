@@ -25,7 +25,7 @@
 
 #include <boost/variant.hpp>
 #include "currents.hpp"
-#include "globals.hpp"
+#include "opar.hpp"
 
 #include <schnek/grid/range.hpp>
 #include <schnek/util/logger.hpp>
@@ -35,6 +35,11 @@
 
 #undef LOGLEVEL
 #define LOGLEVEL 0
+
+void Currents::setContext(OPar *context)
+{
+  this->context = context;
+}
 
 void Currents::setGlobalCurrent(pDataField jx, pDataField jy, pDataField jz)
 {
@@ -58,15 +63,15 @@ void Currents::updateCurrent(pDataField j, const std::list<pDataField> &jl)
   for (pDataField jc: jl)
   {
     SCHNEK_TRACE_LOG(4,"Summing up current")
-    Range<int, dimension> domain(jc->getLo(), jc->getHi());
-    for (Range<int, dimension>::iterator it = domain.begin(); it != domain.end(); ++it)
+    schnek::Range<int, dimension> domain(jc->getLo(), jc->getHi());
+    for (schnek::Range<int, dimension>::iterator it = domain.begin(); it != domain.end(); ++it)
     {
       SCHNEK_TRACE_LOG(5,"at "<< it.getPos()[0] << " " << (*jc)[*it])
       (*j)[*it] += (*jc)[*it];
     }
   }
 
-  Globals::instance().getSubdivision()->accumulate(*j);
+  context->getSubdivision().accumulate(*j);
 }
 
 void Currents::update()

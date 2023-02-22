@@ -34,7 +34,7 @@
 #include <schnek/diagnostic/diagnostic.hpp>
 #include <schnek/diagnostic/hdfdiagnostic.hpp>
 
-class ParticleDiagnostic : public schnek::HDFGridDiagnostic<DataGrid1d> {
+class ParticleDiagnostic : public schnek::HDFGridDiagnostic<DataGrid1d>, public SimulationEntity {
   private:
     typedef schnek::HDFGridDiagnostic<DataGrid1d> Super;
     Species *species;
@@ -46,13 +46,13 @@ class ParticleDiagnostic : public schnek::HDFGridDiagnostic<DataGrid1d> {
     long localStart;
   protected:
     typedef schnek::HDFGridDiagnostic<DataGrid1d>::IndexType IndexType;
-    void write();
-    void registerData();
-    void init();
-    IndexType getGlobalMin();
-    IndexType getGlobalMax();
+    void write() override;
+    void registerData() override;
+    void init() override;
+    IndexType getGlobalMin() override;
+    IndexType getGlobalMax() override;
     std::string getLongFieldName();
-    bool isDerived() { return true; }
+    bool isDerived() override { return true; }
   public:
     virtual ~ParticleDiagnostic() {}
 };

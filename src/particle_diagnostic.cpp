@@ -27,7 +27,6 @@
 #include "particle_diagnostic.hpp"
 
 #include "particles.hpp"
-#include "globals.hpp"
 
 #include <schnek/util/logger.hpp>
 
@@ -43,7 +42,7 @@ void ParticleDiagnostic::write()
   localCount = species->getStorage().getCount();
 #ifdef SCHNEK_HAVE_MPI
   int rank;
-  int procCount = Globals::instance().getSubdivision()->procCount();
+  int procCount = getContext().getSubdivision().procCount();
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Allgather(&localCount, 1, MPI_LONG, sizes.getRawData(), 1, MPI_LONG, MPI_COMM_WORLD);
   localStart = 0;
@@ -109,9 +108,10 @@ void ParticleDiagnostic::registerData()
 
 void ParticleDiagnostic::init()
 {
+  SimulationEntity::init(this);
   Super::init();
   species = Species::getSpecies(getFieldName());
-  int procCount = Globals::instance().getSubdivision()->procCount();
+  int procCount = getContext().getSubdivision().procCount();
   sizes.resize(procCount);
 }
 

@@ -103,8 +103,6 @@ typedef ScalarDomain::LimitType ScalarLimit;
 typedef SDomain::LimitType SLimit;
 typedef PDomain::LimitType PLimit;
 
-enum Direction {north, south, west, east, up, down};
-
 #ifdef THREE_DIMENSIONAL
 static const SStagger exStaggerYee(true,  false, false);
 static const SStagger eyStaggerYee(false, true,  false);

@@ -26,28 +26,43 @@
 #ifndef OPAR_HPP_
 #define OPAR_HPP_
 
+#include "../huerto/simulation/simulation_context.hpp"
+#include "../huerto/constants.hpp"
+
 #include <schnek/variables.hpp>
 #include <schnek/diagnostic/diagnostic.hpp>
 #include <list>
 
-using namespace schnek;
-
 class Fields;
 class Species;
 
-class OPar : public Block
+enum VarGroup { var_none, var_space, var_time, var_spacetime };
+
+class OPar : public schnek::Block,
+             public SimulationContext
 {
   private:
     std::list<Fields*> fields;
     std::list<Species*> species;
+
+    schnek::pParametersGroup spaceVars;
+    schnek::pParametersGroup timeVars;
+
+    schnek::pBlockVariables blockVars;
+
+    /// The parameter associated with t
+    schnek::pParameter t_parameter;
+
   protected:
-    void initParameters(BlockParameters &blockPars);
+    void initParameters(schnek::BlockParameters &blockPars) override;
   public:
     void execute();
-//    void init();
+    void registerData() override;
+    void init() override;
+    schnek::pDependencyUpdater getUpdater(VarGroup gr);
     void addField(Fields *f);
     void addSpecies(Species *s);
-    void addDiagnostic(DiagnosticInterface *d);
+    void addDiagnostic(schnek::DiagnosticInterface *d);
 
 };
 

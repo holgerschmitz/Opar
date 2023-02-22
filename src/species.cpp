@@ -27,7 +27,6 @@
 #include "defs.hpp"
 #include "species.hpp"
 #include "currents.hpp"
-#include "globals.hpp"
 #include "random.hpp"
 #include "particle_boundary.hpp"
 #include "opar.hpp"
@@ -72,7 +71,7 @@ void Species::removeParticle(const ParticleStorage::iterator &p)
   particles.removeParticle(p);
 }
 
-void Species::initParameters(BlockParameters &blockPars)
+void Species::initParameters(schnek::BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(3)
 
@@ -118,6 +117,7 @@ Species* Species::getSpecies(std::string name)
 
 void Species::init()
 {
+  SimulationEntity::init(this);
   static schnek::LiteratureArticle Esirkepov2001("Esirkepov2001", "Esirkepov, T Z",
       "Exact charge conservation scheme for Particle-in-Cell simulation with an arbitrary form-factor",
       "Computer Physics Communications", "2001", "135", "144--153");
@@ -129,9 +129,9 @@ void Species::init()
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   dynamic_cast<OPar&>(*this->getParent()).addSpecies(this);
 
-  SIntVector low = Globals::instance().getLocalInnerGridMin();
-  SIntVector high = Globals::instance().getLocalInnerGridMax();
-  SRange grange = Globals::instance().getDomainRange();
+  SIntVector low = getContext().getSubdivision().getInnerLo();
+  SIntVector high = getContext().getSubdivision().getInnerLo();
+  SRange grange = getContext().getSubdivision().getInnerExtent(getContext().getSize());
 
   pJx = pDataField(
       new DataField(low, high, grange, exStaggerYee, 2));
@@ -171,8 +171,8 @@ void Species::init()
         "Unknown boundary condition: " + bcNamesHi[i]);
 
     int p1 = 1, m1 = -1;
-    boundariesLo[i] = pParticleBoundary(particleBCFactories[bcNamesLo[i]](i, p1));
-    boundariesHi[i] = pParticleBoundary(particleBCFactories[bcNamesHi[i]](i, m1));
+    boundariesLo[i] = pParticleBoundary(particleBCFactories[bcNamesLo[i]](i, p1, getContext()));
+    boundariesHi[i] = pParticleBoundary(particleBCFactories[bcNamesHi[i]](i, m1, getContext()));
   }
   particleExchange = pParticleExchange(new ParticleExchange(*this));
 
@@ -185,15 +185,15 @@ void Species::init()
 void Species::initParticles()
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-  const SIntVector lo = Globals::instance().getLocalInnerGridMin();
-  const SIntVector hi = Globals::instance().getLocalInnerGridMax();
-  const SVector dMin = Globals::instance().getDomainMin();
+  SIntVector lo = getContext().getSubdivision().getInnerLo();
+  SIntVector hi = getContext().getSubdivision().getInnerLo();
+  const SVector dMin = SVector(0.0);
 
   SIntVector i;
 
-  SVector &coords = Globals::instance().getX();
-  SVector dx = Globals::instance().getDx();
-  pDependencyUpdater updater = Globals::instance().getUpdater(var_space);
+  Vector &coords = getContext().getX();
+  SVector dx = getContext().getDx();
+  schnek::pDependencyUpdater updater = dynamic_cast<OPar&>(getContext()).getUpdater(var_space);
 
   updater->addDependent(densityParam);
   updater->addDependentArray(temperatureParam);
@@ -302,8 +302,8 @@ void Species::pushParticles(double dt)
   (*pJz) = 0.0;
 
   // Unvarying multiplication factor
-  const SVector dx = Globals::instance().getDx();
-  const SVector dMin = Globals::instance().getDomainMin();
+  const SVector dx = getContext().getDx();
+  const SVector dMin = SVector(0);
 
   const SVector idx(1.0/dx);
   const double idt = 1.0 / dt;

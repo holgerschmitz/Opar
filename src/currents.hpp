@@ -30,21 +30,23 @@
 
 #include <schnek/util/singleton.hpp>
 
-using namespace schnek;
+class OPar;
 
-class Currents : public Singleton<Currents>
+class Currents : public schnek::Singleton<Currents>
 {
   private:
+    OPar *context;
     pDataField jxg, jyg, jzg;
 
     std::list<pDataField> jxl, jyl, jzl;
 
     friend class Singleton<Currents>;
-    friend class CreateUsingNew<Currents>;
+    friend class schnek::CreateUsingNew<Currents>;
 
     Currents() {}
     void updateCurrent(pDataField j, const std::list<pDataField> &jl);
   public:
+    void setContext(OPar *context);
     void setGlobalCurrent(pDataField jx, pDataField jy, pDataField jz);
     void addCurrent(pDataField jx, pDataField jy, pDataField jz);
     void update();

@@ -26,7 +26,6 @@
 #include <schnek/config.hpp>
 #include "currents.hpp"
 #include "fields.hpp"
-#include "globals.hpp"
 #include "opar.hpp"
 #include "util.hpp"
 
@@ -123,10 +122,12 @@ inline void Fields::fdtdStepB(double dt,
 void Fields::stepD(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-  SIntVector low  = Globals::instance().getLocalGridMin();
-  SIntVector high = Globals::instance().getLocalGridMax();
+  auto &sub = getContext().getSubdivision();
 
-  SVector dx = Globals::instance().getDx();
+  SIntVector low  = sub.getInnerLo();
+  SIntVector high = sub.getInnerHi();
+
+  SVector dx = getContext().getDx();
 
   double jx(0), jy(0), jz(0);
 
@@ -141,13 +142,12 @@ void Fields::stepD(double dt)
         this->fdtdStepD(dt, i, j, k, dx, jx, jy, jz);
       }
 
-  Globals::pSubdivision sub = Globals::instance().getSubdivision();
 
   for (int i=0; i<dimension; ++i)
   {
-    sub->exchange(*pEx,i);
-    sub->exchange(*pEy,i);
-    sub->exchange(*pEz,i);
+    sub.exchange(*pEx,i);
+    sub.exchange(*pEy,i);
+    sub.exchange(*pEz,i);
 
     boundariesLo[i]->applyEx(*pEx,i,FieldBC::lo);
     boundariesLo[i]->applyEy(*pEy,i,FieldBC::lo);
@@ -162,10 +162,12 @@ void Fields::stepD(double dt)
 void Fields::stepB(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-  SIntVector low  = Globals::instance().getLocalGridMin();
-  SIntVector high = Globals::instance().getLocalGridMax();
+  auto &sub = getContext().getSubdivision();
 
-  SVector dx = Globals::instance().getDx();
+  SIntVector low  = sub.getInnerLo();
+  SIntVector high = sub.getInnerHi();
+
+  SVector dx = getContext().getDx();
 
   double jx(0), jy(0), jz(0);
 //  if (this->pMx != 0) sumMagCurrents();
@@ -184,13 +186,11 @@ void Fields::stepB(double dt)
         this->fdtdStepB(dt, i, j, k, dx, jx, jy, jz);
       }
 
-  Globals::pSubdivision sub = Globals::instance().getSubdivision();
-
   for (int i=0; i<dimension; ++i)
   {
-    sub->exchange(*pBx,i);
-    sub->exchange(*pBy,i);
-    sub->exchange(*pBz,i);
+    sub.exchange(*pBx,i);
+    sub.exchange(*pBy,i);
+    sub.exchange(*pBz,i);
 
     boundariesLo[i]->applyBx(*pBx,i,FieldBC::lo);
     boundariesLo[i]->applyBy(*pBy,i,FieldBC::lo);
@@ -275,15 +275,16 @@ inline void Fields::fdtdStepB(double dt,
 
 }
 
-
 void Fields::stepD(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
-  SIntVector low  = Globals::instance().getLocalGridMin();
-  SIntVector high = Globals::instance().getLocalGridMax();
+  auto &sub = getContext().getSubdivision();
 
-  SVector dx = Globals::instance().getDx();
+  SIntVector low  = sub.getInnerLo();
+  SIntVector high = sub.getInnerHi();
+
+  SVector dx = getContext().getDx();
 
   double jx(0), jy(0), jz(0);
 
@@ -339,13 +340,11 @@ void Fields::stepD(double dt)
 //  std::cerr << "Jy  = " << maxJy  << std::endl;
 //  std::cerr << "Jz  = " << maxJz  << std::endl;
 
-  Globals::pSubdivision sub = Globals::instance().getSubdivision();
-
   for (int i=0; i<dimension; ++i)
   {
-    sub->exchange(*pEx,i);
-    sub->exchange(*pEy,i);
-    sub->exchange(*pEz,i);
+    sub.exchange(*pEx,i);
+    sub.exchange(*pEy,i);
+    sub.exchange(*pEz,i);
 
 //    boundariesLo[i]->applyEx(*pEx,i,FieldBC::lo);
 //    boundariesLo[i]->applyEy(*pEy,i,FieldBC::lo);
@@ -360,11 +359,13 @@ void Fields::stepD(double dt)
 void Fields::stepB(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
+  
+  auto &sub = getContext().getSubdivision();
 
-  SIntVector low  = Globals::instance().getLocalGridMin();
-  SIntVector high = Globals::instance().getLocalGridMax();
+  SIntVector low  = sub.getInnerLo();
+  SIntVector high = sub.getInnerHi();
 
-  SVector dx = Globals::instance().getDx();
+  SVector dx = getContext().getDx();
 
   double jx(0), jy(0), jz(0);
 //  if (this->pMx != 0) sumMagCurrents();
@@ -425,13 +426,11 @@ void Fields::stepB(double dt)
 //  std::cerr << "Jy  = " << maxJy  << std::endl;
 //  std::cerr << "Jz  = " << maxJz  << std::endl;
 
-  Globals::pSubdivision sub = Globals::instance().getSubdivision();
-
   for (int i=0; i<dimension; ++i)
   {
-    sub->exchange(*pBx,i);
-    sub->exchange(*pBy,i);
-    sub->exchange(*pBz,i);
+    sub.exchange(*pBx,i);
+    sub.exchange(*pBy,i);
+    sub.exchange(*pBz,i);
 
 //    boundariesLo[i]->applyBx(*pBx,i,FieldBC::lo);
 //    boundariesLo[i]->applyBy(*pBy,i,FieldBC::lo);
@@ -508,11 +507,13 @@ inline void Fields::fdtdStepB(double dt,
 void Fields::stepD(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
+  
+  auto &sub = getContext().getSubdivision();
 
-  SIntVector low  = Globals::instance().getLocalGridMin();
-  SIntVector high = Globals::instance().getLocalGridMax();
+  SIntVector low  = sub.getInnerLo();
+  SIntVector high = sub.getInnerHi();
 
-  SVector dx = Globals::instance().getDx();
+  SVector dx = getContext().getDx();
 
   double jx(0), jy(0), jz(0);
 
@@ -525,13 +526,11 @@ void Fields::stepD(double dt)
     this->fdtdStepD(dt, i, dx, jx, jy, jz);
   }
 
-  Globals::pSubdivision sub = Globals::instance().getSubdivision();
-
   for (int i=0; i<dimension; ++i)
   {
-    sub->exchange(*pEx,i);
-    sub->exchange(*pEy,i);
-    sub->exchange(*pEz,i);
+    sub.exchange(*pEx,i);
+    sub.exchange(*pEy,i);
+    sub.exchange(*pEz,i);
 
     boundariesLo[i]->applyEx(*pEx,i,FieldBC::lo);
     boundariesLo[i]->applyEy(*pEy,i,FieldBC::lo);
@@ -546,11 +545,13 @@ void Fields::stepD(double dt)
 void Fields::stepB(double dt)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
+  
+  auto &sub = getContext().getSubdivision();
 
-  SIntVector low  = Globals::instance().getLocalGridMin();
-  SIntVector high = Globals::instance().getLocalGridMax();
+  SIntVector low  = sub.getInnerLo();
+  SIntVector high = sub.getInnerHi();
 
-  SVector dx = Globals::instance().getDx();
+  SVector dx = getContext().getDx();
 
   double jx(0), jy(0), jz(0);
 //  if (this->pMx != 0) sumMagCurrents();
@@ -567,13 +568,11 @@ void Fields::stepB(double dt)
     this->fdtdStepB(dt, i, dx, jx, jy, jz);
   }
 
-  Globals::pSubdivision sub = Globals::instance().getSubdivision();
-
   for (int i=0; i<dimension; ++i)
   {
-    sub->exchange(*pBx,i);
-    sub->exchange(*pBy,i);
-    sub->exchange(*pBz,i);
+    sub.exchange(*pBx,i);
+    sub.exchange(*pBy,i);
+    sub.exchange(*pBz,i);
 
     boundariesLo[i]->applyBx(*pBx,i,FieldBC::lo);
     boundariesLo[i]->applyBy(*pBy,i,FieldBC::lo);
@@ -624,7 +623,7 @@ void Fields::stepScheme(double dt)
 
 
 
-void Fields::initParameters(BlockParameters &blockPars)
+void Fields::initParameters(schnek::BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(3)
 
@@ -656,6 +655,8 @@ void Fields::registerData()
 
 void Fields::init()
 {
+  SimulationEntity::init(this);
+
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
   static schnek::LiteratureArticle Yee1966("Yee:1966", "Yee, K",
@@ -668,9 +669,11 @@ void Fields::init()
 
   dynamic_cast<OPar&>(*this->getParent()).addField(this);
 
-  SIntVector low  = Globals::instance().getLocalInnerGridMin();
-  SIntVector high = Globals::instance().getLocalInnerGridMax();
-  SRange grange = Globals::instance().getLocalDomainRange();
+  auto &sub = getContext().getSubdivision();
+
+  SIntVector low  = sub.getInnerLo();
+  SIntVector high = sub.getInnerHi();
+  SRange grange = sub.getInnerExtent(getContext().getSize());
 
   pEx = pDataField(new DataField(low, high, grange, exStaggerYee, 2));
   pEy = pDataField(new DataField(low, high, grange, eyStaggerYee, 2));
@@ -687,13 +690,13 @@ void Fields::init()
   Currents::instance().setGlobalCurrent(pJx, pJy, pJz);
 //  for (int i=0; i<dimension; ++i)
 //  {
-//    std::cout << "Field: "<< Globals::instance().getSubdivision()->getUniqueId() << " " << i <<
+//    std::cout << "Field: "<< sub.getUniqueId() << " " << i <<
 //        " (" << low[i] << " " << high[i] <<
 //        ") (" << grange.getLo()[i] << " " << grange.getHi()[i] << ")" << std::endl;
 //  }
 
-  SVector &coords = Globals::instance().getX();
-  pDependencyUpdater updater = Globals::instance().getUpdater(var_space);
+  Vector &coords = getContext().getX();
+  schnek::pDependencyUpdater updater = dynamic_cast<OPar&>(getContext()).getUpdater(var_space);
 
   fill_field(*pEx, coords, EInit[0], *updater, EParam[0]);
   fill_field(*pEy, coords, EInit[1], *updater, EParam[1]);
@@ -723,17 +726,15 @@ void Fields::init()
     boundariesHi[i] = pFieldBC(fieldBCFactories[bcNamesHi[i]]());
   }
 
-  Globals::pSubdivision sub = Globals::instance().getSubdivision();
-
   for (int i=0; i<dimension; ++i)
   {
-    sub->exchange(*pEx,i);
-    sub->exchange(*pEy,i);
-    sub->exchange(*pEz,i);
+    sub.exchange(*pEx,i);
+    sub.exchange(*pEy,i);
+    sub.exchange(*pEz,i);
 
-    sub->exchange(*pBx,i);
-    sub->exchange(*pBy,i);
-    sub->exchange(*pBz,i);
+    sub.exchange(*pBx,i);
+    sub.exchange(*pBy,i);
+    sub.exchange(*pBz,i);
   }
 
 }

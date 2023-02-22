@@ -27,14 +27,14 @@
 
 #include <schnek/config.hpp>
 #include "opar.hpp"
-#include "common.hpp"
 #include "fields.hpp"
-#include "globals.hpp"
 #include "particle_diagnostic.hpp"
 #include "species.hpp"
+#include "currents.hpp"
 
-#include "constants.hpp"
+#include "../huerto/constants.hpp"
 #include "functions.hpp"
+#include "random.hpp"
 
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
@@ -66,59 +66,105 @@ void debug_check_out_of_bounds(std::string)
 }
 
 
-class FieldDiagnostic : public schnek::HDFGridDiagnostic<
-    typename DataField::BaseType, pDataField>
+class FieldDiagnostic : 
+  public schnek::HDFGridDiagnostic<typename DataField::BaseType, pDataField>,
+  public SimulationEntity
 {
   protected:
     typedef HDFGridDiagnostic<typename DataField::BaseType, pDataField>::IndexType IndexType;
+
+    void init()
+    {
+      SimulationEntity::init(this);
+    }
+
     IndexType getGlobalMin()
     {
-      // return IndexType(0);
-      return IndexType(-2); // we want to write out the ghost cells
+      return getContext().getSubdivision().getGlobalDomain().getLo();
     }
     IndexType getGlobalMax()
     {
-      IndexType max = Globals::instance().getGlobalGridSize();
-//      max -= 1;
-      max += 1;  // we want to write out the ghost cells
-      return max;
+      return getContext().getSubdivision().getGlobalDomain().getHi();
     }
 };
 
-void OPar::initParameters(BlockParameters &blockPars)
+void OPar::initParameters(schnek::BlockParameters &blockPars)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
+  SimulationContext::initParameters(blockPars);
+  initConstantParameters(blockPars);
+  t_parameter  = blockPars.addParameter("t", &time, schnek::BlockParameters::readonly);
 
-  blockPars.addConstant("pi", PI);
-  blockPars.addConstant("clight", clight);
-  blockPars.addConstant("me", mass_e);
-  blockPars.addConstant("mp", mass_p);
-  blockPars.addConstant("e", unit_charge);
-  blockPars.addConstant("mu0", mu_0);
-  blockPars.addConstant("eps0", eps_0);
+  blockPars.addArrayParameter("N", gridSize, 100);
+  blockPars.addArrayParameter("L", size, 1.0);
+  blockPars.addParameter("tMax", &tMax, 1.0);
+  blockPars.addParameter("dt", &dt, 0.005);
+}
 
-  Globals::instance().initGlobalParameters(blockPars);
+void OPar::init()
+{
+  Currents::instance().setContext(this);
+}
+
+void OPar::registerData()
+{
+  spaceVars = schnek::pParametersGroup(new schnek::ParametersGroup());
+  timeVars  = schnek::pParametersGroup(new schnek::ParametersGroup());
+
+  dx[0] = size[0] / gridSize[0];
+  dx[1] = size[1] / gridSize[1];
+
+  subdivision = std::make_shared<schnek::MPICartSubdivision<Field> >();
+  subdivision->init(gridSize, 2);
+}
+
+schnek::pDependencyUpdater OPar::getUpdater(VarGroup gr)
+{
+  schnek::pDependencyMap depMap(new schnek::DependencyMap(getVariables()));
+  schnek::pDependencyUpdater updater(new schnek::DependencyUpdater(depMap));
+  switch (gr)
+  {
+    case var_space:
+      updater->addIndependentArray(x_parameters);
+      break;
+    case var_time:
+      updater->addIndependent(t_parameter);
+      break;
+    case var_spacetime:
+      updater->addIndependentArray(x_parameters);
+      updater->addIndependent(t_parameter);
+      break;
+    case var_none:
+    default:
+      break;
+  }
+  return updater;
 }
 
 void OPar::execute()
 {
-  SCHNEK_TRACE_ENTER_FUNCTION(2)
+  Random::seed(subdivision->getUniqueId());
 
-  double dt = Globals::instance().getDt();
+  SCHNEK_TRACE_ENTER_FUNCTION(2)
+  schnek::DiagnosticManager::instance().setTimeCounter(&timeStep);
+  schnek::DiagnosticManager::instance().setMaster(subdivision->master());
+
+  double dt = getDt();
 
   for (Fields *f: fields) f->stepSchemeInit(dt);
 
-  do
+  schnek::DiagnosticManager::instance().execute();
+
+  while (time<=tMax)
   {
     // run diagnostics
     //std::cerr << "diagnostic" << std::endl;
-    DiagnosticManager::instance().execute();
     debug_check_out_of_bounds("A");
 
-    if (Globals::instance().getSubdivision()->master())
-      schnek::Logger::instance().out() <<"Time "<<Globals::instance().getT() << std::endl;
+    if (getSubdivision().master())
+      schnek::Logger::instance().out() <<"Time "<<getTime() << std::endl;
 
-    //std::cerr << "Time = " << Globals::instance().getT() << std::endl;
+    //std::cerr << "Time = " << getTime() << std::endl;
     debug_check_out_of_bounds("B");
     // Advance electromagnetic fields
     for (Fields *f: fields) f->stepScheme(dt);
@@ -130,11 +176,14 @@ void OPar::execute()
     debug_check_out_of_bounds("D");
 
     //if ((++n % 10) == 0) { for (Fields *f: fields) f->writeAsTextFiles(n); }
-  } while (Globals::instance().stepTime());
+    time += dt;
+    ++timeStep;
+    schnek::DiagnosticManager::instance().execute();
+  }
 
   // run diagnostics
   //std::cerr << "diagnostic" << std::endl;
-  DiagnosticManager::instance().execute();
+  schnek::DiagnosticManager::instance().execute();
   debug_check_out_of_bounds("E");
 
 }
@@ -151,16 +200,15 @@ void OPar::addSpecies(Species *s)
   species.push_back(s);
 }
 
-void initBlockLayout(BlockClasses &blocks)
+void initBlockLayout(schnek::BlockClasses &blocks)
 {
 
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   blocks.registerBlock("opar");
-  blocks("opar").addChildren("Common")("Fields")
+  blocks("opar").addChildren("Fields")
       ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 
   blocks("opar").setClass<OPar>();
-  blocks("Common").setClass<CommonBlock>();
   blocks("Fields").setClass<Fields>();
   blocks("Species").setClass<Species>();
   blocks("FieldDiagnostic").setClass<FieldDiagnostic>();
@@ -171,7 +219,7 @@ void initBlockLayout(BlockClasses &blocks)
   //blocks.addBlockClass("Collection").addChildren("Values")("Constants");
 }
 
-void initFunctions(FunctionRegistry &freg)
+void initFunctions(schnek::FunctionRegistry &freg)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   registerCMath(freg);
@@ -189,17 +237,15 @@ int runOpar(int, char **)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
 
-  VariableStorage vars("opar", "opar");
-  FunctionRegistry freg;
-  BlockClasses blocks;
+  schnek::VariableStorage vars("opar", "opar");
+  schnek::FunctionRegistry freg;
+  schnek::BlockClasses blocks;
 
   initFunctions(freg);
   initBlockLayout(blocks);
 
-  Parser P(vars, freg, blocks);
-  pBlock application;
-
-  Globals::instance().setup(vars);
+  schnek::Parser P(vars, freg, blocks);
+  schnek::pBlock application;
 
   std::ifstream in("opar.config");
   if (!in) {
@@ -212,7 +258,7 @@ int runOpar(int, char **)
     application = P.parse(in, "opar.config");
     SCHNEK_TRACE_ERR(1,"Done parsing opar.config");
   }
-  catch (ParserError &e)
+  catch (schnek::ParserError &e)
   {
     std::cerr << "Parse error, " << e.atomToken.getFilename() << "(" << e.atomToken.getLine() << "): "<< e.message << "\n";
     return -1;
@@ -224,12 +270,12 @@ int runOpar(int, char **)
     SCHNEK_TRACE_ERR(1,"Initialising Variables");
     opar.initAll();
   }
-  catch (VariableNotInitialisedException &e)
+  catch (schnek::VariableNotInitialisedException &e)
   {
     std::cerr << "Variable was not initialised: " << e.getVarName() << std::endl;
     return -1;
   }
-  catch (EvaluationException &e)
+  catch (schnek::EvaluationException &e)
   {
     std::cerr << "Error in evaluation: " << e.getMessage() << std::endl;
     return -1;
@@ -240,7 +286,7 @@ int runOpar(int, char **)
     return -1;
   }
 
-  if (Globals::instance().getSubdivision()->master())
+  if (opar.getSubdivision().master())
   {
     std::ofstream referencesText("information.tex");
     std::ofstream referencesBib("references.bib");

@@ -29,6 +29,8 @@
 
 #include "particle_exchange.hpp"
 
+#include "../huerto/simulation/simulation_context.hpp"
+
 /** An abstract particle boundary class.
  *
  * Any particle boundary must implement the apply method of this abstract class.
@@ -42,13 +44,16 @@ class ParticleBoundary
     int direction;
     /// The limiting value of the coordinate
     double limit;
+
+    /// @brief The simulation context
+    SimulationContext &context;
   public:
     /** Constructor of the boundary class
      *
      * @param dim_ The dimension in which the boundary condition is applied
      * @param direction_ The direction either -1 for the lower bound or +1 for the higher bound
      */
-    ParticleBoundary(int dim_, int direction_);
+    ParticleBoundary(int dim_, int direction_, SimulationContext &context);
 
     /// Virtual destructor needed because of virtual methods.
     virtual ~ParticleBoundary() {}
@@ -75,7 +80,7 @@ class PeriodicParticleBoundary : public ParticleBoundary
      * @param dim_ The dimension in which the boundary condition is applied
      * @param direction_ The direction either -1 for the lower bound or +1 for the higher bound
      */
-    PeriodicParticleBoundary(int dim_, int direction_);
+    PeriodicParticleBoundary(int dim_, int direction_, SimulationContext &context);
 
     /** Apply periodic boundary conditions to particles.
      *
@@ -98,7 +103,7 @@ class OpenParticleBoundary : public ParticleBoundary
      * @param dim_ The dimension in which the boundary condition is applied
      * @param direction_ The direction either -1 for the lower bound or +1 for the higher bound
      */
-    OpenParticleBoundary(int dim_, int direction_) : ParticleBoundary(dim_, direction_) {}
+    OpenParticleBoundary(int dim_, int direction_, SimulationContext &context) : ParticleBoundary(dim_, direction_, context) {}
 
     /** Apply open boundary conditions to particles.
      *
@@ -126,7 +131,7 @@ class ReflectingParticleBoundary : public ParticleBoundary
      * @param dim_ The dimension in which the boundary condition is applied
      * @param direction_ The direction either -1 for the lower bound or +1 for the higher bound
      */
-    ReflectingParticleBoundary(int dim_, int direction_) : ParticleBoundary(dim_, direction_) {}
+    ReflectingParticleBoundary(int dim_, int direction_, SimulationContext &context) : ParticleBoundary(dim_, direction_, context) {}
 
     /** Apply reflecting boundary conditions to particles.
      *

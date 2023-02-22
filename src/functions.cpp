@@ -25,7 +25,7 @@
  */
 
 #include "functions.hpp"
-#include "constants.hpp"
+#include "../huerto/constants.hpp"
 
 #include <cmath>
 #include <limits>
@@ -50,5 +50,5 @@ double logistic(double x, double w, double x0)
 
 double pulse1d(double x, double length, double wavelength, double phase)
 {
-  return exp(-x*x/(length*length))*sin(TWO_PI*x/wavelength + phase);
+  return exp(-x*x/(length*length))*sin(2.0*TWO_PI*x/wavelength + phase);
 }

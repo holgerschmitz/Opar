@@ -25,7 +25,6 @@
  */
 
 #include "particles.hpp"
-#include "globals.hpp"
 
 #include <schnek/grid/grid.hpp>
 #include <schnek/grid/domainsubdivision.hpp>
@@ -54,7 +53,6 @@ class ParticleExchange
     ParticleBuffer bufferReceive;
 
     Species& species;
-    Globals::pSubdivision subdivision;
 
   public:
     ParticleExchange(Species& species_);

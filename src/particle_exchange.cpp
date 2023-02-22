@@ -39,11 +39,13 @@ ParticleExchange::ParticleExchange(Species& species_) : species(species_) {}
 void ParticleExchange::exchange(ParticleStorage &particles)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-  subdivision = Globals::instance().getSubdivision();
+  auto &subdivision = species.getContext().getSubdivision();
 
-  SVector locMin = Globals::instance().getLocalDomainMin();
-  SVector locMax = Globals::instance().getLocalDomainMax();
-  SVector dx = Globals::instance().getDx();
+  SRange localExtent = subdivision.getInnerExtent(species.getContext().getSize());
+
+  SVector locMin = localExtent.getLo();
+  SVector locMax = localExtent.getHi();
+  SVector dx = species.getContext().getDx();
 
   locMin = locMin - 0.5*dx;
   locMax = locMax + 0.5*dx;
@@ -62,7 +64,7 @@ void ParticleExchange::exchange(ParticleStorage &particles)
     }
 
     SCHNEK_TRACE_LOG(2,"Pushing " << listSend.size() << " particles < " << locMin[d])
-    if (Globals::instance().getSubdivision()->isBoundLo(d))
+    if (subdivision.isBoundLo(d))
       species.getBoundaryLo(d).apply(listSend);
 
     doExchange(particles, d, -1);
@@ -79,7 +81,7 @@ void ParticleExchange::exchange(ParticleStorage &particles)
     }
 
     SCHNEK_TRACE_LOG(2,"Pushing " << listSend.size() << " particles > " << locMax[d])
-    if (Globals::instance().getSubdivision()->isBoundHi(d))
+    if (subdivision.isBoundHi(d))
       species.getBoundaryHi(d).apply(listSend);
 
     doExchange(particles, d, +1);
@@ -89,21 +91,18 @@ void ParticleExchange::exchange(ParticleStorage &particles)
 
 void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direction)
 {
+  auto &subdivision = species.getContext().getSubdivision();
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   bufferSend.makeBuffer(listSend);
 
   while (!listSend.empty())
   {
-
-    SCHNEK_TRACE_LOG(5,"doExchange send " << listSend.front()->x[0] << " : "
-        << Globals::instance().getLocalDomainMin()[0] << " "
-        << Globals::instance().getLocalDomainMax()[0])
     particles.removeParticle(listSend.front());
     listSend.pop_front();
   }
 
   SCHNEK_TRACE_LOG(3,"subdivision->exchangeData")
-  subdivision->exchangeData(dim, direction, bufferSend.getBuffer(), bufferReceive.getBuffer());
+  subdivision.exchangeData(dim, direction, bufferSend.getBuffer(), bufferReceive.getBuffer());
 
   for (ParticleBuffer::iterator it = bufferReceive.begin(); it != bufferReceive.end(); ++it)
   {
@@ -111,9 +110,6 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direc
     SCHNEK_TRACE_LOG(5,"setting "<< it->x[0])
     Particle &p = particles.addParticle();
     p = *it;
-    SCHNEK_TRACE_LOG(5,"doExchange receive " << p.x[0] << " : "
-        << Globals::instance().getLocalDomainMin()[0] << " "
-        << Globals::instance().getLocalDomainMax()[0])
   }
   SCHNEK_TRACE_LOG(3,"doExchange received")
 }

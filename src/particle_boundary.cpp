@@ -31,19 +31,19 @@
 #undef LOGLEVEL
 #define LOGLEVEL 0
 
-ParticleBoundary::ParticleBoundary(int dim_, int direction_) :
-    dim(dim_), direction(direction_)
+ParticleBoundary::ParticleBoundary(int dim_, int direction_, SimulationContext &context) :
+    dim(dim_), direction(direction_), context(context)
 {
   if (direction > 0)
-    limit = (Globals::instance().getDomainMax())[dim];
+    limit = 0.0;
   else
-    limit = (Globals::instance().getDomainMin())[dim];
+    limit = context.getSize()[dim];
 }
 
-PeriodicParticleBoundary::PeriodicParticleBoundary(int dim_, int direction_)
-  : ParticleBoundary(dim_, direction_)
+PeriodicParticleBoundary::PeriodicParticleBoundary(int dim_, int direction_, SimulationContext &context)
+  : ParticleBoundary(dim_, direction_, context)
 {
-  shift = (Globals::instance().getDomainMax())[dim] - (Globals::instance().getDomainMin())[dim];
+  shift = context.getSize()[dim];
 }
 
 void PeriodicParticleBoundary::apply(ParticleExchange::PartList &particles)

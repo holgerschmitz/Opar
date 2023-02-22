@@ -32,9 +32,11 @@
 #include "particle_boundary.hpp"
 #include "weighting.hpp"
 
+#include "../huerto/simulation/simulation_context.hpp"
+
 #include <schnek/variables.hpp>
 
-class Species : public Block
+class Species : public schnek::Block, public SimulationEntity
 {
   private:
     std::string name;
@@ -66,14 +68,14 @@ class Species : public Block
 
     int ppc;
 
-    pParameter densityParam;
+    schnek::pParameter densityParam;
     PParameterVector temperatureParam;
     PParameterVector driftParam;
 
     typedef Weighting::WeightingCoefficients WeightingCoefficients;
     WeightingCoefficients gx, hx;
 
-    typedef boost::function<ParticleBoundary*(int&, int&)> particleBCFactoryFunction;
+    typedef boost::function<ParticleBoundary*(int&, int&, SimulationContext&)> particleBCFactoryFunction;
     std::map<std::string, particleBCFactoryFunction> particleBCFactories;
 
     schnek::Array<std::string, dimension> bcNamesLo, bcNamesHi;
@@ -86,7 +88,7 @@ class Species : public Block
     static std::map<std::string, Species*> allSpecies;
 
   protected:
-    void initParameters(BlockParameters &blockPars);
+    void initParameters(schnek::BlockParameters &blockPars);
     void registerData();
     void preInit();
     void init();

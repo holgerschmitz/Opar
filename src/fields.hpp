@@ -30,11 +30,11 @@
 #include "types.hpp"
 #include "fieldbc.hpp"
 
+#include "../huerto/simulation/simulation_context.hpp"
+
 #include <schnek/variables.hpp>
 
-using namespace schnek;
-
-class Fields : public Block
+class Fields : public schnek::Block, public SimulationEntity
 {
   private:
     pDataField pEx;
@@ -61,7 +61,7 @@ class Fields : public Block
     schnek::Array<pFieldBC, dimension> boundariesLo, boundariesHi;
 
   protected:
-    void initParameters(BlockParameters &blockPars);
+    void initParameters(schnek::BlockParameters &blockPars);
     void registerData();
     void init();
     // void postInit();

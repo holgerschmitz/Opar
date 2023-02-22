@@ -28,12 +28,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 # add the executable
 add_executable(opar1d
-    src/common.cpp
     src/util.cpp
     src/species.cpp
     src/random.cpp
     src/opar.cpp
-    src/globals.cpp
     src/currents.cpp
     src/particle_diagnostic.cpp
     src/particle_boundary.cpp
@@ -41,15 +39,14 @@ add_executable(opar1d
     src/functions.cpp
     src/particle_exchange.cpp
     src/fields.cpp
+    huerto/constants.cpp
 )
 
 add_executable(opar2d
-    src/common.cpp
     src/util.cpp
     src/species.cpp
     src/random.cpp
     src/opar.cpp
-    src/globals.cpp
     src/currents.cpp
     src/particle_diagnostic.cpp
     src/particle_boundary.cpp
@@ -57,15 +54,14 @@ add_executable(opar2d
     src/functions.cpp
     src/particle_exchange.cpp
     src/fields.cpp
+    huerto/constants.cpp
 )
 
 add_executable(opar3d
-    src/common.cpp
     src/util.cpp
     src/species.cpp
     src/random.cpp
     src/opar.cpp
-    src/globals.cpp
     src/currents.cpp
     src/particle_diagnostic.cpp
     src/particle_boundary.cpp
@@ -73,6 +69,7 @@ add_executable(opar3d
     src/functions.cpp
     src/particle_exchange.cpp
     src/fields.cpp
+    huerto/constants.cpp
 )
 
 target_compile_definitions(opar1d PRIVATE HUERTO_ONE_DIM ONE_DIMENSIONAL)

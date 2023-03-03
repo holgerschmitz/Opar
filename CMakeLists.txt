@@ -35,7 +35,6 @@ add_executable(opar1d
     src/currents.cpp
     src/particle_diagnostic.cpp
     src/particle_boundary.cpp
-    src/particles.cpp
     src/functions.cpp
     src/particle_exchange.cpp
     src/fields.cpp
@@ -50,7 +49,6 @@ add_executable(opar2d
     src/currents.cpp
     src/particle_diagnostic.cpp
     src/particle_boundary.cpp
-    src/particles.cpp
     src/functions.cpp
     src/particle_exchange.cpp
     src/fields.cpp
@@ -65,7 +63,6 @@ add_executable(opar3d
     src/currents.cpp
     src/particle_diagnostic.cpp
     src/particle_boundary.cpp
-    src/particles.cpp
     src/functions.cpp
     src/particle_exchange.cpp
     src/fields.cpp

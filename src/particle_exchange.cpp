@@ -97,7 +97,7 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direc
 
   while (!listSend.empty())
   {
-    particles.removeParticle(listSend.front());
+    particles.removeElement(listSend.front());
     listSend.pop_front();
   }
 
@@ -108,7 +108,7 @@ void ParticleExchange::doExchange(ParticleStorage &particles, int dim, int direc
   {
     SCHNEK_TRACE_LOG(5,"particles.count "<<particles.getCount())
     SCHNEK_TRACE_LOG(5,"setting "<< it->x[0])
-    Particle &p = particles.addParticle();
+    Particle &p = particles.addElement();
     p = *it;
   }
   SCHNEK_TRACE_LOG(3,"doExchange received")

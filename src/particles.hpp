@@ -29,8 +29,7 @@
 
 #include "types.hpp"
 
-#include <list>
-#include <iterator>
+#include "../huerto/storage/small_object_storage.hpp"
 
 /** @Particle
  *  A low impact particle class for holding all the particle data
@@ -96,125 +95,6 @@ class Particle
     }
 };
 
-class ParticleStorage
-{
-  private:
-    struct DataBlock
-    {
-        Particle *data;
-        long count;
-        DataBlock();
-        DataBlock(const DataBlock &block);
-        void free();
-        Particle &addParticle();
-    };
-
-    typedef std::list<DataBlock> BlockList;
-    typedef BlockList::iterator BlockIterator;
-    typedef BlockList::const_iterator BlockConstIterator;
-    BlockList blocks;
-    BlockIterator freeBlock;
-  public:
-    ParticleStorage()
-    {
-      freeBlock = blocks.end();
-    }
-
-    class iterator : public std::iterator<std::bidirectional_iterator_tag, Particle>
-    {
-      private:
-        friend class ParticleStorage;
-        BlockIterator blockIter;
-        long pos;
-
-        iterator(BlockIterator blockIter_, long pos_ = 0) :
-          blockIter(blockIter_), pos(pos_)
-        {
-        }
-      public:
-        iterator() : pos(0)
-        {
-        }
-        iterator(const iterator &it)
-        {
-          blockIter = it.blockIter;
-          pos = it.pos;
-        }
-
-        iterator& operator++()
-        {
-          if (++pos >= blockIter->count)
-          {
-            ++blockIter;
-            pos = 0;
-          }
-          return *this;
-        }
-
-        iterator operator++(int)
-        {
-          iterator tmp(*this);
-          operator++();
-          return tmp;
-        }
-
-        iterator& operator--()
-        {
-          if (--pos < 0)
-          {
-            --blockIter;
-            pos = blockIter->count - 1;
-          }
-          return *this;
-        }
-
-        iterator operator--(int)
-        {
-          iterator tmp(*this);
-          operator--();
-          return tmp;
-        }
-
-        bool operator==(const iterator& rhs) const
-        {
-          return (blockIter == rhs.blockIter) && (pos == rhs.pos);
-        }
-
-        bool operator!=(const iterator& rhs) const
-        {
-          return (blockIter != rhs.blockIter) || (pos != rhs.pos);
-        }
-
-        Particle& operator*()
-        {
-          return blockIter->data[pos];
-        }
-
-        Particle* operator->()
-        {
-          return &(blockIter->data[pos]);
-        }
-    };
-
-    iterator begin()
-    {
-      return iterator(blocks.begin());
-    }
-    iterator end()
-    {
-      return iterator(blocks.end());
-    }
-
-    Particle &addParticle();
-
-    /** Remove a particle from the storage.
-     *
-     * After deletion the iterator will point to the position after the deleted particle.
-     * This is in line with STL behaviour
-     */
-    iterator removeParticle(const iterator&);
-
-    long getCount() const;
-};
+typedef SmallObjectStorage<Particle> ParticleStorage;
 
 #endif /* PARTICLES_HPP_ */

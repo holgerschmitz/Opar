@@ -63,12 +63,12 @@ std::map<std::string, Species*> Species::allSpecies;
 
 Particle &Species::addParticle()
 {
-  return particles.addParticle();
+  return particles.addElement();
 }
 
 void Species::removeParticle(const ParticleStorage::iterator &p)
 {
-  particles.removeParticle(p);
+  particles.removeElement(p);
 }
 
 void Species::initParameters(schnek::BlockParameters &blockPars)
@@ -229,7 +229,7 @@ void Species::initParticles()
       updater->update();
       if (density < densityCutoff) continue;
 
-      Particle &p = particles.addParticle();
+      Particle &p = particles.addElement();
 
       SCHNEK_TRACE_LOG(5,"density=" << density << "    weight_factor="<<weight_factor)
 

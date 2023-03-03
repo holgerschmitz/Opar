@@ -66,7 +66,7 @@ void ParticleDiagnostic::write()
   if (totalCount==0) return;
 
   std::string coordNames[] = {"x","y","z"};
-  ParticleStorage particles = species->getStorage();
+  ParticleStorage &particles = species->getStorage();
 
   for (int d=0; d<dimension; ++d)
   {

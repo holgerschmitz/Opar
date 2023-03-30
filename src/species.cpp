@@ -130,7 +130,7 @@ void Species::init()
   dynamic_cast<OPar&>(*this->getParent()).addSpecies(this);
 
   SIntVector low = getContext().getSubdivision().getInnerLo();
-  SIntVector high = getContext().getSubdivision().getInnerLo();
+  SIntVector high = getContext().getSubdivision().getInnerHi();
   SRange grange = getContext().getSubdivision().getInnerExtent(getContext().getSize());
 
   pJx = pDataField(
@@ -337,6 +337,8 @@ void Species::pushParticles(double dt)
 
   SCHNEK_TRACE_LOG(5,"Particle minimum val = " << minVal << "; maximum val " << maxVal)
 #endif
+
+  std::cerr << "Particle Count: " << particles.getCount() << std::endl;
 
 //  int debug_count = 0;
   for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)

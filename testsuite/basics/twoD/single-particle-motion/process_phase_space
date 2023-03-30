@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+echo "Arg $1"
 
 rm -f phase.out
 touch phase.out

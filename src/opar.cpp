@@ -32,9 +32,10 @@
 #include "species.hpp"
 #include "currents.hpp"
 
-#include "../huerto/constants.hpp"
 #include "functions.hpp"
 #include "random.hpp"
+#include "../huerto/constants.hpp"
+#include "../huerto/diagnostic/field_diagnostic.hpp"
 
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
@@ -66,27 +67,7 @@ void debug_check_out_of_bounds(std::string)
 }
 
 
-class FieldDiagnostic : 
-  public schnek::HDFGridDiagnostic<typename DataField::BaseType, pDataField>,
-  public SimulationEntity
-{
-  protected:
-    typedef HDFGridDiagnostic<typename DataField::BaseType, pDataField>::IndexType IndexType;
-
-    void init()
-    {
-      SimulationEntity::init(this);
-    }
-
-    IndexType getGlobalMin()
-    {
-      return getContext().getSubdivision().getGlobalDomain().getLo();
-    }
-    IndexType getGlobalMax()
-    {
-      return getContext().getSubdivision().getGlobalDomain().getHi();
-    }
-};
+typedef FieldDiagnostic<DataField, pDataField, schnek::DeltaTimeDiagnostic> OparFieldDiagnostic;
 
 void OPar::initParameters(schnek::BlockParameters &blockPars)
 {
@@ -143,10 +124,13 @@ schnek::pDependencyUpdater OPar::getUpdater(VarGroup gr)
 
 void OPar::execute()
 {
+  time = 0.0;
+  timeStep = 0;
+
   Random::seed(subdivision->getUniqueId());
 
   SCHNEK_TRACE_ENTER_FUNCTION(2)
-  schnek::DiagnosticManager::instance().setTimeCounter(&timeStep);
+  schnek::DiagnosticManager::instance().setPhysicalTime(&time);
   schnek::DiagnosticManager::instance().setMaster(subdivision->master());
 
   double dt = getDt();
@@ -175,7 +159,6 @@ void OPar::execute()
     for (Species *s: species) s->pushParticles(dt);
     debug_check_out_of_bounds("D");
 
-    //if ((++n % 10) == 0) { for (Fields *f: fields) f->writeAsTextFiles(n); }
     time += dt;
     ++timeStep;
     schnek::DiagnosticManager::instance().execute();
@@ -211,7 +194,7 @@ void initBlockLayout(schnek::BlockClasses &blocks)
   blocks("opar").setClass<OPar>();
   blocks("Fields").setClass<Fields>();
   blocks("Species").setClass<Species>();
-  blocks("FieldDiagnostic").setClass<FieldDiagnostic>();
+  blocks("FieldDiagnostic").setClass<OparFieldDiagnostic>();
   blocks("ParticleDiagnostic").setClass<ParticleDiagnostic>();
 
   //blocks("Fields").addChildren("FieldBC")("FieldInit");

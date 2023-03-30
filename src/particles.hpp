@@ -31,8 +31,8 @@
 
 #include "../huerto/storage/small_object_storage.hpp"
 
-/** @Particle
- *  A low impact particle class for holding all the particle data
+/** 
+ * @brief A low impact particle class for holding all the particle data
  */
 class Particle
 {
@@ -60,8 +60,7 @@ class Particle
 
     Particle &operator=(const Particle &P)
     {
-      SVector tmpx = P.x;
-      x = tmpx; // P.x;
+      x = P.x;
       u = P.u;
       weight = P.weight;
       index = P.index;

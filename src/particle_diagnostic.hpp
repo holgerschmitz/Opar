@@ -34,9 +34,12 @@
 #include <schnek/diagnostic/diagnostic.hpp>
 #include <schnek/diagnostic/hdfdiagnostic.hpp>
 
-class ParticleDiagnostic : public schnek::HDFGridDiagnostic<DataGrid1d>, public SimulationEntity {
+class ParticleDiagnostic 
+  : public schnek::HDFGridDiagnostic<DataGrid1d, pDataGrid1d, schnek::DeltaTimeDiagnostic>, 
+    public SimulationEntity 
+{
   private:
-    typedef schnek::HDFGridDiagnostic<DataGrid1d> Super;
+    typedef schnek::HDFGridDiagnostic<DataGrid1d, pDataGrid1d, schnek::DeltaTimeDiagnostic> Super;
     Species *species;
     pDataGrid1d data;
 
@@ -45,7 +48,7 @@ class ParticleDiagnostic : public schnek::HDFGridDiagnostic<DataGrid1d>, public 
     long localCount;
     long localStart;
   protected:
-    typedef schnek::HDFGridDiagnostic<DataGrid1d>::IndexType IndexType;
+    typedef Super::IndexType IndexType;
     void write() override;
     void registerData() override;
     void init() override;

@@ -5,7 +5,7 @@
  * Author: Holger Schmitz
  * Email: holger@notjustphysics.com
  *
- * Copyright 2012 Holger Schmitz
+ * Copyright 2012-2023 Holger Schmitz
  *
  * This file is part of OPar.
  *
@@ -23,11 +23,8 @@
  * along with OPar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO Create JavaDoc comments everywhere
-
 #include <schnek/config.hpp>
 #include "opar.hpp"
-#include "fields.hpp"
 #include "particle_diagnostic.hpp"
 #include "species.hpp"
 #include "currents.hpp"
@@ -36,6 +33,8 @@
 #include "random.hpp"
 #include "../huerto/constants.hpp"
 #include "../huerto/diagnostic/field_diagnostic.hpp"
+#include "../huerto/electromagnetics/em_fields.hpp"
+#include "../huerto/electromagnetics/fdtd/fdtd_plain.hpp"
 
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
@@ -67,7 +66,7 @@ void debug_check_out_of_bounds(std::string)
 }
 
 
-typedef FieldDiagnostic<DataField, pDataField, schnek::DeltaTimeDiagnostic> OparFieldDiagnostic;
+typedef FieldDiagnostic<DataField, schnek::DeltaTimeDiagnostic> OparFieldDiagnostic;
 
 void OPar::initParameters(schnek::BlockParameters &blockPars)
 {
@@ -135,14 +134,17 @@ void OPar::execute()
 
   double dt = getDt();
 
-  for (Fields *f: fields) f->stepSchemeInit(dt);
+  // first half time-step for the EM fields
+  for(pFieldSolver f: schnek::BlockContainer<FieldSolver>::childBlocks())
+  {
+    f->stepSchemeInit(dt);
+  }
 
   schnek::DiagnosticManager::instance().execute();
 
   while (time<=tMax)
   {
     // run diagnostics
-    //std::cerr << "diagnostic" << std::endl;
     debug_check_out_of_bounds("A");
 
     if (getSubdivision().master())
@@ -150,8 +152,14 @@ void OPar::execute()
 
     //std::cerr << "Time = " << getTime() << std::endl;
     debug_check_out_of_bounds("B");
+
     // Advance electromagnetic fields
-    for (Fields *f: fields) f->stepScheme(dt);
+    for(pFieldSolver f: schnek::BlockContainer<FieldSolver>::childBlocks())
+    {
+      std::cerr << "STEP" << std::endl;
+      f->stepScheme(dt);
+    }
+
     debug_check_out_of_bounds("C");
 
     // Advance particle species
@@ -171,12 +179,6 @@ void OPar::execute()
 
 }
 
-void OPar::addField(Fields *f)
-{
-  SCHNEK_TRACE_ENTER_FUNCTION(2)
-  fields.push_back(f);
-}
-
 void OPar::addSpecies(Species *s)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
@@ -188,14 +190,16 @@ void initBlockLayout(schnek::BlockClasses &blocks)
 
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   blocks.registerBlock("opar");
-  blocks("opar").addChildren("Fields")
-      ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 
   blocks("opar").setClass<OPar>();
-  blocks("Fields").setClass<Fields>();
+  blocks("EMFields").setClass<EMFields>();
+  blocks("FDTD").setClass<FDTD_Plain>();
   blocks("Species").setClass<Species>();
   blocks("FieldDiagnostic").setClass<OparFieldDiagnostic>();
   blocks("ParticleDiagnostic").setClass<ParticleDiagnostic>();
+
+  blocks("opar").addChildren("EMFields")("FDTD")
+      ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 
   //blocks("Fields").addChildren("FieldBC")("FieldInit");
   //blocks("Species").addChildren("SpeciesBC")("SpeciesInit");
@@ -256,6 +260,11 @@ int runOpar(int, char **)
   catch (schnek::VariableNotInitialisedException &e)
   {
     std::cerr << "Variable was not initialised: " << e.getVarName() << std::endl;
+    return -1;
+  }
+  catch (schnek::VariableNotFoundException &e)
+  {
+    std::cerr << "Variable was not found: " << e.getMessage() << std::endl;
     return -1;
   }
   catch (schnek::EvaluationException &e)

@@ -29,45 +29,51 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 # add the executable
 add_executable(opar1d
-    src/util.cpp
-    src/species.cpp
-    src/random.cpp
-    src/opar.cpp
     src/currents.cpp
-    src/particle_diagnostic.cpp
-    src/particle_boundary.cpp
     src/functions.cpp
+    src/opar.cpp
+    src/particle_boundary.cpp
+    src/particle_diagnostic.cpp
     src/particle_exchange.cpp
-    src/fields.cpp
+    src/random.cpp
+    src/species.cpp
+    src/util.cpp
     huerto/constants.cpp
+    huerto/electromagnetics/current.cpp
+    huerto/electromagnetics/em_fields.cpp
+    huerto/electromagnetics/fdtd/fdtd_plain.cpp
 )
 
 add_executable(opar2d
-    src/util.cpp
-    src/species.cpp
-    src/random.cpp
-    src/opar.cpp
     src/currents.cpp
-    src/particle_diagnostic.cpp
-    src/particle_boundary.cpp
     src/functions.cpp
+    src/opar.cpp
+    src/particle_boundary.cpp
+    src/particle_diagnostic.cpp
     src/particle_exchange.cpp
-    src/fields.cpp
+    src/random.cpp
+    src/species.cpp
+    src/util.cpp
     huerto/constants.cpp
+    huerto/electromagnetics/current.cpp
+    huerto/electromagnetics/em_fields.cpp
+    huerto/electromagnetics/fdtd/fdtd_plain.cpp
 )
 
 add_executable(opar3d
-    src/util.cpp
-    src/species.cpp
-    src/random.cpp
-    src/opar.cpp
     src/currents.cpp
-    src/particle_diagnostic.cpp
-    src/particle_boundary.cpp
     src/functions.cpp
+    src/opar.cpp
+    src/particle_boundary.cpp
+    src/particle_diagnostic.cpp
     src/particle_exchange.cpp
-    src/fields.cpp
+    src/random.cpp
+    src/species.cpp
+    src/util.cpp
     huerto/constants.cpp
+    huerto/electromagnetics/current.cpp
+    huerto/electromagnetics/em_fields.cpp
+    huerto/electromagnetics/fdtd/fdtd_plain.cpp
 )
 
 target_compile_definitions(opar1d PRIVATE HUERTO_ONE_DIM ONE_DIMENSIONAL)

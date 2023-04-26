@@ -54,8 +54,8 @@ void ParticleDiagnostic::write()
   totalCount = localCount;
   localStart = 0;
 #endif
-  data->resize(IndexType(localStart), IndexType(localStart+localCount-1));
-  container.grid = &(*data);
+  data.resize(IndexType(localStart), IndexType(localStart+localCount-1));
+  container.grid = data;
   container.global_min = IndexType(0);
   container.global_max = IndexType(totalCount-1);
   container.local_min = IndexType(localStart);
@@ -73,7 +73,7 @@ void ParticleDiagnostic::write()
     long pos = localStart;
     for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
     {
-      (*data)(pos++) = it->x[d];
+      data(pos++) = it->x[d];
     }
     output.setBlockName(coordNames[d]);
     output.writeGrid(container);
@@ -84,7 +84,7 @@ void ParticleDiagnostic::write()
     long pos = localStart;
     for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
     {
-      (*data)(pos++) = it->u[d];
+      data(pos++) = it->u[d];
     }
     output.setBlockName("u"+coordNames[d]);
     output.writeGrid(container);
@@ -93,7 +93,7 @@ void ParticleDiagnostic::write()
   long pos = localStart;
   for (ParticleStorage::iterator it=particles.begin(); it!=particles.end(); ++it)
   {
-    (*data)(pos++) = it->weight;
+    data(pos++) = it->weight;
   }
   output.setBlockName("weight");
   output.writeGrid(container);
@@ -102,7 +102,6 @@ void ParticleDiagnostic::write()
 
 void ParticleDiagnostic::registerData()
 {
-  data = pDataField1d(new DataField1d());
   addData(getLongFieldName(), data);
 }
 

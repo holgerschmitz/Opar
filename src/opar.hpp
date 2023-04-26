@@ -5,7 +5,7 @@
  * Author: Holger Schmitz
  * Email: holger@notjustphysics.com
  *
- * Copyright 2012 Holger Schmitz
+ * Copyright 2012-2023 Holger Schmitz
  *
  * This file is part of OPar.
  *
@@ -28,21 +28,21 @@
 
 #include "../huerto/simulation/simulation_context.hpp"
 #include "../huerto/constants.hpp"
+#include "../huerto/electromagnetics/fieldsolver.hpp"
 
 #include <schnek/variables.hpp>
 #include <schnek/diagnostic/diagnostic.hpp>
 #include <list>
 
-class Fields;
 class Species;
 
 enum VarGroup { var_none, var_space, var_time, var_spacetime };
 
 class OPar : public schnek::Block,
-             public SimulationContext
+             public SimulationContext,
+             public schnek::BlockContainer<FieldSolver>
 {
   private:
-    std::list<Fields*> fields;
     std::list<Species*> species;
 
     schnek::pParametersGroup spaceVars;
@@ -60,7 +60,6 @@ class OPar : public schnek::Block,
     void registerData() override;
     void init() override;
     schnek::pDependencyUpdater getUpdater(VarGroup gr);
-    void addField(Fields *f);
     void addSpecies(Species *s);
     void addDiagnostic(schnek::DiagnosticInterface *d);
 

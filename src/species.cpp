@@ -33,6 +33,8 @@
 #include "util.hpp"
 #include "constants.hpp"
 
+#include "../huerto/electromagnetics/em_fields.hpp"
+
 #include <schnek/grid.hpp>
 #include <schnek/util/logger.hpp>
 #include <schnek/tools/literature.hpp>

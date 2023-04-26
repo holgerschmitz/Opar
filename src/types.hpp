@@ -103,37 +103,6 @@ typedef ScalarDomain::LimitType ScalarLimit;
 typedef SDomain::LimitType SLimit;
 typedef PDomain::LimitType PLimit;
 
-#ifdef THREE_DIMENSIONAL
-static const SStagger exStaggerYee(true,  false, false);
-static const SStagger eyStaggerYee(false, true,  false);
-static const SStagger ezStaggerYee(false, false, true );
-
-static const SStagger bxStaggerYee(false, true,  true );
-static const SStagger byStaggerYee(true,  false, true );
-static const SStagger bzStaggerYee(true,  true,  false);
-#endif
-
-
-#ifdef TWO_DIMENSIONAL
-static const SStagger exStaggerYee(true,  false);
-static const SStagger eyStaggerYee(false, true );
-static const SStagger ezStaggerYee(false, false);
-
-static const SStagger bxStaggerYee(false, true );
-static const SStagger byStaggerYee(true,  false);
-static const SStagger bzStaggerYee(true,  true );
-#endif
-
-
-#ifdef ONE_DIMENSIONAL
-static const SStagger exStaggerYee(true );
-static const SStagger eyStaggerYee(false);
-static const SStagger ezStaggerYee(false);
-
-static const SStagger bxStaggerYee(false);
-static const SStagger byStaggerYee(true );
-static const SStagger bzStaggerYee(true );
-#endif
 
 void debug_check_out_of_bounds(std::string checkpoint);
 

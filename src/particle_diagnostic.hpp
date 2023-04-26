@@ -35,13 +35,13 @@
 #include <schnek/diagnostic/hdfdiagnostic.hpp>
 
 class ParticleDiagnostic 
-  : public schnek::HDFGridDiagnostic<DataGrid1d, pDataGrid1d, schnek::DeltaTimeDiagnostic>, 
+  : public schnek::HDFGridDiagnostic<DataGrid1d, schnek::DeltaTimeDiagnostic>, 
     public SimulationEntity 
 {
   private:
-    typedef schnek::HDFGridDiagnostic<DataGrid1d, pDataGrid1d, schnek::DeltaTimeDiagnostic> Super;
+    typedef schnek::HDFGridDiagnostic<DataGrid1d, schnek::DeltaTimeDiagnostic> Super;
     Species *species;
-    pDataGrid1d data;
+    DataGrid1d data;
 
     schnek::Grid<long, 1, GridArgCheck> sizes;
     long totalCount;

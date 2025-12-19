@@ -46,6 +46,7 @@
 
 #include <fstream>
 #include <limits>
+#include <cmath>
 
 #undef LOGLEVEL
 #define LOGLEVEL 0
@@ -277,7 +278,7 @@ void debug_check_out_of_bounds(std::string, Particle, Particle, SIntVector, SInt
 
 inline bool debug_particle_nan(std::string checkpoint, const Particle &p)
 {
-  if (isnan(p.x[0]) || isnan(p.x[1]) || isnan(p.u[0]) || isnan(p.u[1]) || isnan(p.u[2]))
+  if (std::isnan(p.x[0]) || std::isnan(p.x[1]) || std::isnan(p.u[0]) || std::isnan(p.u[1]) || std::isnan(p.u[2]))
   {
     std::cerr << "Particle NaN at checkpoint " << checkpoint << std::endl;
     std::cerr << "X = " << p.x << "\nU = " << p.u << "\n";
@@ -463,8 +464,8 @@ void Species::pushParticles(double dt)
     SIntVector hi, dhi = d.getHi();
     for (int i=0; i<dimension; ++i)
     {
-      lo[i] = d.getLo()[i] + std::min(0,dcell[i]);
-      hi[i] = d.getHi()[i] + std::max(0,dcell[i]);
+      lo[i] = d.getLo()[i] + std::min(0l, dcell[i]);
+      hi[i] = d.getHi()[i] + std::max(0l, dcell[i]);
     }
 #ifndef ONE_DIMENSIONAL
     const double sixth = 1.0 / 6.0;
@@ -506,8 +507,8 @@ void Species::pushParticles(double dt)
       //
       // The weighting coefficients have been double checked and should be OK
 #ifdef ONE_DIMENSIONAL
-      int i = l_ind[0];
-      int ih = l_ind[0] - dcell[0];
+      ptrdiff_t i = l_ind[0];
+      ptrdiff_t ih = l_ind[0] - dcell[0];
       const double sx = ((i<dlo[0])||(i>dhi[0]))?0.0:gx[i][0];
       const double rx = ((ih<dlo[0])||(ih>dhi[0]))?0.0:hx[ih][0];
 
@@ -521,10 +522,10 @@ void Species::pushParticles(double dt)
 #endif
 
 #ifdef TWO_DIMENSIONAL
-      int i = l_ind[0];
-      int j = l_ind[1];
-      int ih = l_ind[0] - dcell[0];
-      int jh = l_ind[1] - dcell[1];
+      ptrdiff_t i = l_ind[0];
+      ptrdiff_t j = l_ind[1];
+      ptrdiff_t ih = l_ind[0] - dcell[0];
+      ptrdiff_t jh = l_ind[1] - dcell[1];
       const double sx = ((i<dlo[0])||(i>dhi[0]))?0.0:gx[i][0];
       const double sy = ((j<dlo[1])||(j>dhi[1]))?0.0:gx[j][1];
 
@@ -541,12 +542,12 @@ void Species::pushParticles(double dt)
 #endif
 
 #ifdef THREE_DIMENSIONAL
-      int i = l_ind[0];
-      int j = l_ind[1];
-      int k = l_ind[2];
-      int ih = l_ind[0] - dcell[0];
-      int jh = l_ind[1] - dcell[1];
-      int kh = l_ind[2] - dcell[2];
+      ptrdiff_t i = l_ind[0];
+      ptrdiff_t j = l_ind[1];
+      ptrdiff_t k = l_ind[2];
+      ptrdiff_t ih = l_ind[0] - dcell[0];
+      ptrdiff_t jh = l_ind[1] - dcell[1];
+      ptrdiff_t kh = l_ind[2] - dcell[2];
       const double sx = ((i<dlo[0])||(i>dhi[0]))?0.0:gx[i][0];
       const double sy = ((j<dlo[1])||(j>dhi[1]))?0.0:gx[j][1];
       const double sz = ((k<dlo[2])||(k>dhi[2]))?0.0:gx[k][2];

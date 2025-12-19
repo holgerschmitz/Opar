@@ -95,7 +95,7 @@ void OPar::registerData()
   dx[1] = size[1] / gridSize[1];
 
   subdivision = std::make_shared<schnek::MPICartSubdivision<Field> >();
-  subdivision->init(gridSize, 2);
+  subdivision->init(getGridSize(), (size_t)2);
 }
 
 schnek::pDependencyUpdater OPar::getUpdater(VarGroup gr)

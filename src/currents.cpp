@@ -63,8 +63,8 @@ void Currents::updateCurrent(pDataField j, const std::list<pDataField> &jl)
   for (pDataField jc: jl)
   {
     SCHNEK_TRACE_LOG(4,"Summing up current")
-    schnek::Range<int, dimension> domain(jc->getLo(), jc->getHi());
-    for (schnek::Range<int, dimension>::iterator it = domain.begin(); it != domain.end(); ++it)
+    schnek::Range<ptrdiff_t, dimension> domain(jc->getLo(), jc->getHi());
+    for (schnek::Range<ptrdiff_t, dimension>::iterator it = domain.begin(); it != domain.end(); ++it)
     {
       SCHNEK_TRACE_LOG(5,"at "<< it.getPos()[0] << " " << (*jc)[*it])
       (*j)[*it] += (*jc)[*it];

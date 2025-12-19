@@ -89,15 +89,15 @@ typedef schnek::Array<bool, dimension> SStagger;
 
 typedef schnek::Array<real, 3, ArrayArgCheck> PVector;
 
-typedef schnek::Array<int, dimension, ArrayArgCheck> SIntVector;
-typedef schnek::Array<int, 3, ArrayArgCheck> PIntVector;
+typedef schnek::Array<ptrdiff_t, dimension, ArrayArgCheck> SIntVector;
+typedef schnek::Array<ptrdiff_t, 3, ArrayArgCheck> PIntVector;
 
 typedef schnek::Array<schnek::pParameter, dimension, ArrayArgCheck> SParameterVector;
 typedef schnek::Array<schnek::pParameter, 3, ArrayArgCheck> PParameterVector;
 
-typedef schnek::Range<int, 1> ScalarDomain;
-typedef schnek::Range<int, dimension> SDomain;
-typedef schnek::Range<int, 3> PDomain;
+typedef schnek::Range<ptrdiff_t, 1> ScalarDomain;
+typedef schnek::Range<ptrdiff_t, dimension> SDomain;
+typedef schnek::Range<ptrdiff_t, 3> PDomain;
 
 typedef ScalarDomain::LimitType ScalarLimit;
 typedef SDomain::LimitType SLimit;

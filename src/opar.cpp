@@ -31,6 +31,7 @@
 
 #include "functions.hpp"
 #include "random.hpp"
+#include "../huerto/types.hpp"
 #include "../huerto/constants.hpp"
 #include "../huerto/diagnostic/field_diagnostic.hpp"
 #include "../huerto/electromagnetics/em_fields.hpp"
@@ -78,12 +79,19 @@ void OPar::initParameters(schnek::BlockParameters &blockPars)
   blockPars.addArrayParameter("N", gridSize, 100);
   blockPars.addArrayParameter("L", size, 1.0);
   blockPars.addParameter("tMax", &tMax, 1.0);
-  blockPars.addParameter("dt", &dt, 0.005);
+  blockPars.addParameter("cflFactor", &cflFactor, 0.99);
+  blockPars.addParameter("ignore_initial_time_stagger", (int*)(&ignore_initial_time_stagger), 0);
 }
 
 void OPar::init()
 {
   Currents::instance().setContext(this);
+
+  double minDx = std::numeric_limits<double>::max();
+  for (std::size_t i=0; i < DIMENSION; ++i) {
+    minDx = std::min(size[i] / gridSize[i], minDx);
+  }
+  dt = cflFactor*minDx/clight;
 }
 
 void OPar::registerData()
@@ -134,10 +142,12 @@ void OPar::execute()
 
   double dt = getDt();
 
-  // first half time-step for the EM fields
-  for(pFieldSolver f: schnek::BlockContainer<FieldSolver>::childBlocks())
-  {
-    f->stepSchemeInit(dt);
+  if (!ignore_initial_time_stagger) {
+    // first half time-step for the EM fields
+    for(pFieldSolver f: schnek::BlockContainer<FieldSolver>::childBlocks())
+    {
+      f->stepSchemeInit(dt);
+    }
   }
 
   schnek::DiagnosticManager::instance().execute();
@@ -234,16 +244,16 @@ int runOpar(int, char **)
   schnek::Parser P(vars, freg, blocks);
   schnek::pBlock application;
 
-  std::ifstream in("opar.config");
+  std::ifstream in("opar.setup");
   if (!in) {
     std::cerr << "Could not open file\n";
     return -1;
   }
   try
   {
-    SCHNEK_TRACE_ERR(1,"Parsing opar.config");
-    application = P.parse(in, "opar.config");
-    SCHNEK_TRACE_ERR(1,"Done parsing opar.config");
+    SCHNEK_TRACE_ERR(1,"Parsing opar.setup");
+    application = P.parse(in, "opar.setup");
+    SCHNEK_TRACE_ERR(1,"Done parsing opar.setup");
   }
   catch (schnek::ParserError &e)
   {

@@ -43,6 +43,18 @@ class OPar : public schnek::Block,
              public schnek::BlockContainer<FieldSolver>
 {
   private:
+    /**
+     * The CLF factor \f$f_{\mathrm{CLF}}\f$
+     *
+     * A factor that is multiplied into the timestep #dt of the simulation.
+     */
+    double cflFactor;
+
+    /**
+     * If true, then don't do an initial half time step to bring E and B field in sync.
+     */
+    bool ignore_initial_time_stagger;
+
     std::list<Species*> species;
 
     schnek::pParametersGroup spaceVars;

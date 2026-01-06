@@ -1,0 +1,93 @@
+
+float lambda = 1e-6;
+float dx = 0.05*lambda;
+
+Nx = 100;
+Ny = 100;
+
+Lx = dx*Nx;
+Ly = dx*Ny;
+
+// plasma and laser parameters
+
+cflFactor = 0.99/sqrt(2.0);
+
+float dt = cflFactor*dx/clight;
+
+tMax = 2*Lx/clight;
+ignore_initial_time_stagger = 1;
+
+EMFields {
+  int kx = 1;
+  int ky = 1;
+  float k = sqrt(kx*kx + ky*ky);
+  float xm = (x - Lx/2);
+  float ampE = sin(2*pi*(kx*x + ky*y)/lambda);
+  float ampB = sin(2*pi*(kx*x + ky*y - 0.5*cflFactor*k*dx)/lambda);
+  
+  float phi = atan2(ky, kx);
+  Ex = -ampE*sin(phi);
+  Ey =  ampE*cos(phi);
+  Ez = 0.0;
+
+  Bx = 0.0;
+  By = 0.0;
+  Bz = ampB/clight;
+}
+
+FDTD {
+}
+
+float outDt = dt;
+
+FieldDiagnostic Ex {
+  file = "Ex_#t.h5";
+  field = "Ex";
+  deltaTime = outDt;
+}
+
+FieldDiagnostic Ey {
+  file = "Ey_#t.h5";
+  field = "Ey";
+  deltaTime = outDt;
+}
+
+FieldDiagnostic Ez {
+  file = "Ez_#t.h5";
+  field = "Ez";
+  deltaTime = outDt;
+}
+
+FieldDiagnostic Bx {
+  file = "Bx_#t.h5";
+  field = "Bx";
+  deltaTime = outDt;
+}
+
+FieldDiagnostic By {
+  file = "By_#t.h5";
+  field = "By";
+  deltaTime = outDt;
+}
+
+FieldDiagnostic Bz {
+  file = "Bz_#t.h5";
+  field = "Bz";
+  deltaTime = outDt;
+}
+
+// SliceDiag EySlice {
+//   file = "Ey_slice_#t.h5";
+//   field = "Ey";
+//   interval = 1000;
+//   dim = 0;
+//   pos = 30;
+// }
+
+// SliceDiag BzSlice {
+//   file = "Bz_slice_#t.h5";
+//   field = "Bz";
+//   interval = 1000;
+//   dim = 0;
+//   pos = 30;
+// }

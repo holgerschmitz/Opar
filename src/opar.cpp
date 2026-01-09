@@ -33,9 +33,11 @@
 #include "random.hpp"
 #include "../huerto/types.hpp"
 #include "../huerto/constants.hpp"
+#include "../huerto/maths/functions/core.hpp"
 #include "../huerto/diagnostic/field_diagnostic.hpp"
 #include "../huerto/electromagnetics/em_fields.hpp"
 #include "../huerto/electromagnetics/fdtd/fdtd_plain.hpp"
+#include "../huerto/electromagnetics/pml/cpml_border.hpp"
 
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
@@ -204,6 +206,8 @@ void initBlockLayout(schnek::BlockClasses &blocks)
   blocks("opar").setClass<OPar>();
   blocks("EMFields").setClass<EMFields>();
   blocks("FDTD").setClass<FDTD_Plain>();
+  blocks("CPMLBorder").setClass<CPMLBorder>();
+
   blocks("Species").setClass<Species>();
   blocks("FieldDiagnostic").setClass<OparFieldDiagnostic>();
   blocks("ParticleDiagnostic").setClass<ParticleDiagnostic>();
@@ -211,6 +215,7 @@ void initBlockLayout(schnek::BlockClasses &blocks)
   blocks("opar").addChildren("EMFields")("FDTD")
       ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 
+  blocks("FDTD").addChildren("CPMLBorder");
   //blocks("Fields").addChildren("FieldBC")("FieldInit");
   //blocks("Species").addChildren("SpeciesBC")("SpeciesInit");
   //blocks.addBlockClass("Collection").addChildren("Values")("Constants");
@@ -220,7 +225,6 @@ void initFunctions(schnek::FunctionRegistry &freg)
 {
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   registerCMath(freg);
-  freg.registerFunction("step", step);
   freg.registerFunction("logistic", logistic);
   freg.registerFunction("pulse1d", pulse1d);
 }
@@ -239,6 +243,7 @@ int runOpar(int, char **)
   schnek::BlockClasses blocks;
 
   initFunctions(freg);
+  registerCoreFunctions(freg);
   initBlockLayout(blocks);
 
   schnek::Parser P(vars, freg, blocks);

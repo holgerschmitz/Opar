@@ -1,0 +1,82 @@
+// This defines a 10 cell CPML border with he optimal value of sigmaMax
+// The central pulse reflects off the border and should result in a reduction
+// of amplitude to about 0.00042 from its original value.
+// This corresponds to an intensity reduction by -67dB as reported by 
+// Roden and Gedney 2000
+
+
+float lambda = 1e-6;
+float dx = 0.05*lambda;
+float length = 5.0;
+Nx = 1000;
+
+Lx = dx*Nx;
+
+// plasma and laser parameters
+
+cflFactor = 1.0;
+
+float dt = cflFactor*dx/clight;
+
+tMax = Lx/clight;
+
+EMFields {  
+  float xm = (x - Lx/2);
+  float xn = xm/lambda;
+  float amp = exp(-xn*xn/(length*length))*sin(2*pi*xn)*box(xn, -5*length, 5*length);
+  
+  Ex = 0.0;
+  Ey = amp;
+  Ez = 0.0;
+
+  Bx = 0.0;
+  By = 0.0;
+  Bz = amp/clight;
+}
+
+FDTD {
+  CPMLBorder { 
+    d = 10;
+    sigmaMax = 12.5;
+    kappaMax = 11.0;
+    aMax = 0.0;
+  }
+}
+
+float outDt = 10*dt;
+
+FieldDiagnostic Ex {
+  file = "Ex_#t.h5";
+  field = "Ex";
+  deltaTime = outDt;
+}
+
+FieldDiagnostic Ey {
+  file = "Ey_#t.h5";
+  field = "Ey";
+  deltaTime = outDt;
+}
+
+FieldDiagnostic Ez {
+  file = "Ez_#t.h5";
+  field = "Ez";
+  deltaTime = outDt;
+}
+
+FieldDiagnostic Bx {
+  file = "Bx_#t.h5";
+  field = "Bx";
+  deltaTime = outDt;
+}
+
+FieldDiagnostic By {
+  file = "By_#t.h5";
+  field = "By";
+  deltaTime = outDt;
+}
+
+FieldDiagnostic Bz {
+  file = "Bz_#t.h5";
+  field = "Bz";
+  deltaTime = outDt;
+}

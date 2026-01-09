@@ -30,11 +30,6 @@
 #include <cmath>
 #include <limits>
 
-double step(double x)
-{
-  return (x<0.0)?0.0:1.0;
-}
-
 double logistic(double x, double w, double x0)
 {
   static const double lim = M_LN2*std::numeric_limits<double>::digits + 1;

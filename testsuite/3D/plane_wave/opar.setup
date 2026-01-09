@@ -38,17 +38,6 @@ EMFields {
   Bx = -ampB * sin(theta) * cos(phi) / clight;
   By = -ampB * sin(theta) * sin(phi) / clight;
   Bz = ampB  * cos(theta) / clight;
-
-  // float ampE = sin(2*pi*x/lambda);
-  // float ampB = sin(2*pi*(x - 0.5*cflFactor*dx)/lambda);
-  
-  // Ex = 0.0;
-  // Ey =  ampE;
-  // Ez = 0.0;
-
-  // Bx = 0.0;
-  // By = 0.0;
-  // Bz = ampB / clight;
 }
 
 FDTD {

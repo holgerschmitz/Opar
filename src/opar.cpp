@@ -99,8 +99,9 @@ void OPar::registerData()
   spaceVars = schnek::pParametersGroup(new schnek::ParametersGroup());
   timeVars  = schnek::pParametersGroup(new schnek::ParametersGroup());
 
-  dx[0] = size[0] / gridSize[0];
-  dx[1] = size[1] / gridSize[1];
+  for (std::size_t i=0; i < DIMENSION; ++i) {
+    dx[i] = size[i] / gridSize[i];
+  }
 
   subdivision = std::make_shared<schnek::MPICartSubdivision<Field> >();
   subdivision->init(getGridSize(), (size_t)2);
@@ -158,7 +159,7 @@ void OPar::execute()
     debug_check_out_of_bounds("A");
 
     if (getSubdivision().master())
-      schnek::Logger::instance().out() <<"Time "<<getTime() << std::endl;
+      schnek::Logger::instance().out() << "Time " << getTime() << std::endl;
 
     //std::cerr << "Time = " << getTime() << std::endl;
     debug_check_out_of_bounds("B");
@@ -166,7 +167,6 @@ void OPar::execute()
     // Advance electromagnetic fields
     for(pFieldSolver f: schnek::BlockContainer<FieldSolver>::childBlocks())
     {
-      std::cerr << "STEP" << std::endl;
       f->stepScheme(dt);
     }
 

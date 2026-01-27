@@ -29,63 +29,63 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 # add the executable
 add_executable(opar1d
-    src/currents.cpp
+    # src/currents.cpp
     src/functions.cpp
     src/opar.cpp
-    src/particle_boundary.cpp
-    src/particle_diagnostic.cpp
-    src/particle_exchange.cpp
+    # src/particle_boundary.cpp
+    # src/particle_diagnostic.cpp
+    # src/particle_exchange.cpp
     src/random.cpp
-    src/species.cpp
-    src/util.cpp
+    # src/species.cpp
+    # src/util.cpp
     huerto/constants.cpp
     huerto/maths/random.cpp
     huerto/maths/functions/core.cpp
     huerto/electromagnetics/current.cpp
     huerto/electromagnetics/em_fields.cpp
-    huerto/electromagnetics/fdtd/fdtd_plain.cpp
-    huerto/electromagnetics/pml/cpml_border.cpp
-    huerto/electromagnetics/source/border.cpp
+    # huerto/electromagnetics/fdtd/fdtd_plain.cpp
+    # huerto/electromagnetics/pml/cpml_border.cpp
+    # huerto/electromagnetics/source/border.cpp
 )
 
 add_executable(opar2d
-    src/currents.cpp
+    # src/currents.cpp
     src/functions.cpp
     src/opar.cpp
-    src/particle_boundary.cpp
-    src/particle_diagnostic.cpp
-    src/particle_exchange.cpp
+    # src/particle_boundary.cpp
+    # src/particle_diagnostic.cpp
+    # src/particle_exchange.cpp
     src/random.cpp
-    src/species.cpp
-    src/util.cpp
+    # src/species.cpp
+    # src/util.cpp
     huerto/constants.cpp
     huerto/maths/random.cpp
     huerto/maths/functions/core.cpp
     huerto/electromagnetics/current.cpp
     huerto/electromagnetics/em_fields.cpp
-    huerto/electromagnetics/fdtd/fdtd_plain.cpp
-    huerto/electromagnetics/pml/cpml_border.cpp
-    huerto/electromagnetics/source/border.cpp
+    # huerto/electromagnetics/fdtd/fdtd_plain.cpp
+    # huerto/electromagnetics/pml/cpml_border.cpp
+    # huerto/electromagnetics/source/border.cpp
 )
 
 add_executable(opar3d
-    src/currents.cpp
+    # src/currents.cpp
     src/functions.cpp
     src/opar.cpp
-    src/particle_boundary.cpp
-    src/particle_diagnostic.cpp
-    src/particle_exchange.cpp
+    # src/particle_boundary.cpp
+    # src/particle_diagnostic.cpp
+    # src/particle_exchange.cpp
     src/random.cpp
-    src/species.cpp
-    src/util.cpp
+    # src/species.cpp
+    # src/util.cpp
     huerto/constants.cpp
     huerto/maths/random.cpp
     huerto/maths/functions/core.cpp
     huerto/electromagnetics/current.cpp
     huerto/electromagnetics/em_fields.cpp
-    huerto/electromagnetics/fdtd/fdtd_plain.cpp
-    huerto/electromagnetics/pml/cpml_border.cpp
-    huerto/electromagnetics/source/border.cpp
+    # huerto/electromagnetics/fdtd/fdtd_plain.cpp
+    # huerto/electromagnetics/pml/cpml_border.cpp
+    # huerto/electromagnetics/source/border.cpp
 )
 
 target_compile_definitions(opar1d PRIVATE HUERTO_ONE_DIM ONE_DIMENSIONAL)

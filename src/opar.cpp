@@ -25,8 +25,8 @@
 
 #include <schnek/config.hpp>
 #include "opar.hpp"
-#include "particle_diagnostic.hpp"
-#include "species.hpp"
+// #include "particle_diagnostic.hpp"
+// #include "species.hpp"
 #include "currents.hpp"
 
 #include "functions.hpp"
@@ -34,10 +34,10 @@
 #include "../huerto/types.hpp"
 #include "../huerto/constants.hpp"
 #include "../huerto/maths/functions/core.hpp"
-#include "../huerto/diagnostic/field_diagnostic.hpp"
+// #include "../huerto/diagnostic/field_diagnostic.hpp"
 #include "../huerto/electromagnetics/em_fields.hpp"
-#include "../huerto/electromagnetics/fdtd/fdtd_plain.hpp"
-#include "../huerto/electromagnetics/pml/cpml_border.hpp"
+// #include "../huerto/electromagnetics/fdtd/fdtd_plain.hpp"
+// #include "../huerto/electromagnetics/pml/cpml_border.hpp"
 
 #include <schnek/parser.hpp>
 #include <schnek/util/logger.hpp>
@@ -69,7 +69,7 @@ void debug_check_out_of_bounds(std::string)
 }
 
 
-typedef FieldDiagnostic<DataField, schnek::DeltaTimeDiagnostic> OparFieldDiagnostic;
+// typedef FieldDiagnostic<DataField, schnek::DeltaTimeDiagnostic> OparFieldDiagnostic;
 
 void OPar::initParameters(schnek::BlockParameters &blockPars)
 {
@@ -87,7 +87,7 @@ void OPar::initParameters(schnek::BlockParameters &blockPars)
 
 void OPar::init()
 {
-  Currents::instance().setContext(this);
+  // Currents::instance().setContext(this);
 
   double minDx = std::numeric_limits<double>::max();
   for (std::size_t i=0; i < DIMENSION; ++i) {
@@ -98,15 +98,14 @@ void OPar::init()
 
 void OPar::registerData()
 {
-  spaceVars = schnek::pParametersGroup(new schnek::ParametersGroup());
-  timeVars  = schnek::pParametersGroup(new schnek::ParametersGroup());
-
   for (std::size_t i=0; i < DIMENSION; ++i) {
     dx[i] = size[i] / gridSize[i];
   }
 
-  subdivision = std::make_shared<schnek::MPICartSubdivision<Field> >();
-  subdivision->init(getGridSize(), (size_t)2);
+  decomposition = std::make_shared<HuertoDecomposition>();
+  decomposition->setGlobalRange({{0}, getGridSize()});
+  decomposition->setGlobalDomain({{0.0} , getSize()});
+  decomposition->init();
 }
 
 schnek::pDependencyUpdater OPar::getUpdater(VarGroup gr)
@@ -137,11 +136,11 @@ void OPar::execute()
   time = 0.0;
   timeStep = 0;
 
-  Random::seed(subdivision->getUniqueId());
+  Random::seed(decomposition->getUniqueId());
 
   SCHNEK_TRACE_ENTER_FUNCTION(2)
   schnek::DiagnosticManager::instance().setPhysicalTime(&time);
-  schnek::DiagnosticManager::instance().setMaster(subdivision->master());
+  schnek::DiagnosticManager::instance().setMaster(decomposition->master());
 
   double dt = getDt();
 
@@ -160,7 +159,7 @@ void OPar::execute()
     // run diagnostics
     debug_check_out_of_bounds("A");
 
-    if (getSubdivision().master())
+    if (getDecomposition().master())
       schnek::Logger::instance().out() << "Time " << getTime() << std::endl;
 
     //std::cerr << "Time = " << getTime() << std::endl;
@@ -176,12 +175,12 @@ void OPar::execute()
 
     // Advance particle species
     //std::cerr << "push" << std::endl;
-    for (Species *s: species) s->pushParticles(dt);
+    // for (Species *s: species) s->pushParticles(dt);
     debug_check_out_of_bounds("D");
 
     time += dt;
     ++timeStep;
-    schnek::DiagnosticManager::instance().execute();
+    // schnek::DiagnosticManager::instance().execute();
   }
 
   // run diagnostics
@@ -191,11 +190,11 @@ void OPar::execute()
 
 }
 
-void OPar::addSpecies(Species *s)
-{
-  SCHNEK_TRACE_ENTER_FUNCTION(2)
-  species.push_back(s);
-}
+// void OPar::addSpecies(Species *s)
+// {
+//   SCHNEK_TRACE_ENTER_FUNCTION(2)
+//   species.push_back(s);
+// }
 
 void initBlockLayout(schnek::BlockClasses &blocks)
 {
@@ -205,17 +204,18 @@ void initBlockLayout(schnek::BlockClasses &blocks)
 
   blocks("opar").setClass<OPar>();
   blocks("EMFields").setClass<EMFields>();
-  blocks("FDTD").setClass<FDTD_Plain>();
-  blocks("CPMLBorder").setClass<CPMLBorder>();
+  // blocks("FDTD").setClass<FDTD_Plain>();
+  // blocks("CPMLBorder").setClass<CPMLBorder>();
 
-  blocks("Species").setClass<Species>();
-  blocks("FieldDiagnostic").setClass<OparFieldDiagnostic>();
-  blocks("ParticleDiagnostic").setClass<ParticleDiagnostic>();
+  // blocks("Species").setClass<Species>();
+  // blocks("FieldDiagnostic").setClass<OparFieldDiagnostic>();
+  // blocks("ParticleDiagnostic").setClass<ParticleDiagnostic>();
 
-  blocks("opar").addChildren("EMFields")("FDTD")
-      ("Species")("FieldDiagnostic")("ParticleDiagnostic");
+  blocks("opar").addChildren("EMFields");
+  // ("FDTD")
+  //     ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 
-  blocks("FDTD").addChildren("CPMLBorder");
+  // blocks("FDTD").addChildren("CPMLBorder");
   //blocks("Fields").addChildren("FieldBC")("FieldInit");
   //blocks("Species").addChildren("SpeciesBC")("SpeciesInit");
   //blocks.addBlockClass("Collection").addChildren("Values")("Constants");
@@ -293,7 +293,7 @@ int runOpar(int, char **)
     return -1;
   }
 
-  if (opar.getSubdivision().master())
+  if (opar.getDecomposition().master())
   {
     std::ofstream referencesText("information.tex");
     std::ofstream referencesBib("references.bib");

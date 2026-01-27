@@ -55,12 +55,7 @@ class OPar : public schnek::Block,
      */
     bool ignore_initial_time_stagger;
 
-    std::list<Species*> species;
-
-    schnek::pParametersGroup spaceVars;
-    schnek::pParametersGroup timeVars;
-
-    schnek::pBlockVariables blockVars;
+    // std::list<Species*> species;
 
     /// The parameter associated with t
     schnek::pParameter t_parameter;
@@ -72,8 +67,8 @@ class OPar : public schnek::Block,
     void registerData() override;
     void init() override;
     schnek::pDependencyUpdater getUpdater(VarGroup gr);
-    void addSpecies(Species *s);
-    void addDiagnostic(schnek::DiagnosticInterface *d);
+    // void addSpecies(Species *s);
+    // void addDiagnostic(schnek::DiagnosticInterface *d);
 
 };
 

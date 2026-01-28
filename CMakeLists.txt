@@ -43,7 +43,7 @@ add_executable(opar1d
     huerto/maths/functions/core.cpp
     huerto/electromagnetics/current.cpp
     huerto/electromagnetics/em_fields.cpp
-    # huerto/electromagnetics/fdtd/fdtd_plain.cpp
+    huerto/electromagnetics/fdtd/fdtd_plain.cpp
     # huerto/electromagnetics/pml/cpml_border.cpp
     # huerto/electromagnetics/source/border.cpp
 )
@@ -63,7 +63,7 @@ add_executable(opar2d
     huerto/maths/functions/core.cpp
     huerto/electromagnetics/current.cpp
     huerto/electromagnetics/em_fields.cpp
-    # huerto/electromagnetics/fdtd/fdtd_plain.cpp
+    huerto/electromagnetics/fdtd/fdtd_plain.cpp
     # huerto/electromagnetics/pml/cpml_border.cpp
     # huerto/electromagnetics/source/border.cpp
 )
@@ -83,7 +83,7 @@ add_executable(opar3d
     huerto/maths/functions/core.cpp
     huerto/electromagnetics/current.cpp
     huerto/electromagnetics/em_fields.cpp
-    # huerto/electromagnetics/fdtd/fdtd_plain.cpp
+    huerto/electromagnetics/fdtd/fdtd_plain.cpp
     # huerto/electromagnetics/pml/cpml_border.cpp
     # huerto/electromagnetics/source/border.cpp
 )

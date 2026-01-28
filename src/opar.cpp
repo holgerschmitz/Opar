@@ -36,7 +36,7 @@
 #include "../huerto/maths/functions/core.hpp"
 // #include "../huerto/diagnostic/field_diagnostic.hpp"
 #include "../huerto/electromagnetics/em_fields.hpp"
-// #include "../huerto/electromagnetics/fdtd/fdtd_plain.hpp"
+#include "../huerto/electromagnetics/fdtd/fdtd_plain.hpp"
 // #include "../huerto/electromagnetics/pml/cpml_border.hpp"
 
 #include <schnek/parser.hpp>
@@ -204,15 +204,14 @@ void initBlockLayout(schnek::BlockClasses &blocks)
 
   blocks("opar").setClass<OPar>();
   blocks("EMFields").setClass<EMFields>();
-  // blocks("FDTD").setClass<FDTD_Plain>();
+  blocks("FDTD").setClass<FDTD_Plain>();
   // blocks("CPMLBorder").setClass<CPMLBorder>();
 
   // blocks("Species").setClass<Species>();
   // blocks("FieldDiagnostic").setClass<OparFieldDiagnostic>();
   // blocks("ParticleDiagnostic").setClass<ParticleDiagnostic>();
 
-  blocks("opar").addChildren("EMFields");
-  // ("FDTD")
+  blocks("opar").addChildren("EMFields")("FDTD");
   //     ("Species")("FieldDiagnostic")("ParticleDiagnostic");
 
   // blocks("FDTD").addChildren("CPMLBorder");

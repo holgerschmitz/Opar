@@ -41,6 +41,7 @@ for tstep in range(201):
   Bz_err[tstep] = (clight*Bz - Bz_expect).max()
   Ey_err[tstep] = (Ey - Ey_expect).max()
   # plt.plot(Ey, 'k-', linewidth = 2)
+  # plt.plot(Ey_expect, 'b-')
   # plt.show()
 
 plt.plot(time, Bz_err, 'k-', linewidth = 2)

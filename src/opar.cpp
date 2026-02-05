@@ -34,12 +34,13 @@
 #include "../huerto/types.hpp"
 #include "../huerto/constants.hpp"
 #include "../huerto/maths/functions/core.hpp"
-// #include "../huerto/diagnostic/field_diagnostic.hpp"
+#include "../huerto/diagnostic/field_diagnostic.hpp"
 #include "../huerto/electromagnetics/em_fields.hpp"
 #include "../huerto/electromagnetics/fdtd/fdtd_plain.hpp"
 // #include "../huerto/electromagnetics/pml/cpml_border.hpp"
 
 #include <schnek/parser.hpp>
+#include <schnek/grid/arrayexpression.hpp>
 #include <schnek/util/logger.hpp>
 #include <schnek/tools/literature.hpp>
 #include <schnek/diagnostic/diagnostic.hpp>
@@ -69,7 +70,7 @@ void debug_check_out_of_bounds(std::string)
 }
 
 
-// typedef FieldDiagnostic<DataField, schnek::DeltaTimeDiagnostic> OparFieldDiagnostic;
+typedef FieldDiagnostic<DataField, schnek::DeltaTimeDiagnostic> OparFieldDiagnostic;
 
 void OPar::initParameters(schnek::BlockParameters &blockPars)
 {
@@ -103,7 +104,7 @@ void OPar::registerData()
   }
 
   decomposition = std::make_shared<HuertoDecomposition>();
-  decomposition->setGlobalRange({{0}, getGridSize()});
+  decomposition->setGlobalRange({{0}, Size{getGridSize() - (size_t)1}});
   decomposition->setGlobalDomain({{0.0} , getSize()});
   decomposition->init();
 }
@@ -180,7 +181,7 @@ void OPar::execute()
 
     time += dt;
     ++timeStep;
-    // schnek::DiagnosticManager::instance().execute();
+    schnek::DiagnosticManager::instance().execute();
   }
 
   // run diagnostics
@@ -208,11 +209,12 @@ void initBlockLayout(schnek::BlockClasses &blocks)
   // blocks("CPMLBorder").setClass<CPMLBorder>();
 
   // blocks("Species").setClass<Species>();
-  // blocks("FieldDiagnostic").setClass<OparFieldDiagnostic>();
+  blocks("FieldDiagnostic").setClass<OparFieldDiagnostic>();
   // blocks("ParticleDiagnostic").setClass<ParticleDiagnostic>();
 
-  blocks("opar").addChildren("EMFields")("FDTD");
-  //     ("Species")("FieldDiagnostic")("ParticleDiagnostic");
+  blocks("opar").addChildren("EMFields")("FDTD")
+    ("FieldDiagnostic");
+  //     ("Species")("ParticleDiagnostic");
 
   // blocks("FDTD").addChildren("CPMLBorder");
   //blocks("Fields").addChildren("FieldBC")("FieldInit");

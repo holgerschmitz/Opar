@@ -44,8 +44,8 @@ add_executable(opar1d
     huerto/electromagnetics/current.cpp
     huerto/electromagnetics/em_fields.cpp
     huerto/electromagnetics/fdtd/fdtd_plain.cpp
-    # huerto/electromagnetics/pml/cpml_border.cpp
-    # huerto/electromagnetics/source/border.cpp
+    huerto/electromagnetics/pml/cpml_border.cpp
+    huerto/electromagnetics/source/border.cpp
 )
 
 add_executable(opar2d
@@ -64,8 +64,8 @@ add_executable(opar2d
     huerto/electromagnetics/current.cpp
     huerto/electromagnetics/em_fields.cpp
     huerto/electromagnetics/fdtd/fdtd_plain.cpp
-    # huerto/electromagnetics/pml/cpml_border.cpp
-    # huerto/electromagnetics/source/border.cpp
+    huerto/electromagnetics/pml/cpml_border.cpp
+    huerto/electromagnetics/source/border.cpp
 )
 
 add_executable(opar3d
@@ -84,8 +84,8 @@ add_executable(opar3d
     huerto/electromagnetics/current.cpp
     huerto/electromagnetics/em_fields.cpp
     huerto/electromagnetics/fdtd/fdtd_plain.cpp
-    # huerto/electromagnetics/pml/cpml_border.cpp
-    # huerto/electromagnetics/source/border.cpp
+    huerto/electromagnetics/pml/cpml_border.cpp
+    huerto/electromagnetics/source/border.cpp
 )
 
 target_compile_definitions(opar1d PRIVATE HUERTO_ONE_DIM ONE_DIMENSIONAL)
